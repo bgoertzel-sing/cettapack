@@ -1,0 +1,9 @@
+[submodule "cetta"]
+	path = cetta
+	url = https://github.com/zariuq/CeTTa.git
+[submodule "deps/MORK"]
+	path = deps/MORK
+	url = https://github.com/trueagi-io/MORK.git
+[submodule "deps/PathMap"]
+	path = deps/PathMap
+	url = https://github.com/Adam-Vandervorst/PathMap.git

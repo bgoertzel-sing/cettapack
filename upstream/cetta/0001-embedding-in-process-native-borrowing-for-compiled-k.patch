@@ -1,0 +1,128 @@
+From 92868c53d87d8b1e3b3ab57a5cc235403f7de2c4 Mon Sep 17 00:00:00 2001
+From: "ProtoCosmo (cettapack)" <protocosmo@users.noreply.github.com>
+Date: Thu, 5 Nov 2026 22:11:43 -0700
+Subject: [PATCH] embedding: in-process native borrowing for compiled kernels
+
+Add include/cetta_embed_native.h with three functions a host linked against
+the same build's native objects can use inside a registered callback:
+
+- cetta_embed_native_atom: borrow the runtime Atom behind a handle;
+- cetta_embed_native_space: borrow the Space behind a space-valued handle;
+- cetta_embed_native_atom_copy: deep-copy a runtime Atom into a new
+  engine-owned handle, so a callback can return it.
+
+They let a compiled match kernel (CettaPack M1) borrow the caller's space
+and return answers without copying struct layouts private to embedding.c.
+Nothing here mutates a space, and the stable ABI is unchanged.
+---
+ Makefile                     |  2 +-
+ include/cetta_embed_native.h | 38 ++++++++++++++++++++++++++++++++++++
+ src/embedding.c              | 30 ++++++++++++++++++++++++++++
+ 3 files changed, 69 insertions(+), 1 deletion(-)
+ create mode 100644 include/cetta_embed_native.h
+
+diff --git a/Makefile b/Makefile
+index d957a450..230f87b3 100644
+--- a/Makefile
++++ b/Makefile
+@@ -48967,7 +48967,7 @@ EMBED_STATIC_LIB = runtime/libcetta-$(EMBED_TAG).a
+ EMBED_TEST = runtime/test_embedding-$(EMBED_TAG)
+ -include $(EMBED_OBJ:.o=.d)
+ 
+-$(EMBED_OBJ): src/embedding.c include/cetta_embed.h src/runtime_names.h $(BUILD_CONFIG_HEADER)
++$(EMBED_OBJ): src/embedding.c include/cetta_embed.h include/cetta_embed_native.h src/runtime_names.h $(BUILD_CONFIG_HEADER)
+ 	$(call compile_c_object,$(CPPFLAGS) $(CFLAGS) $(DEPFLAGS) -Iinclude)
+ 
+ $(EMBED_LIB): $(EMBED_STATIC_LIB) $(BRIDGE_DEPS) include/cetta_embed.map
+diff --git a/include/cetta_embed_native.h b/include/cetta_embed_native.h
+new file mode 100644
+index 00000000..916552ef
+--- /dev/null
++++ b/include/cetta_embed_native.h
+@@ -0,0 +1,38 @@
++#ifndef CETTA_EMBED_NATIVE_H
++#define CETTA_EMBED_NATIVE_H
++
++/* In-process native borrowing for compiled kernels.
++ *
++ * Not part of the stable embedding ABI. A host that links the same build's
++ * native objects (not the symbol-localized static library) may use these to
++ * run a compiled kernel inside a registered callback, on runtime state it
++ * borrows. Every function requires the engine to be entered, which is the
++ * case while a callback's open/next runs. Nothing here mutates a space. */
++
++#include "cetta_embed.h"
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++struct Atom;
++struct Space;
++
++/* The runtime atom behind a handle. Borrowed: valid while the handle lives. */
++const struct Atom *cetta_embed_native_atom(const cetta_atom_t *atom);
++
++/* The space behind a space-valued atom handle; NULL when the atom is not a
++ * space. Borrowed: valid while the handle lives. */
++struct Space *cetta_embed_native_space(const cetta_atom_t *atom);
++
++/* Deep-copy a runtime atom into a new handle owned by the engine, for a
++ * callback to return as a value. */
++cetta_status_t cetta_embed_native_atom_copy(cetta_engine_t *engine,
++                                            const struct Atom *value,
++                                            cetta_atom_t **output);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+diff --git a/src/embedding.c b/src/embedding.c
+index 3bcb390d..018e8173 100644
+--- a/src/embedding.c
++++ b/src/embedding.c
+@@ -8,6 +8,7 @@
+ #define _XOPEN_SOURCE 700
+ #endif
+ #include "cetta_embed.h"
++#include "cetta_embed_native.h"
+ #include "runtime_names.h"
+ #include "eval.h"
+ #include "eval_invocation.h"
+@@ -1551,3 +1552,32 @@ const char *cetta_embed_status_name(cetta_status_t status) {
+         "query-closed", "invalidated", "preparation-required", "buffer-incompatible", "io-error", "halted"};
+     return (unsigned)status < sizeof(names) / sizeof(*names) ? names[status] : "unknown-status";
+ }
++
++/* ── In-process native borrowing (cetta_embed_native.h) ─────────────────── */
++
++const Atom *cetta_embed_native_atom(const cetta_atom_t *atom) {
++    return atom ? atom->value : NULL;
++}
++
++Space *cetta_embed_native_space(const cetta_atom_t *atom) {
++    if (!atom || !atom->value || atom->value->kind != ATOM_GROUNDED ||
++        atom->value->ground.gkind != GV_SPACE)
++        return NULL;
++    return atom->value->ground.ptr;
++}
++
++cetta_status_t cetta_embed_native_atom_copy(cetta_engine_t *engine,
++                                            const Atom *value,
++                                            cetta_atom_t **output) {
++    if (!engine || !value || !output) return CETTA_INVALID_ARGUMENT;
++    *output = NULL;
++    EmbeddingScope scope;
++    cetta_status_t status = engine_enter(engine, &scope);
++    if (status != CETTA_OK) return status;
++    EmbeddingOwner *owner = owner_new(engine);
++    status = !owner ? CETTA_OUT_OF_MEMORY
++        : atom_wrap(owner, atom_deep_copy(&owner->arena, (Atom *)value), output);
++    owner_release(owner);
++    engine_leave(engine, &scope);
++    return status;
++}
+-- 
+2.34.1
+

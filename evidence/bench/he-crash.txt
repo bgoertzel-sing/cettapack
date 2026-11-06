@@ -1,0 +1,38 @@
+HE 0.2.10 (PyPI hyperon, user site-packages) aborts on this KB family.
+
+Reproduce:
+  python3 bench/gen_kb.py --snps 600 --genes 150 --interactions 750 --annotations 500 --queries 40 --out /tmp/kb_600.metta --queries-out /tmp/q_600.txt
+  # load /tmp/kb_600.metta into &self, then: !(match &self (target rs329 $g) $g)
+  python3 - /tmp/kb_600.metta /tmp/q_600.txt < he_find.py (script below)
+
+--- he_find.py ---
+import sys
+from hyperon import MeTTa
+m = MeTTa()
+s = m.space()
+for a in m.parse_all(open(sys.argv[1]).read()):
+    s.add_atom(a)
+print("loaded", flush=True)
+for rs in open(sys.argv[2]).read().split():
+    print("q", rs, flush=True)
+    r = m.run(f"!(match &self (target {rs} $g) $g)")
+    print("  single", r, flush=True)
+    r = m.run(f"!(match &self (, (target {rs} $g) (expressed $g $t)) ($g $t))")
+    print("  conj", len(r[0]), flush=True)
+
+--- output (first 12 lines) ---
+loaded
+q rs591
+  single [[gene132, gene15]]
+  conj 10
+q rs384
+  single [[gene12]]
+  conj 3
+q rs329
+  single [[gene145, gene5]]
+  conj 10
+q rs575
+  single [[gene20]]
+
+The same panic occurs with the 128,576-atom main KB and the 12,944-atom KB (--snps 2400 --genes 600 --interactions 3000 --annotations 2000);
+HE completes on the 1,264-atom KB used for the he-scale suite.

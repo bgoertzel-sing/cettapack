@@ -1,0 +1,1 @@
+cpkc compile (plan + manifest, incl. langdef digest): median 29.2 ms over 5 runs

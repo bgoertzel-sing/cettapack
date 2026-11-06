@@ -1,0 +1,33 @@
+Clean build: GMP_PREFIX=<user-local libgmp-dev> JOBS=6 scripts/build_cetta.sh  (2026-11-06, this host)
+scratch copy HEAD:
+29f29cec embedding: in-process native borrowing for compiled kernels
+4c285a97   WIP: make pre-main shareable and preserve benchmark evidence
+
+first lines:
+make: Entering directory '/home/openclaw/research-agent/projects/cettapack/repos/cettapack/build/cetta-src'
+gcc -Isrc -I. -std=c11 -O2 -Wall -Werror -ffunction-sections -fdata-sections -o runtime/bootstrap/emit-operational-reader-v1 \
+	tools/emit_operational_reader_v1.c src/lib_parse_native_grammar.c src/gslt_dense_bitset_v1.c \
+	native/cetta_standalone_alloc_v1.c src/native_sha256.c -Wl,--gc-sections
+runtime/bootstrap/emit-operational-reader-v1 runtime/generated/cetta_term_reader_v1.generated.h
+...
+last lines:
+make: Leaving directory '/home/openclaw/research-agent/projects/cettapack/repos/cettapack/build/cetta-src'
+make: Entering directory '/home/openclaw/research-agent/projects/cettapack/repos/cettapack/build/cetta-src'
+make: Leaving directory '/home/openclaw/research-agent/projects/cettapack/repos/cettapack/build/cetta-src'
+cetta 1.5.0-dev (mork)
+build/cetta.mk written
+EXIT=0
+
+warnings kept visible under gcc 11 (-Wno-error classes):
+16
+
+build/cetta-src/cetta -v:
+cetta 1.5.0-dev (mork)
+
+build/cetta.mk (link inputs, abbreviated):
+CPK_OBJ=runtime/bootstrap/embedding.mork.prime-need-heap-index.prime-eval-stack.json-gslt.o src/symbol.mork.prime-need-heap-index.prime-eval-stack.json-gslt.o src/scalar_trie.mork.prime-need-heap-inde
+CPK_LDFLAGS=-Wl,--as-needed runtime/bootstrap/libcetta_space_bridge.v2.default.fcf0572f70ae.a -lrt -ldl -lm -pthread -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64
+CPK_CPPFLAGS=-Isrc -I. -Iexperiments/gslt2parse_foundation/native -DCETTA_MORK_BRIDGE_STATIC=1  -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/resear
+CPK_CFLAGS=-O3 -Wall -Werror -std=c11 -pthread
+CPK_TAG=mork.prime-need-heap-index.prime-eval-stack.json-gslt
+CPK_CETTA_ROOT=/home/openclaw/research-agent/projects/cettapack/repos/cettapack/build/cetta-src

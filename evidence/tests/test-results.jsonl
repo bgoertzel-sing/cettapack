@@ -1,0 +1,23 @@
+{"item":"1","name":"ground match","ok":true,"detail":"generic=1 kernel=1 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes"}
+{"item":"2","name":"no result","ok":true,"detail":"generic=0 kernel=0 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes"}
+{"item":"2b","name":"no result (dangling gene)","ok":true,"detail":"generic=0 kernel=0 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes"}
+{"item":"3","name":"multiple results","ok":true,"detail":"generic=3 kernel=3 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes"}
+{"item":"4","name":"duplicates and multiplicity","ok":true,"detail":"generic=8 kernel=8 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes"}
+{"item":"4s","name":"support demand dedups","ok":true,"detail":"generic=3 kernel=3 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes"}
+{"item":"5","name":"co-reference","ok":true,"detail":"generic=2 kernel=2 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes"}
+{"item":"6","name":"distinct variables","ok":true,"detail":"generic=2 kernel=2 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes"}
+{"item":"7","name":"result template","ok":true,"detail":"generic=3 kernel=3 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes"}
+{"item":"9","name":"profile mismatch -> fallback","ok":true,"detail":"generic=8 kernel=8 same_bag=yes verdict=INVALID(profile mismatch) path=fallback loaded=yes space_unchanged=yes"}
+{"item":"10","name":"schema hash mismatch -> fallback","ok":true,"detail":"generic=3 kernel=3 same_bag=yes verdict=INVALID(schema digest mismatch) path=fallback loaded=yes space_unchanged=yes"}
+{"item":"10r","name":"schema violation (variable record)","ok":true,"detail":"generic=3 kernel=3 same_bag=yes verdict=INVALID(schema: record 1: non-symbol field in a target record) path=fallback loaded=yes space_unchanged=yes"}
+{"item":"10b","name":"schema violation (number field)","ok":true,"detail":"generic=2 kernel=2 same_bag=yes verdict=INVALID(schema: record 1: non-symbol field in a target record) path=fallback loaded=yes space_unchanged=yes"}
+{"item":"10c","name":"schema violation (variable head)","ok":true,"detail":"generic=2 kernel=2 same_bag=yes verdict=INVALID(schema: record 1: non-symbol head on arity-3 record) path=fallback loaded=yes space_unchanged=yes"}
+{"item":"11","name":"meta-expanded hash mismatch -> fallback","ok":true,"detail":"generic=3 kernel=3 same_bag=yes verdict=INVALID(meta-expanded region hash mismatch) path=fallback loaded=yes space_unchanged=yes"}
+{"item":"11b","name":"missing hash -> not loaded (fail closed)","ok":true,"detail":"generic=3 kernel=3 same_bag=yes verdict=INVALID(pack not loaded (fail closed): missing or malformed hash identity.match_pattern_hash: not loading) path=fallback loaded=no space_unchanged=yes"}
+{"item":"14","name":"PathMap disabled -> fallback","ok":true,"detail":"generic=8 kernel=8 same_bag=yes verdict=INVALID(PathMap narrowing disabled or unavailable) path=fallback loaded=yes space_unchanged=yes"}
+{"item":"12","name":"append-only patching path (stub) -> fallback","ok":true,"detail":"generic=4 kernel=4 same_bag=yes verdict=PATCHABLE(append-only delta of 1 atoms; patching is an M1 stub: fallback) path=fallback loaded=yes space_unchanged=yes"}
+{"item":"12r","name":"append over patch budget -> REPLAN -> fallback","ok":true,"detail":"generic=4 kernel=4 same_bag=yes verdict=REPLAN(append of 1 atoms over the patch budget 0) path=fallback loaded=yes space_unchanged=yes"}
+{"item":"13","name":"destructive write invalidation -> fallback","ok":true,"detail":"generic=2 kernel=2 same_bag=yes verdict=INVALID(destructive write since instantiation) path=fallback loaded=yes space_unchanged=yes"}
+{"item":"in","name":"non-symbol input -> fallback","ok":true,"detail":"generic=4 kernel=4 same_bag=yes verdict=INVALID(input 1 is not a ground symbol) path=fallback loaded=yes space_unchanged=yes"}
+{"item":"long","name":"long symbol: MORK-query narrowing","ok":true,"detail":"generic=3 kernel=3 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes"}
+{"item":"15","name":"generic CeTTa vs kernel, 300 seeds","ok":true,"detail":"same=300/300 answers=2656 kernel_calls=300 fallbacks=0 kb_atoms=128576"}
