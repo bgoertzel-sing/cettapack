@@ -26,7 +26,8 @@ PASS A.9-11b missing hash -> not loaded (fail closed) generic=3 kernel=3 same_ba
 PASS A.9-14 PathMap disabled -> fallback       generic=8 kernel=8 same_bag=yes verdict=INVALID(PathMap narrowing disabled or unavailable) path=fallback loaded=yes space_unchanged=yes
 PASS A.9-dep space changed after instantiation  generic=4 kernel=4 same_bag=yes verdict=PATCHABLE(space revision changed (PATCHABLE stub: falls back)) path=fallback loaded=yes space_unchanged=yes
 PASS A.9-in non-symbol input -> fallback       generic=4 kernel=4 same_bag=yes verdict=INVALID(input 1 is not a ground symbol) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-long long symbol: MORK-query narrowing  generic=3 kernel=3 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes
 PASS A.9-15 generic CeTTa vs kernel, 300 seeds same=300/300 answers=2656 kernel_calls=300 fallbacks=0 kb_atoms=128576
-summary: 19 passed, 0 failed
+summary: 20 passed, 0 failed
 python3 tools/emit_certificate.py packs/target_expressed build/test-results.jsonl build/kb.metta
-wrote packs/target_expressed/certificate.json: 19 items, claim bag-tested-adequate
+wrote packs/target_expressed/certificate.json: 20 items, claim bag-tested-adequate

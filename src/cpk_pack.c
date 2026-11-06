@@ -447,7 +447,7 @@ static void compute(Cursor *c) {
     Space *s = cetta_embed_native_space(c->args[plan->space_input]);
 
     /* instantiation: the narrowing index for this space, built once */
-    if (p->loaded && p->digests_match && s && !p->index) {
+    if (p->loaded && p->digests_match && s && !p->index && !p->opt.native_generic) {
         uint64_t t0 = cpk_now_ns();
         Arena a;
         arena_init_detached(&a);

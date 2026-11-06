@@ -16,4 +16,5 @@
 {"item":"14","name":"PathMap disabled -> fallback","ok":true,"detail":"generic=8 kernel=8 same_bag=yes verdict=INVALID(PathMap narrowing disabled or unavailable) path=fallback loaded=yes space_unchanged=yes"}
 {"item":"dep","name":"space changed after instantiation","ok":true,"detail":"generic=4 kernel=4 same_bag=yes verdict=PATCHABLE(space revision changed (PATCHABLE stub: falls back)) path=fallback loaded=yes space_unchanged=yes"}
 {"item":"in","name":"non-symbol input -> fallback","ok":true,"detail":"generic=4 kernel=4 same_bag=yes verdict=INVALID(input 1 is not a ground symbol) path=fallback loaded=yes space_unchanged=yes"}
+{"item":"long","name":"long symbol: MORK-query narrowing","ok":true,"detail":"generic=3 kernel=3 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes"}
 {"item":"15","name":"generic CeTTa vs kernel, 300 seeds","ok":true,"detail":"same=300/300 answers=2656 kernel_calls=300 fallbacks=0 kb_atoms=128576"}

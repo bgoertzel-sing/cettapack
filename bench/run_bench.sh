@@ -7,8 +7,9 @@
 #                   kernel (hosting overhead cancels against "kernel")
 #   kernel          the compiled kernel, guard checks included on every call
 #   fallback        guard -> INVALID on every call (PathMap disabled) -> residual
-# Suite "he-scale" (1/10 KB, same generator and seed): generic, kernel and HE,
-#   because HE 0.2.10 aborts on the main KB (see evidence/bench/he-main-kb.txt).
+# Suite "he-scale" (1,264-atom KB, same generator and seed): generic, kernel and
+#   HE, because HE 0.2.10 aborts (Rust panic in hyperon-space/src/index/trie.rs:179)
+#   on this KB family from a few thousand atoms up (evidence/bench/he-crash.txt).
 # PeTTa is not run: no SWI-Prolog on this host (docs/BENCHMARK.md).
 #
 # Each mode runs in RUNS separate processes (peak RSS is per process); each
@@ -54,4 +55,4 @@ suite() {
 suite main "generic hosted-generic kernel fallback"
 HE_MODES=""
 python3 -c "import hyperon" 2>/dev/null && HE_MODES=he
-suite he-scale "generic kernel $HE_MODES" --snps 2400 --genes 600 --interactions 3000 --annotations 2000 --queries $HE_QUERIES
+suite he-scale "generic kernel $HE_MODES" --snps 240 --genes 60 --interactions 300 --annotations 200 --queries $HE_QUERIES
