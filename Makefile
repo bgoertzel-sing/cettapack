@@ -35,6 +35,7 @@ build/kb.metta build/queries.txt: bench/gen_kb.py
 test: build/cettapack-host build/kb.metta
 	./build/cettapack-host hashes
 	CPK_TEST_LOG=build/test-results.jsonl ./build/cettapack-host test --kb build/kb.metta
+	python3 tools/emit_certificate.py packs/target_expressed build/test-results.jsonl build/kb.metta
 
 bench: build/cettapack-host build/kb.metta
 	bench/run_bench.sh

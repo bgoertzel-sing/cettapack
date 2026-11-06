@@ -345,6 +345,8 @@ typedef struct {
     size_t nargs;
     cetta_atom_t **answers;
     size_t n, cap, pos;
+    Atom **raw;                    /* kernel answers, borrowed from the call's scratch arena */
+    size_t nraw, rawcap;
     bool computed, failed;
 } Cursor;
 
@@ -361,9 +363,29 @@ static int push_handle(Cursor *c, cetta_atom_t *h) {
 
 static int sink_emit(void *sink, Atom *answer) {
     Cursor *c = sink;
-    cetta_atom_t *h = NULL;
-    if (cetta_embed_native_atom_copy(c->engine, answer, &h) != CETTA_OK) return -1;
-    return push_handle(c, h);
+    if (c->nraw == c->rawcap) {
+        size_t cap = c->rawcap ? c->rawcap * 2 : 16;
+        Atom **t = realloc(c->raw, cap * sizeof(*t));
+        if (!t) return -1;
+        c->raw = t; c->rawcap = cap;
+    }
+    c->raw[c->nraw++] = answer;
+    return 0;
+}
+
+/* Answer construction: one deep copy of all answers into an engine-owned
+ * handle, then one handle per answer occurrence (children of that copy). */
+static int materialize(Cursor *c, Arena *scratch) {
+    if (c->nraw == 0) return 0;
+    cetta_atom_t *bundle = NULL;
+    if (cetta_embed_native_atom_copy(c->engine, atom_expr(scratch, c->raw, c->nraw), &bundle) != CETTA_OK) return -1;
+    int rc = 0;
+    for (size_t i = 0; !rc && i < c->nraw; i++) {
+        cetta_atom_t *h = NULL;
+        rc = cetta_embed_atom_child(bundle, i, &h) == CETTA_OK ? push_handle(c, h) : -1;
+    }
+    cetta_embed_atom_release(bundle);
+    return rc;
 }
 
 static void drop_answers(Cursor *c) {
@@ -435,6 +457,36 @@ static void compute(Cursor *c) {
         p->instantiate_ns += cpk_now_ns() - t0;
     }
 
+    if (p->opt.native_generic && s && p->region_ok) {
+        uint64_t k0 = cpk_now_ns();
+        Arena a;
+        arena_init_detached(&a);
+        Bindings seed;
+        bindings_init(&seed);
+        bool ok = true;
+        for (uint8_t i = 0; ok && i < plan->ninputs; i++)
+            if (plan->input_slot[i] >= 0)
+                ok = bindings_add_var(&seed, p->slot_vars[plan->input_slot[i]], inputs[i]);
+        BindingSet out;
+        if (ok) {
+            Atom *pats[CPK_MAX_FACTORS];
+            for (uint8_t k = 0; k < plan->nfactors; k++) pats[k] = p->conj_atom->expr.elems[1 + k];
+            space_query_conjunction(s, &a, pats, plan->nfactors, &seed, &out);
+            for (CettaCount i = 0; ok && i < out.len; i++) {
+                Atom *ans = bindings_apply(&out.items[i], &a, p->template_atom);
+                ok = ans && sink_emit(c, ans) == 0;
+            }
+            binding_set_free(&out);
+        }
+        if (ok) ok = materialize(c, &a) == 0;
+        c->nraw = 0;
+        bindings_free(&seed);
+        arena_free(&a);
+        p->stats.kernel_ns += cpk_now_ns() - k0;
+        if (!ok) { drop_answers(c); c->failed = true; }
+        return;
+    }
+
     uint64_t g0 = cpk_now_ns();
     CpkVerdict v = guard(p, s, inputs, p->last_reason, sizeof p->last_reason);
     p->stats.guard_ns += cpk_now_ns() - g0;
@@ -451,6 +503,12 @@ static void compute(Cursor *c) {
             .demand = p->opt.demand, .emit = sink_emit, .sink = c, .stats = &p->stats,
         };
         int rc = cpk_kernel_run(&call);
+        if (rc == 0) {
+            uint64_t m0 = cpk_now_ns();
+            rc = materialize(c, &a);
+            p->stats.answer_ns += cpk_now_ns() - m0;
+        }
+        c->nraw = 0;
         arena_free(&a);
         p->stats.kernel_ns += cpk_now_ns() - k0;
         if (rc == 0) { p->stats.kernel_calls++; return; }
@@ -484,6 +542,7 @@ static void cb_close(void *cursor, cetta_callback_close_mode_t mode) {
     Cursor *c = cursor;
     for (size_t i = c->pos; i < c->n; i++) cetta_embed_atom_release(c->answers[i]);
     free(c->answers);
+    free(c->raw);
     free(c);
 }
 

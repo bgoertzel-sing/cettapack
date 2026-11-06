@@ -14,6 +14,9 @@ typedef struct {
     const char *language;          /* engine language, part of the live profile */
     bool pathmap_enabled;          /* test item 14 turns this off */
     CpkDemand demand;
+    /* benchmark baseline: answer through CeTTa's generic conjunction matcher
+     * (space_query_conjunction) on the same hosted path, no guard, no kernel */
+    bool native_generic;
 } CpkPackOptions;
 
 typedef struct {

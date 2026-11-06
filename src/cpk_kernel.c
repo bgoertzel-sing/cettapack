@@ -90,6 +90,7 @@ struct CpkIndex {
     uint64_t *offsets;            /* CSR: group g owns rows[offsets[g] .. offsets[g+1]) */
     CettaIndex *rows;             /* source record positions in the borrowed space */
     bool schema_ok, pathmap_ok;
+    bool direct_ok;               /* keys use MORK's inline symbol encoding: byte-prefix descent */
     char note[256];
 };
 
@@ -101,6 +102,7 @@ uint64_t cpk_index_length(const CpkIndex *ix) { return ix ? ix->length : 0; }
 uint64_t cpk_index_groups(const CpkIndex *ix) { return ix ? ix->ngroups : 0; }
 uint64_t cpk_index_rows(const CpkIndex *ix) { return ix ? ix->nrows : 0; }
 const char *cpk_index_schema_note(const CpkIndex *ix) { return ix ? ix->note : "no index"; }
+bool cpk_index_direct_ok(const CpkIndex *ix) { return ix && ix->direct_ok; }
 
 void cpk_index_free(CpkIndex *ix) {
     if (!ix) return;
@@ -163,6 +165,75 @@ static RecClass classify(const CpkPlan *plan, const SymbolId *heads, Atom *a,
     return REC_IRRELEVANT;
 }
 
+/* MORK's expression bytes (MORK/expr, Tag): Arity(a) = a (a < 64);
+ * SymbolSize(s) = 0xC0|s then s bytes (0 < s < 64); NewVar = 0xC0;
+ * VarRef(r) = 0x80|r. A symbol is written inline when its text is plain. */
+static bool plain_symbol_text(const char *t) {
+    if (!t) return false;
+    size_t n = strlen(t);
+    if (n == 0 || n >= 64) return false;
+    for (size_t i = 0; i < n; i++) {
+        unsigned char c = (unsigned char)t[i];
+        if (c <= 32 || c >= 127 || strchr("()\"$;\\", c)) return false;
+    }
+    return true;
+}
+
+static bool atom_symbols_inline(Arena *scratch, Atom *a) {
+    if (a->kind == ATOM_SYMBOL) return plain_symbol_text(atom_to_parseable_string(scratch, a));
+    if (a->kind != ATOM_EXPR || a->expr.len >= 64) return false;
+    for (CettaExprLen i = 0; i < a->expr.len; i++)
+        if (!atom_symbols_inline(scratch, a->expr.elems[i])) return false;
+    return true;
+}
+
+/* skip one MORK expression starting at *pos */
+static bool mork_skip(const uint8_t *b, size_t n, size_t *pos, int depth) {
+    if (*pos >= n || depth > 64) return false;
+    uint8_t t = b[(*pos)++];
+    if ((t & 0xC0) == 0xC0) { if (t != 0xC0) *pos += (t & 0x3F); return *pos <= n; }
+    if ((t & 0xC0) == 0x80) return true;
+    if ((t & 0xC0) == 0x00) {
+        for (uint8_t i = 0; i < t; i++) if (!mork_skip(b, n, pos, depth + 1)) return false;
+        return true;
+    }
+    return false;
+}
+
+/* key = (<atom> <gid>): arity 2, the atom, then the gid symbol */
+static bool key_gid(const uint8_t *b, size_t n, uint64_t *gid) {
+    size_t pos = 1;
+    if (n < 3 || b[0] != 0x02) return false;
+    if (!mork_skip(b, n, &pos, 0) || pos >= n) return false;
+    uint8_t t = b[pos++];
+    if ((t & 0xC0) != 0xC0 || t == 0xC0) return false;
+    size_t len = t & 0x3F;
+    if (pos + len != n) return false;
+    uint64_t g = 0;
+    for (size_t i = 0; i < len; i++) {
+        if (b[pos + i] < '0' || b[pos + i] > '9') return false;
+        g = g * 10 + (uint64_t)(b[pos + i] - '0');
+    }
+    *gid = g;
+    return true;
+}
+
+/* every stored key must decode to an in-range group id */
+static bool direct_selfcheck(CpkIndex *ix) {
+    CettaMorkCursorHandle *c = cetta_mork_bridge_cursor_new(ix->pm);
+    if (!c) return false;
+    bool moved = true, ok = true;
+    uint64_t seen = 0;
+    while (ok && cetta_mork_bridge_cursor_next_val(c, &moved) && moved) {
+        uint8_t *b = NULL; size_t n = 0; uint64_t g = 0;
+        ok = cetta_mork_bridge_cursor_path_bytes(c, &b, &n) && key_gid(b, n, &g) && g < ix->ngroups;
+        if (b) cetta_mork_bridge_bytes_free(b, n);
+        seen++;
+    }
+    cetta_mork_bridge_cursor_free(c);
+    return ok && seen == ix->ngroups;
+}
+
 CpkIndex *cpk_index_build(const CpkPlan *plan, Space *space, Arena *scratch,
                           bool pathmap_enabled, char *why, size_t why_len) {
     CpkIndex *ix = calloc(1, sizeof(*ix));
@@ -178,6 +249,7 @@ CpkIndex *cpk_index_build(const CpkPlan *plan, Space *space, Arena *scratch,
         heads[f] = atom_symbol(scratch, plan->factors[f].fields[0].text)->sym_id;
 
     uint64_t len = ix->length;
+    bool direct = true;
     uint64_t *gid_of_row = malloc(sizeof(uint64_t) * (len ? len : 1));
     StrMap groups;
     Buf text = {0};
@@ -196,6 +268,7 @@ CpkIndex *cpk_index_build(const CpkPlan *plan, Space *space, Arena *scratch,
         if (c != REC_INDEX) continue;
         char *s = atom_to_parseable_string(scratch, a);
         if (!s) { ok = false; break; }
+        if (direct && !atom_symbols_inline(scratch, a)) direct = false;
         uint64_t g; bool inserted;
         if (!strmap_get_or_put(&groups, s, ix->ngroups, &g, &inserted)) { ok = false; break; }
         if (inserted) {
@@ -233,8 +306,10 @@ CpkIndex *cpk_index_build(const CpkPlan *plan, Space *space, Arena *scratch,
             ix->pm = cetta_mork_bridge_space_new();
             uint64_t added = 0;
             if (ix->pm && (ix->ngroups == 0 ||
-                           cetta_mork_bridge_space_add_text(ix->pm, text.buf, &added)))
+                           cetta_mork_bridge_space_add_text(ix->pm, text.buf, &added))) {
                 ix->pathmap_ok = true;
+                ix->direct_ok = direct && direct_selfcheck(ix);
+            }
             else
                 snprintf(why, why_len, "bridge add_text failed: %s", cetta_mork_bridge_last_error());
         }
@@ -317,6 +392,32 @@ static bool narrow(const CpkIndex *ix, const char *query, uint8_t gid_index,
     return ok;
 }
 
+/* Direct narrowing: descend the PathMap trie on the key prefix (wrapper,
+ * factor arity, then the ground fields up to the first unbound one) and read
+ * the group id of every key below it. */
+static bool narrow_direct(const CpkIndex *ix, CettaMorkCursorHandle *c,
+                          const uint8_t *prefix, size_t plen, U64Vec *out, CpkStats *st) {
+    uint64_t t0 = cpk_now_ns();
+    bool ok = cetta_mork_bridge_cursor_reset(c), moved = true;
+    for (size_t i = 0; ok && i < plen; i++) {
+        ok = cetta_mork_bridge_cursor_descend_byte(c, prefix[i], &moved);
+        if (ok && !moved) { st->narrow_ns += cpk_now_ns() - t0; st->narrow_queries++; return true; }
+    }
+    while (ok) {
+        ok = cetta_mork_bridge_cursor_next_val(c, &moved);
+        if (!ok || !moved) break;
+        uint8_t *b = NULL; size_t n = 0; uint64_t g = 0;
+        ok = cetta_mork_bridge_cursor_path_bytes(c, &b, &n);
+        bool inside = ok && n >= plen && !memcmp(b, prefix, plen);
+        if (inside) ok = key_gid(b, n, &g) && g < ix->ngroups && u64_push(out, g);
+        if (b) cetta_mork_bridge_bytes_free(b, n);
+        if (!inside) break;
+    }
+    st->narrow_ns += cpk_now_ns() - t0;
+    st->narrow_queries++;
+    return ok;
+}
+
 /* ---------------------------------------------------------------------- */
 /* the join                                                                */
 
@@ -324,7 +425,18 @@ typedef struct {
     const CpkKernelCall *call;
     bool bound[CPK_MAX_FACTORS + 1][CPK_MAX_SLOTS];  /* slot bound before factor k */
     StrMap seen;                                      /* support demand only */
+    CettaMorkCursorHandle *cursor;                    /* call-local PathMap cursor */
 } JoinCtx;
+
+static bool put_sym(uint8_t *buf, size_t cap, size_t *len, const char *t) {
+    if (!plain_symbol_text(t)) return false;
+    size_t n = strlen(t);
+    if (*len + 1 + n > cap) return false;
+    buf[(*len)++] = (uint8_t)(0xC0 | n);
+    memcpy(buf + *len, t, n);
+    *len += n;
+    return true;
+}
 
 static int join(JoinCtx *jc, uint8_t k, Bindings *env);
 
@@ -378,7 +490,24 @@ static int join(JoinCtx *jc, uint8_t k, Bindings *env) {
     }
     ok = ok && buf_puts(&q, ") $cpkgid)");
     U64Vec cands = {0};
-    if (ok) ok = narrow(c->index, q.buf, nvars, &cands, c->stats);
+    /* direct trie descent when the key prefix can be written byte for byte */
+    uint8_t prefix[512];
+    size_t plen = 0;
+    bool direct = ok && jc->cursor != NULL;
+    if (direct) {
+        prefix[plen++] = 0x02;
+        prefix[plen++] = f->arity;
+        for (uint8_t i = 0; direct && i < f->arity; i++) {
+            const CpkField *fd = &f->fields[i];
+            if (fd->kind == CPK_FIELD_CONST) { direct = put_sym(prefix, sizeof prefix, &plen, fd->text); continue; }
+            if (!jc->bound[k][fd->slot]) break;
+            Atom *v = bindings_apply(env, c->scratch, c->slot_vars[fd->slot]);
+            direct = v && v->kind == ATOM_SYMBOL &&
+                     put_sym(prefix, sizeof prefix, &plen, atom_to_parseable_string(c->scratch, v));
+        }
+    }
+    if (direct) ok = narrow_direct(c->index, jc->cursor, prefix, plen, &cands, c->stats);
+    else if (ok) ok = narrow(c->index, q.buf, nvars, &cands, c->stats);
     free(q.buf);
     if (!ok) { free(cands.items); return -1; }
     c->stats->candidates += cands.len;
@@ -419,6 +548,7 @@ int cpk_kernel_run(const CpkKernelCall *c) {
                 jc.bound[k + 1][p->factors[k].fields[i].slot] = true;
     }
     if (c->demand == CPK_DEMAND_SUPPORT && !strmap_init(&jc.seen, 64)) return -1;
+    if (c->index->direct_ok) jc.cursor = cetta_mork_bridge_cursor_new(c->index->pm);
 
     Bindings env;
     bindings_init(&env);
@@ -431,5 +561,6 @@ int cpk_kernel_run(const CpkKernelCall *c) {
     if (!rc) rc = join(&jc, 0, &env);
     bindings_free(&env);
     if (c->demand == CPK_DEMAND_SUPPORT) strmap_free(&jc.seen);
+    if (jc.cursor) cetta_mork_bridge_cursor_free(jc.cursor);
     return rc;
 }

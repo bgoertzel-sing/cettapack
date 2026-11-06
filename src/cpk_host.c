@@ -318,6 +318,11 @@ static int cmd_test(const char *kbfile) {
     const char *distinct =  /* $gene and $tissue are distinct variables: equal values allowed */
         "(target rs1 g1)\n(expressed g1 g1)\n(expressed g1 liver)\n";
 
+    /* a 70-byte symbol: MORK would intern it, so the kernel cannot write the
+     * key prefix byte for byte and narrows through MORK's query instead */
+    const char *longsym =
+        "(target rs1 g1)\n(target rs1 gene_with_a_very_long_name_that_mork_interns_rather_than_inlining_xx)\n"
+        "(expressed g1 liver)\n(expressed g1 liver)\n(expressed gene_with_a_very_long_name_that_mork_interns_rather_than_inlining_xx heart)\n";
     char *m_profile = write_variant_manifest("digest", FAKE, "cpk-manifest-profile.json");
     char *m_struct = write_variant_manifest("region_hash", FAKE, "cpk-manifest-struct.json");
     char *m_missing = write_variant_manifest("pattern_hash", NULL, "cpk-manifest-missing.json");
@@ -344,6 +349,7 @@ static int cmd_test(const char *kbfile) {
         {"14", "PathMap disabled -> fallback", dups, "rs1", NULL, NULL, false, CPK_DEMAND_BAG, CPK_INVALID, 8, NULL, true},
         {"dep", "space changed after instantiation", base, "rs1", NULL, NULL, true, CPK_DEMAND_BAG, CPK_PATCHABLE, 4, "(expressed g2 kidney)\n", true},
         {"in", "non-symbol input -> fallback", base, "$x", NULL, NULL, true, CPK_DEMAND_BAG, CPK_INVALID, -1, NULL, true},
+        {"long", "long symbol: MORK-query narrowing", longsym, "rs1", NULL, NULL, true, CPK_DEMAND_BAG, CPK_VALID, 3, NULL, true},
     };
     for (size_t i = 0; i < sizeof cases / sizeof *cases; i++) run_case(&t, &cases[i]);
 
@@ -400,11 +406,17 @@ static int cmd_bench(const char *kbfile, const char *qfile, const char *mode, in
     for (char *s = strtok(qs, "\n"); s && nq < 4096; s = strtok(NULL, "\n")) queries[nq++] = s;
 
     bool kernel = !strcmp(mode, "kernel"), fallback = !strcmp(mode, "fallback"), generic = !strcmp(mode, "generic");
-    if (!kernel && !fallback && !generic) die("mode must be generic, kernel or fallback");
+    bool hosted_generic = !strcmp(mode, "hosted-generic");
+    if (!kernel && !fallback && !generic && !hosted_generic) die("mode must be generic, hosted-generic, kernel or fallback");
     cetta_engine_t *e = engine_new("he");
     /* fallback mode: a pack whose PathMap narrowing is disabled, so every
-     * call takes guard -> INVALID -> residual; it measures the fallback cost */
-    CpkPack *p = open_pack(e, g_manifest, "he", !fallback, CPK_DEMAND_BAG);
+     * call takes guard -> INVALID -> residual; it measures the fallback cost.
+     * hosted-generic: CeTTa's generic conjunction matcher behind the same
+     * callable, so hosting overhead cancels between it and the kernel. */
+    CpkPackOptions o = {.plan = PLAN, .manifest_path = g_manifest, .site_path = g_site, .language = "he",
+                        .pathmap_enabled = !fallback, .demand = CPK_DEMAND_BAG, .native_generic = hosted_generic};
+    CpkPack *p = NULL;
+    if (cpk_pack_open(e, &o, &p) != CETTA_OK) die("pack open");
     cetta_atom_t *space = new_space(e);
     uint64_t t0 = cpk_now_ns();
     add_text(e, space, kb);
@@ -478,8 +490,32 @@ static int cmd_hashes(void) {
     return rc;
 }
 
+#include "mork_space_bridge_runtime.h"
+static int cmd_pmprobe(void) {
+    CettaMorkSpaceHandle *pm = cetta_mork_bridge_space_new();
+    uint64_t added = 0;
+    const char *text = "((target rs5 gene7) 17)\n((target rs5 gene8) 3)\n((expressed gene7 liver) 4)\n";
+    if (!cetta_mork_bridge_space_add_text(pm, text, &added)) die("add_text: %s", cetta_mork_bridge_last_error());
+    CettaMorkCursorHandle *c = cetta_mork_bridge_cursor_new(pm);
+    bool moved = true;
+    while (cetta_mork_bridge_cursor_next_val(c, &moved) && moved) {
+        uint8_t *b = NULL; size_t n = 0;
+        cetta_mork_bridge_cursor_path_bytes(c, &b, &n);
+        printf("val:");
+        for (size_t i = 0; i < n; i++) printf(" %02x", b[i]);
+        printf("  |");
+        for (size_t i = 0; i < n; i++) putchar(b[i] >= 32 && b[i] < 127 ? b[i] : '.');
+        printf("|\n");
+        cetta_mork_bridge_bytes_free(b, n);
+    }
+    cetta_mork_bridge_cursor_free(c);
+    cetta_mork_bridge_space_free(pm);
+    return 0;
+}
+
 int main(int argc, char **argv) {
     if (argc < 2) die("usage: cettapack-host test|bench|hashes ...");
+    if (!strcmp(argv[1], "pmprobe")) return cmd_pmprobe();
     const char *kb = NULL, *q = NULL, *mode = "kernel";
     int repeat = 5;
     for (int i = 2; i < argc; i++) {

@@ -119,6 +119,7 @@ uint64_t cpk_index_length(const CpkIndex *index);
 uint64_t cpk_index_groups(const CpkIndex *index);
 uint64_t cpk_index_rows(const CpkIndex *index);
 const char *cpk_index_schema_note(const CpkIndex *index);
+bool cpk_index_direct_ok(const CpkIndex *index);
 
 uint64_t cpk_now_ns(void);
 
