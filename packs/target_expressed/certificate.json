@@ -105,7 +105,7 @@
     "test_log_sha256": "3eb4df3130a73670a8847b283979b6e448fa8a6e424fc9585711319bad6db152",
     "kb_sha256": "8097f2f4ad2990cdf096cdcf428cf719397f4695536b6f51416fe9e3d5439f5c",
     "kb_generator": "bench/gen_kb.py --seed 20261106 (defaults)",
-    "cettapack_commit": "eb24cbb8a0c0282b67426711f17dac901ce93533",
+    "cettapack_commit": "1f44464b675a629e3f281983ea6b5b99529917bb",
     "cetta_commit": "4c285a97fd8c60e3c3fccd5ccd3b3e5e0ebccb4c"
   },
   "proof": null,

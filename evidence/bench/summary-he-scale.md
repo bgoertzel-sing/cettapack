@@ -1,8 +1,8 @@
 | mode | processes | queries/batch | answers/batch | per-query median (us) | guard ns/call | narrow ns/call | rematch ns/call | answer ns/call | fallback ns/call | candidates/call | rematches/call | index build (ms) | KB load (ms) | peak RSS (MiB) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| generic | 5 | 40 | 371 | 39.81 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.000 | 0.000 | 0.0 | 9.6 | 11.4 |
-| kernel | 5 | 40 | 371 | 45.27 | 111.6 | 6910.1 | 2877.4 | 3558.7 | 0.0 | 10.350 | 11.075 | 2.7 | 10.0 | 16.2 |
-| he | 5 | 40 | 371 | 1867.75 | - | - | - | - | - | - | - | - | 14.0 | 29.4 |
+| generic | 5 | 40 | 371 | 46.05 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.000 | 0.000 | 0.0 | 11.0 | 11.2 |
+| kernel | 5 | 40 | 371 | 49.24 | 119.7 | 7353.4 | 3050.3 | 3835.8 | 0.0 | 10.350 | 11.075 | 2.8 | 10.3 | 16.3 |
+| he | 5 | 40 | 371 | 2589.31 | - | - | - | - | - | - | - | - | 19.3 | 29.5 |
 
-- kernel (guards included) vs generic CeTTa, end to end: 0.88x per query (>1 means the kernel is faster)
-- kernel vs HE: 41.3x per query (HE timed on its first 40 seeds)
+- kernel (guards included) vs generic CeTTa, end to end: 0.94x per query (>1 means the kernel is faster)
+- kernel vs HE: 52.6x per query (HE timed on its first 40 seeds)

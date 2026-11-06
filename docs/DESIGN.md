@@ -185,9 +185,11 @@ the note, so I did not guess at them.
 
 - The narrowing index is built per pack instance and is not updated; any
   change to the space sends that instance to the residual (PATCHABLE stub).
-- The index costs memory: on the 128k KB the kernel process peaks at about
-  0.55 GB against about 45 MB for generic CeTTa, almost all of it the MORK
-  space (jemalloc arenas included). See docs/BENCHMARK.md.
+- The index costs memory: on the 128k KB the kernel process peaks at
+  563 MiB against 42 MiB for generic CeTTa, almost all of it the MORK space
+  (jemalloc arenas included). See docs/BENCHMARK.md.
+- It is not faster than generic CeTTa on this site (0.83x end to end, guards
+  included); docs/BENCHMARK.md says where the time goes.
 - The residual is built from the region CeTTa parsed. If the site source
   cannot be parsed in the engine's language, the callable cannot answer at
   all (it fails rather than guess).
