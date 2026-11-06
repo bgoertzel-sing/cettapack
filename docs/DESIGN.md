@@ -45,8 +45,11 @@ flat symbol/variable factors, picks the join order (most ground fields first:
    grouped by identical atom; each distinct atom is stored once in a
    PathMap-backed MORK space (CeTTa's bridge) under the key
    `(<atom> <group-id>)`, and a table maps each group to its source record
-   positions. The space's record ids, revision and length are kept for the
-   revision policy. A schema check runs over every record (below).
+   positions. The space's CeTTa instance id (`space_instance_id`, so a freed
+   space whose address is reused is not mistaken for the original), record
+   ids, revision and length are kept for the dependency vector and the
+   revision policy. A schema check runs over every record and yields the
+   live-space schema digest (below).
 2. **Guard** (A.3, above), timed on every call.
 3. **Narrowing.** Per factor, the kernel writes the key prefix (constants,
    seeded inputs and variables bound by earlier factors, up to the first
@@ -76,6 +79,22 @@ non-symbol head and a factor's arity, a record under a factor's head with
 another arity, or one with a non-symbol field. That is what makes "candidates
 come from a symbol trie" sound, and what lets one rematch stand for all
 records of a group.
+
+**Two schema checks (review 1, finding 4).** The manifest's
+`spaces[0].schema_hash` is the compiled schema: `cpk-schema-v1` over the site's
+relations (`head/arity:sym,...`). The guard compares it twice:
+
+1. with the digest recomputed from the loaded plan (catches a manifest built
+   for another plan; only a wrong manifest can fail it, item 10);
+2. with the **live-space schema digest**, computed at instantiation from the
+   records themselves: the same `cpk-schema-v1` text, with one
+   `off-schema:<signature>` line appended per distinct off-schema signature
+   seen (variable record, variable head, wrong arity under a factor head,
+   non-symbol field). A conforming space hashes to the compiled value; any
+   violation changes the digest and the guard returns INVALID (items 10r,
+   10b, 10c). A relation with no records is vacuously conforming. After an
+   append the revision policy routes to PATCHABLE or REPLAN before this check,
+   and both fall back in M1, so appended records are never served unchecked.
 
 ## Correctness contract (§10.2), as M1 meets it
 

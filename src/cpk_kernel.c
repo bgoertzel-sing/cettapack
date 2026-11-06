@@ -84,7 +84,9 @@ static bool strmap_get_or_put(StrMap *m, const char *key, uint64_t next_val,
 
 struct CpkIndex {
     Space *space;
+    uint64_t instance_id;         /* CeTTa's process-local Space lifetime id (pointer reuse) */
     uint64_t revision, length;
+    char space_schema[65];        /* live-space schema digest (cpk-schema-v1), see cpk_index_build */
     CettaMorkSpaceHandle *pm;     /* PathMap-backed MORK space; NULL if disabled */
     uint64_t ngroups, nrows;
     uint64_t *offsets;            /* CSR: group g owns rows[offsets[g] .. offsets[g+1]) */
@@ -98,6 +100,8 @@ struct CpkIndex {
 bool cpk_index_schema_ok(const CpkIndex *ix) { return ix && ix->schema_ok; }
 bool cpk_index_pathmap_ok(const CpkIndex *ix) { return ix && ix->pathmap_ok; }
 Space *cpk_index_space(const CpkIndex *ix) { return ix ? ix->space : NULL; }
+uint64_t cpk_index_instance_id(const CpkIndex *ix) { return ix ? ix->instance_id : 0; }
+const char *cpk_index_space_schema(const CpkIndex *ix) { return ix ? ix->space_schema : ""; }
 uint64_t cpk_index_revision(const CpkIndex *ix) { return ix ? ix->revision : 0; }
 uint64_t cpk_index_length(const CpkIndex *ix) { return ix ? ix->length : 0; }
 uint64_t cpk_index_groups(const CpkIndex *ix) { return ix ? ix->ngroups : 0; }
@@ -254,6 +258,7 @@ CpkIndex *cpk_index_build(const CpkPlan *plan, Space *space, Arena *scratch,
     CpkIndex *ix = calloc(1, sizeof(*ix));
     if (!ix) { snprintf(why, why_len, "out of memory"); return NULL; }
     ix->space = space;
+    ix->instance_id = space_instance_id(space);
     ix->revision = space_revision(space);
     ix->length = space_length64(space);
     ix->schema_ok = true;
@@ -268,6 +273,7 @@ CpkIndex *cpk_index_build(const CpkPlan *plan, Space *space, Arena *scratch,
     uint64_t *gid_of_row = malloc(sizeof(uint64_t) * (len ? len : 1));
     StrMap groups;
     Buf text = {0};
+    Buf offschema = {0};
     bool ok = gid_of_row && strmap_init(&groups, 1024);
     ix->ids = malloc(sizeof(AtomId) * (len ? len : 1));
     ok = ok && ix->ids;
@@ -281,6 +287,10 @@ CpkIndex *cpk_index_build(const CpkPlan *plan, Space *space, Arena *scratch,
             if (ix->schema_ok)
                 snprintf(ix->note, sizeof ix->note, "record %" PRIu64 ": %s", i, note);
             ix->schema_ok = false;
+            /* the observed off-schema signature joins the live schema (once) */
+            char line[200];
+            snprintf(line, sizeof line, "off-schema:%s\n", note);
+            if (!offschema.buf || !strstr(offschema.buf, line)) ok = buf_puts(&offschema, line);
             continue;
         }
         if (c != REC_INDEX) continue;
@@ -332,6 +342,15 @@ CpkIndex *cpk_index_build(const CpkPlan *plan, Space *space, Arena *scratch,
                 snprintf(why, why_len, "bridge add_text failed: %s", cetta_mork_bridge_last_error());
         }
     }
+    /* Live-space schema digest (A.3 per-space schema hash), observed from the
+     * records: cpk-schema-v1 over the site's relations as the records under
+     * them show them. A relation whose records are all in the compiled shape
+     * (or that has none) contributes its compiled line; every distinct
+     * off-schema signature seen (variable record, variable head, wrong arity,
+     * non-symbol field) is appended. A conforming space therefore hashes to
+     * the compiled schema hash; any violation changes the digest. */
+    if (ok) cpk_plan_schema_digest_with(plan, offschema.buf, ix->space_schema);
+    free(offschema.buf);
     free(text.buf);
     free(gid_of_row);
     strmap_free(&groups);

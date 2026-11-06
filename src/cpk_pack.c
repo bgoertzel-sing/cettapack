@@ -61,6 +61,10 @@ void cpk_live_profile_digest(const char *language, char out[65], char *component
 }
 
 void cpk_plan_schema_digest(const CpkPlan *plan, char out[65]) {
+    cpk_plan_schema_digest_with(plan, NULL, out);
+}
+
+void cpk_plan_schema_digest_with(const CpkPlan *plan, const char *extra, char out[65]) {
     /* relations in conjunction order: head/arity:sym,... */
     SBuf b = {0};
     sb_put(&b, "cpk-schema-v1\n");
@@ -75,6 +79,7 @@ void cpk_plan_schema_digest(const CpkPlan *plan, char out[65]) {
             sb_put(&b, "\n");
         }
     }
+    if (extra && *extra) sb_put(&b, extra);
     cpk_sha256_hex(b.buf, b.len, out);
     free(b.buf);
 }
@@ -361,7 +366,8 @@ static CpkVerdict guard(CpkPack *p, Space *s, Atom *const *inputs, char *why, si
     if (strcmp(p->live_template, p->m_template) || strcmp(p->live_normalized, p->m_normalized)) {
         snprintf(why, len, "template or normalized region hash mismatch"); return CPK_INVALID;
     }
-    if (strcmp(p->live_schema, p->m_schema)) { snprintf(why, len, "schema digest mismatch"); return CPK_INVALID; }
+    /* the compiled plan's schema must be the one the manifest was built for */
+    if (strcmp(p->live_schema, p->m_schema)) { snprintf(why, len, "schema digest mismatch (compiled plan)"); return CPK_INVALID; }
     if (!s) { snprintf(why, len, "space input is not a space"); return CPK_INVALID; }
     for (uint8_t i = 0; i < plan->ninputs; i++) {
         if (plan->input_slot[i] < 0) continue;
@@ -370,7 +376,7 @@ static CpkVerdict guard(CpkPack *p, Space *s, Atom *const *inputs, char *why, si
     if (!space_match_backend_supports_seeded_candidates(s)) { snprintf(why, len, "space backend does not take seeded candidates"); return CPK_INVALID; }
     if (!p->index) { snprintf(why, len, "no narrowing index"); return CPK_INVALID; }
     /* space dependency vector: the instantiated space, at the indexed revision */
-    if (cpk_index_space(p->index) != s) { snprintf(why, len, "space differs from the instantiated dependency"); return CPK_INVALID; }
+    if (cpk_index_space(p->index) != s || cpk_index_instance_id(p->index) != space_instance_id(s)) { snprintf(why, len, "space differs from the instantiated dependency"); return CPK_INVALID; }
     /* revision policy append_only_epoch (A.3 check_revision_policy) */
     uint64_t delta = 0;
     switch (cpk_index_change(p->index, s, &delta)) {
@@ -385,7 +391,10 @@ static CpkVerdict guard(CpkPack *p, Space *s, Atom *const *inputs, char *why, si
         snprintf(why, len, "append-only delta of %llu atoms", (unsigned long long)delta);
         return CPK_PATCHABLE;
     }
-    if (!cpk_index_schema_ok(p->index)) { snprintf(why, len, "schema: %s", cpk_index_schema_note(p->index)); return CPK_INVALID; }
+    /* per-space schema hash (A.3): the live space's observed schema digest */
+    if (strcmp(cpk_index_space_schema(p->index), p->m_schema)) {
+        snprintf(why, len, "schema: live space schema hash mismatch (%s)", cpk_index_schema_note(p->index)); return CPK_INVALID;
+    }
     if (!p->opt.pathmap_enabled || !cpk_index_pathmap_ok(p->index)) { snprintf(why, len, "PathMap narrowing disabled or unavailable"); return CPK_INVALID; }
     snprintf(why, len, "ok");
     return CPK_VALID;

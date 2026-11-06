@@ -24,12 +24,12 @@
      (residualize-to-c-kernel step-id-8 (evidence "packs/target_expressed/kernel_plan.c sha256 3b55a547b3d1baab66f26db904ee68bfce51b05c3a04e36bc6417c0dad36edff")))
   :evidence
     ((tests "1 2 2b 3 4 4s 5 6 7 9 10 10r 10b 10c 11 11b 14 12 12r 13 in long 15")
-     (test-log-sha256 "2f58d86437702d8a80da4e9862352ded24735195837087cde658901170ff7a40")
+     (test-log-sha256 "edf9c602a99dbbc73a77ebe44529adbd8b75558062d65cd3503a3158d4b10aaf")
      (he-comparison "PASS A.9-16 kernel vs HE 0.2.10  same_bag=37/37 answers=355 kb=build/kb-small.metta")
      (kb-sha256 "8097f2f4ad2990cdf096cdcf428cf719397f4695536b6f51416fe9e3d5439f5c")
      (kb-generator "bench/gen_kb.py --seed 20261106")
      (manifest-sha256 "570eedb24af86d3dc6e65c50504b8b5e886fdbeda3e3e8a1c7bff84cfd9edc33")
-     (cettapack-commit "4e0ff1c5fd0f66f6dd1ab23c02bc4af752ecfbfa")
+     (cettapack-commit "5c22929b18232d11a703dccb88ee9f59bda4a10d")
      (cetta-commit "4c285a97fd8c60e3c3fccd5ccd3b3e5e0ebccb4c"))
   :open-obligations
     ("rule-sound-on-fragment: VALID guard implies kernel bag = generic bag for all spaces of the fragment (unproved)"
