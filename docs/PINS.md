@@ -6,8 +6,9 @@ scratch clone (`build/cetta-src`), never on the submodule's history.
 
 | What | Path | Source | Commit | Why this one |
 |---|---|---|---|---|
-| CeTTa | `cetta/` | https://github.com/zariuq/CeTTa | `4c285a97fd8c60e3c3fccd5ccd3b3e5e0ebccb4c` | main HEAD when the task started (2026-11-06 05:10 UTC; `git ls-remote` HEAD still equal at 05:2x UTC) |
+| CeTTa | `cetta/` | https://github.com/zariuq/CeTTa | `4c285a97fd8c60e3c3fccd5ccd3b3e5e0ebccb4c` | main HEAD when the task started (2026-11-06 05:10 UTC); confirmed by the hive's answer |
 | MORK | `deps/MORK/` | https://github.com/trueagi-io/MORK | `ed57c6716d8c510296fb5fbb8be6fbfe2df241d7` | the revision CeTTa's README names for its bridge lockfile (README.md:384 at the CeTTa pin) |
+| Design note | `docs/cetta-guarded-supercompilation-2026-07-06.pdf` | Ben Goertzel, *CeTTa-Hosted Guarded Supercompilation for MeTTa*, 2026-07-06 (Google Drive file 1DpdolqeaCLPXCyZNbX6yZypPn0-BO8gP) | sha256 `757a25390f2c6acb64f077455246e17cba592a9c75bf97dbb434dc677ebd0cb2` (205,272 bytes) | the M1 design; committed in this branch's first commit |
 | PathMap | `deps/PathMap/` | https://github.com/Adam-Vandervorst/PathMap | `ef0259152867ece8e85888acc49c238f264a0330` | the revision CeTTa's README names (README.md:385 at the CeTTa pin) |
 
 Patches applied to the scratch copy of CeTTa, in order:
@@ -28,5 +29,6 @@ Other inputs:
 | glibc | 2.35 | see docs/BUILD.md for the DT_RELR workaround |
 | Rust | nightly (rustup default on the host) | builds CeTTa's bridge crates against the pinned MORK/PathMap |
 | libgmp headers | Ubuntu `libgmp-dev 2:6.2.1+dfsg-3ubuntu1`, unpacked user-locally | runtime `libgmp.so.10` is the system's |
-| hyperon (HE) | 0.2.10 from PyPI (user site-packages) | comparison only |
+| hyperon (HE) | 0.2.10 from PyPI (user site-packages) | comparison only (A.9 item 16, benchmark) |
+| Approximate-CettaPacks note | not committed | context only, per the order (sha256 `98deb3542e01f1b356f98ddf1c9bc910ecf3c0ae2d9050953a9cc0f6173b998b`) |
 | KB | `bench/gen_kb.py --seed 20261106` | 128,576 atoms, sha256 `8097f2f4ad2990cdf096cdcf428cf719397f4695536b6f51416fe9e3d5439f5c` |

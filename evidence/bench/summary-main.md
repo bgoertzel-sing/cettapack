@@ -1,11 +1,11 @@
-| mode | processes | queries/batch | answers/batch | per-query median (us) | guard ns/call | narrow ns/call | rematch ns/call | answer ns/call | fallback ns/call | candidates/call | rematches/call | index build (ms) | KB load (ms) | peak RSS (MiB) |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| generic | 5 | 200 | 1653 | 49.04 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.000 | 0.000 | 0.0 | 1287.4 | 42.3 |
-| hosted-generic | 5 | 200 | 1653 | 40.28 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.000 | 0.000 | 0.0 | 1255.1 | 41.4 |
-| kernel | 5 | 200 | 1653 | 58.89 | 150.3 | 11605.4 | 6001.3 | 4847.4 | 0.0 | 9.395 | 10.025 | 566.7 | 1588.4 | 563.2 |
-| fallback | 5 | 200 | 1653 | 77.10 | 156.4 | 0.0 | 0.0 | 0.0 | 43083.3 | 0.000 | 0.000 | 162.8 | 1313.1 | 56.8 |
+| mode | processes | queries/batch | answers/batch | per-query median (us) | guard ns/call | narrow ns/call | rematch ns/call | multiplicity ns/call | answer ns/call | fallback ns/call | fallback freq | candidates/call | rematches/call | records/call | index build (ms) | KB load (ms) | peak RSS (MiB) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| generic | 7 | 200 | 1653 | 47.83 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.000 | 0.000 | 0.000 | 0.000 | 0.0 | 1193.0 | 42.4 |
+| hosted-generic | 7 | 200 | 1653 | 38.12 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.000 | 0.000 | 0.000 | 0.000 | 0.0 | 1192.3 | 41.8 |
+| kernel | 7 | 200 | 1653 | 51.14 | 142.1 | 8900.5 | 4819.8 | 163.5 | 3493.4 | 0.0 | 0.000 | 8.655 | 8.655 | 9.250 | 489.1 | 1181.8 | 564.2 |
+| fallback | 7 | 200 | 1653 | 69.69 | 169.2 | 0.0 | 0.0 | 0.0 | 0.0 | 38795.2 | 1.000 | 0.000 | 0.000 | 0.000 | 150.1 | 1179.1 | 57.5 |
 
-- kernel (guards included) vs generic CeTTa, end to end: 0.83x per query (>1 means the kernel is faster)
-- kernel vs CeTTa's generic matcher behind the same callable: 0.68x per query
-- in-callable work per call: kernel 28.03 us + guard 0.15 us vs generic matcher 10.71 us
-- forced fallback vs generic CeTTa: 1.57x per query (guard + residual)
+- kernel (guards included) vs generic CeTTa, end to end: 0.94x per query (>1 means the kernel is faster)
+- kernel vs CeTTa's generic matcher behind the same callable: 0.75x per query
+- in-callable work per call: kernel 21.12 us + guard 0.14 us vs generic matcher 10.89 us
+- forced fallback vs generic CeTTa: 1.46x per query (guard + residual)

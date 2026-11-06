@@ -26,10 +26,11 @@ Any guard failure runs the residual, generic CeTTa's own `match`.
 | Loader, guard, callable, fallback | `src/cpk_pack.c` |
 | Compiler | `tools/cpkc.py` -> `packs/target_expressed/{kernel_plan.c,manifest.json}` |
 | Differential tests, benchmark driver | `src/cpk_host.c` |
-| Certificate skeleton | `tools/emit_certificate.py` -> `packs/target_expressed/certificate.json` |
+| Certificate skeleton (A.8) | `tools/emit_certificate.py` -> `packs/target_expressed/certificate.metta` |
 | KB generator (seeded) | `bench/gen_kb.py` |
 | CeTTa patch + PR text | `upstream/cetta/` |
-| Design and adaptations | `docs/DESIGN.md` |
+| Design note (Ben, 2026-07-06) | `docs/cetta-guarded-supercompilation-2026-07-06.pdf` |
+| How M1 maps to the note | `docs/DESIGN.md` |
 | Build | `docs/BUILD.md` |
 | Benchmark results | `docs/BENCHMARK.md`, raw logs in `evidence/bench/` |
 | Test output | `evidence/tests/` |
@@ -37,6 +38,6 @@ Any guard failure runs the residual, generic CeTTa's own `match`.
 ```bash
 git submodule update --init
 scripts/build_cetta.sh     # CeTTa BUILD=mork with the MORK/PathMap bridge, patched scratch copy
-make test                  # one command: all differential tests + certificate
+make test                  # one command: A.9 tests (incl. HE comparison) + certificate
 bench/run_bench.sh         # benchmark
 ```

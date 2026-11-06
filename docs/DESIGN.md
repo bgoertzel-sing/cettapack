@@ -1,14 +1,28 @@
-# CettaPack M1: design and its adaptations
+# CettaPack M1: design, and how it maps to the note
 
-**Status of the source note.** The order's design note
-(`cetta-guarded-supercompilation-2026-07-06.pdf`, appendix A) lives in the
-hive's workspace repository, which this host cannot read; I asked for it on the
-record (blocked, needs information) and built M1 from the order's own
-restatement of A.11. Every shape below that the note defines (A.2 manifest
-v0.2, A.3 guard, A.5 structural hashing, A.6 kernel interface, A.8 certificate,
-A.9 test list, §10.1 multiplicity, §17 benchmark) is therefore **my
-adaptation**, named as such. When the note is available these should be
-checked against it; each is small and isolated in one file.
+Source: Ben Goertzel, *CeTTa-Hosted Guarded Supercompilation for MeTTa*
+(2026-07-06), `docs/cetta-guarded-supercompilation-2026-07-06.pdf` (sha256 in
+docs/PINS.md). Section numbers below are the note's. A first version of M1 was
+built before the note was readable; this version is aligned with it, and the
+table says where M1 follows the note and where it adapts.
+
+## Conformance with appendix A
+
+| Note | M1 | Where |
+|---|---|---|
+| A.1 prime directive: guard and fallback for every kernel; refuse, don't guess | the site is a CeTTa callable; every call is guarded; any non-VALID verdict or kernel error runs the residual; unsupported regions are refused by the compiler | `src/cpk_pack.c` (`compute`), `tools/cpkc.py` |
+| A.2 manifest v0.2 | same layout and field names (`artifact_kind`, `manifest_version`, `identity`, `effects`, `spaces`, `guards`, `artifacts`, `amortization`); M1-specific data under `x_cettapack`. Values M1 does not compute say so in place (`stats_signature`, `native_so_hash` = null: the kernel is linked into the host, its plan is hashed as `native_plan_hash`) | `packs/target_expressed/manifest.json` |
+| A.3 guard | same order: profile, langdef, meta-expanded region hash, match pattern hash, then per space schema hash and revision policy; plus template and normalized-region hashes, input and backend checks. Fail closed: a missing or malformed identity hash, schema hash or space entry means the pack does not load | `guard` in `src/cpk_pack.c` |
+| A.3 revision policy `append_only_epoch` | the index keeps the space's record ids at instantiation. Same revision: VALID path. Records appended (old records unchanged, in order) within `max_append_delta_atoms`: **PATCHABLE**; over budget: **REPLAN**; anything else (removal, rewrite): **INVALID** | `cpk_index_change` in `src/cpk_kernel.c` |
+| A.3 stats drift -> REPLAN | not computed in M1 (stub, never raised) | |
+| A.4 patch lifecycle | PATCHABLE: `apply_patches` is a stub that applies nothing, so the re-check cannot reach VALID; the call falls back (replan is not scheduled: M2) | `compute` |
+| A.5 structural hash | parse by CeTTa (`cetta_embed_parse`); imports: none visible to the span; macro and meta-rule expansion: identity (the region holds none); alpha-normalize: variables renamed `$_0, $_1, ...` by first occurrence; serialize canonically; hash with one domain tag per field (`cpk-normalized-v1`, `cpk-meta-expanded-v1`, `cpk-pattern-v1`, `cpk-template-v1`). Operator schema IDs: `operator_schema_hashes`, one per relation. The source span hash is recorded but not guarded (it changes with comments: not semantic) | `tools/cpkc.py`, `pack_load` |
+| A.6 kernel interface | `cpk_kernel_run(const CpkKernelCall *)` with a visitor `CpkVisitCtl (*)(void *user_data, Atom *answer, uint64_t multiplicity)` returning CONTINUE / STOP / ERROR. Borrows space, index, arena and inputs; owns no global state; never writes the space | `src/cpk.h` |
+| A.7 algorithm | PathMap prefix iteration, then native seeded rematch on every candidate, template instantiation, multiplicity read from the records; for the conjunction, multiplicity is composed after rematch confirmed compatibility | `join` in `src/cpk_kernel.c` |
+| A.8 certificate | `supercompile-cert` s-expression with every listed field and the eight steps, each with the evidence behind it; claim level `bag-tested-adequate`; open obligations listed; no proof | `packs/target_expressed/certificate.metta` |
+| A.9 tests | items 1-7, 9-16 run and pass; item 8 (cross-space join) is not supported in M1 and the compiler refuses it (`tests/cross_space_site.metta`) | `make test` |
+| A.10 anti-patterns | PathMap keys are never read as bindings (only a group id is read); no dedup unless demand = support; structural hashes always checked; profile includes the CeTTa pin and patch series; guard runs on every call; benchmark includes guard and fallback; residual kept | |
+| A.11 definition of done | see the result report | |
 
 ## The site
 
@@ -19,180 +33,67 @@ checked against it; each is small and isolated in one file.
    (match $space (, (target $rs $gene) (expressed $gene $tissue)) ($gene $tissue)))
 ```
 
-A conjunction of two patterns over one space, with a seeded input (`$rs`), a
-join variable (`$gene`) and a result template. The compiler
-(`tools/cpkc.py`) accepts any equation of this shape whose factors are flat
-symbol/variable patterns; it chooses the join order (most ground fields first)
-and emits a static plan (`packs/target_expressed/kernel_plan.c`) for the kernel
-runtime (`src/cpk_kernel.c`). "Meta-expansion" of the region is the identity in
-M1: the region contains no macros.
+A conjunction of two patterns over one space, a seeded input, a join variable
+and a result template. `tools/cpkc.py` accepts equations of this shape with
+flat symbol/variable factors, picks the join order (most ground fields first:
+§10 step 2, "most selective grounded prefix") and emits a static plan
+(`kernel_plan.c`) for the kernel runtime plus the manifest.
 
-## How a call runs
+## A call (§10 steps 1-9)
 
-`cpk-site-target-expressed` is registered as a CeTTa embedding callback, so
-`(cpk-site-target-expressed &kb rs5)` is evaluated by CeTTa like any other
-function. On each call (`src/cpk_pack.c`, `compute`):
+1. **Instantiation, once per space.** Records of the site's relations are
+   grouped by identical atom; each distinct atom is stored once in a
+   PathMap-backed MORK space (CeTTa's bridge) under the key
+   `(<atom> <group-id>)`, and a table maps each group to its source record
+   positions. The space's record ids, revision and length are kept for the
+   revision policy. A schema check runs over every record (below).
+2. **Guard** (A.3, above), timed on every call.
+3. **Narrowing.** Per factor, the kernel writes the key prefix (constants,
+   seeded inputs and variables bound by earlier factors, up to the first
+   unbound field) and descends the PathMap trie with the bridge cursor; only
+   the group id at the end of each key is read. Keys whose symbols MORK would
+   intern (64 bytes or longer) are narrowed with MORK's own query instead.
+4. **Native seeded rematch** on every candidate:
+   `space_match_backend_match_atom_seeded` (`src/space_match_backend.c:12406`
+   at the CeTTa pin), read from the candidate's first source record. All
+   records of a group are the same ground all-symbol atom (schema check), so
+   the rematch result is the same for each.
+5. **Multiplicity (§10.1).** After a successful rematch the candidate's
+   multiplicity is its number of source records; across the join the
+   multiplicities multiply (product composition after exact compatibility).
+   The visitor receives each answer once with that multiplicity. Under demand
+   `support` it receives each distinct answer once with multiplicity 1.
+6. **Answers.** The pack's visitor turns multiplicity m into m occurrences in
+   CeTTa's result bag (that is how a CeTTa bag carries multiplicity) and copies
+   them once into an engine-owned handle (`cetta_embed_native_atom_copy`).
+7. **Fallback** (step 9): generic CeTTa evaluating
+   `(match <space> <conjunction, inputs substituted> <template>)` built from
+   the parsed region.
 
-1. **Instantiation (once per space).** The first call with a space builds the
-   narrowing index: every record of the space is classified against the
-   compiled schema; records of the site's relations are grouped by identical
-   atom text, and each distinct atom is stored once in a PathMap-backed MORK
-   space (CeTTa's bridge, `cetta_mork_bridge_space_new`) under the key
-   `(<atom> <group-id>)`. A CSR table maps each group id to its source record
-   positions. The index records the space, its revision and its length.
-   Index build time is reported separately from per-call time.
-2. **Guard (every call, timed).** See below. Not VALID means fallback.
-3. **Kernel.** For each factor in plan order, the kernel writes the key prefix
-   (wrapper, arity, then the ground fields: constants, seeded inputs and
-   variables bound by earlier factors, up to the first unbound field) and
-   descends the PathMap trie byte by byte with CeTTa's bridge cursor
-   (`cetta_mork_bridge_cursor_descend_byte`, `..._next_val`, `..._path_bytes`).
-   The only thing read from PathMap is the group id at the end of each key.
-   Then, for **every source record** of every candidate group, it calls CeTTa's
-   native seeded rematch
-   `space_match_backend_match_atom_seeded` (`src/space_match_backend.c:12406` at
-   the pin, declared `src/space_match_backend.h:569`; it calls
-   `match_space_atom_epoch`, `:1004`, which calls `match_atoms_atom_id_epoch`,
-   `src/match.c:12440`) with a clone of the current bindings. Bindings come only
-   from rematch. When all factors matched, the template is instantiated with
-   `bindings_apply` and emitted.
-4. **Answer construction.** Answers are deep-copied once into an engine-owned
-   handle (`cetta_embed_native_atom_copy`, the upstream patch) and returned one
-   occurrence per callback pull.
-5. **Fallback.** Any guard failure, and any kernel error, runs the residual:
-   generic CeTTa evaluating `(match <space> <conjunction with inputs
-   substituted> <template>)` built from the parsed source region.
+The schema check fails (INVALID) when a record could unify with a factor but
+lies outside the compiled schema: a variable record, an expression with a
+non-symbol head and a factor's arity, a record under a factor's head with
+another arity, or one with a non-symbol field. That is what makes "candidates
+come from a symbol trie" sound, and what lets one rematch stand for all
+records of a group.
 
-If the narrowing key prefix cannot be written byte for byte (a symbol that is
-not plain text or is 64 bytes or longer, which MORK would intern), the kernel
-uses MORK's own query (`cetta_mork_bridge_space_query_bindings_text`) for that
-factor and still reads only the group id from it. On this KB the byte path is
-always taken (the index self-check confirms every key decodes).
+## Correctness contract (§10.2), as M1 meets it
 
-### Multiplicity (§10.1, adapted)
-
-Duplicates are separate records of the source space. The index groups records
-by atom only to keep the trie small; the kernel then rematches and emits per
-record, so k copies of a fact give k answers, and a join of a k-fold and an
-m-fold fact gives k·m answers, exactly as generic CeTTa's `match` does. The
-kernel deduplicates only under demand mode `support` (test 4s).
-
-### Ownership
-
-The kernel (`cpk_kernel_run`) receives everything through `CpkKernelCall`:
-the space, the index, a scratch arena, the bindings' variables, the inputs, the
-sink and the statistics belong to the caller. It has no static mutable state;
-its PathMap cursor lives for one call. It never writes the space: tests check
-the space's length before and after every kernel call, and the guard would see
-any revision change.
-
-## Kernel interface (A.6, adapted)
-
-`src/cpk.h`:
-
-```c
-int cpk_kernel_run(const CpkKernelCall *call);   /* 0 = complete; nonzero = caller falls back */
-
-typedef struct {
-    const CpkPlan *plan;          /* compiled site plan */
-    Space *space;                 /* borrowed, read-only */
-    const CpkIndex *index;        /* borrowed narrowing index */
-    Arena *scratch;               /* borrowed */
-    Atom *const *slot_vars;       /* the region's variables */
-    Atom *const *factor_atoms;    /* the region's factor patterns (rematched as is) */
-    Atom *template_atom;
-    Atom *const *inputs;          /* callable arguments */
-    CpkDemand demand;             /* BAG or SUPPORT */
-    CpkEmitFn emit; void *sink;   /* one call per answer occurrence */
-    CpkStats *stats;              /* guard/narrow/rematch/answer timings and counts */
-} CpkKernelCall;
-```
-
-## Manifest (A.2 v0.2 shape, adapted)
-
-`packs/target_expressed/manifest.json`, written by `tools/cpkc.py`. Fields the
-loader requires (missing or malformed: **the pack does not load**, and the site
-then always runs the residual): `cettapack: "0.2"`, `site.name`,
-`profile.digest`, `langdef.digest`, `structure.region_hash`,
-`structure.pattern_hash`, `structure.template_hash`, `schema.digest`, and a
-non-empty `dependencies.spaces` vector.
-
-| Digest | Method | Live value computed from |
-|---|---|---|
-| profile | `cpk-profile-v1`: sha256 of CeTTa commit, patch-series digest, BUILD mode, engine language | compile-time constants of the host + the engine's language |
-| langdef | `cpk-tree-v1`: sha256 over `langdef/<tree>` files (path, sha256 of content), sorted | the CeTTa tree the host was built from |
-| structure (region, pattern, template) | `cpk-struct-v1` (A.5 adaptation): sha256 of canonical text, variables renamed `$_0, $_1, ...` by first occurrence in the hashed unit, one space between children | the site source as **parsed by CeTTa** (`cetta_embed_parse`), canonicalized through the embedding API |
-| schema | `cpk-schema-v1`: each factor relation as `head/arity:sym,...` | the compiled plan |
-
-Python (compiler) and C (loader) compute the structural hashes independently;
-`build/cettapack-host hashes` prints both sides and `make test` runs it.
-
-## Guard (A.3, adapted)
-
-Checked on every call, in this order (`src/cpk_pack.c`, `guard`):
-
-| Check | Failure verdict |
+| Contract | M1 |
 |---|---|
-| pack loaded (fail closed) | INVALID |
-| profile, langdef, structural, schema digests equal the manifest's | INVALID |
-| the space argument is a space; seeded inputs are ground symbols | INVALID |
-| the space's backend takes seeded candidates (`space_match_backend_supports_seeded_candidates`) | INVALID |
-| index exists and was built for this space (space dependency vector) | INVALID |
-| space revision and length equal the indexed ones | **PATCHABLE (M1 stub: falls back)** |
-| schema check of the space passed at instantiation | INVALID |
-| PathMap narrowing enabled and its index available | INVALID |
-| otherwise | VALID |
-
-PATCHABLE and REPLAN are stubs: both fall back exactly like INVALID. A changed
-space is not re-indexed in M1 (that is loader lifecycle, M2): after any change,
-that pack instance answers through the residual.
-
-The schema check at instantiation fails when any record could unify with a
-factor but lies outside the compiled schema: a variable record, an expression
-with a non-symbol head and a factor's arity, a record under a factor's head
-with another arity, or one with a non-symbol field (number, variable,
-expression). That is what makes "candidates come from a symbol trie" safe.
-
-## Certificate skeleton (A.8, adapted)
-
-`make test` writes `packs/target_expressed/certificate.json` only if every
-test item passed: pack id, manifest and plan digests, structural hashes,
-claim level `bag-tested-adequate`, the guard conditions under which the claim
-is made, the evidence (test items, log digest, KB digest and seed, commits),
-`proof: null` and the open obligations. No proof is claimed; Lean is not part
-of M1.
-
-## Differential tests (A.9)
-
-`build/cettapack-host test --kb build/kb.metta` (`make test`). Every item runs
-generic CeTTa's `match` and the site callable in the same engine on the same
-space and compares the two answer bags as sorted multisets. It also checks the
-guard verdict, which path ran (kernel or fallback), the answer count and that
-the space did not change.
-
-The item numbers follow the order's list (the note's numbering, which I could
-not read): 1 ground match, 2 no result, 3 multiple results, 4 duplicates and
-multiplicity, 5 co-reference, 6 distinct variables, 7 result template, 9
-profile mismatch, 10 schema mismatch, 11 structural-hash mismatch, 14 PathMap
-disabled, 15 comparison with generic CeTTa (300 seeds over the 128,576-atom
-KB). Extra items: 2b, 4s (support demand), 10b, 10c, 11b (missing hash: fail
-closed), `dep` (space changed after instantiation), `in` (non-symbol input).
-
-**Not in M1:** items 8, 12, 13 and 16. I could not read their definitions in
-the note, so I did not guess at them.
+| PathMap candidate selector is sound | claimed for the guarded fragment (schema check), tested (items 1-7, 15, 16); not proved |
+| native rematch is exact on the accepted fragment | CeTTa's own function; not re-verified |
+| template instantiation matches generic CeTTa | `bindings_apply` on the parsed template; tested (item 7) |
+| multiplicity reconstructed from space records | record counts and products; tested (items 4, 15) |
+| fallback is identical to generic evaluation | the residual is generic `match`; tested on every guard failure item |
 
 ## Known limits
 
-- The narrowing index is built per pack instance and is not updated; any
-  change to the space sends that instance to the residual (PATCHABLE stub).
-- The index costs memory: on the 128k KB the kernel process peaks at
-  563 MiB against 42 MiB for generic CeTTa, almost all of it the MORK space
-  (jemalloc arenas included). See docs/BENCHMARK.md.
-- It is not faster than generic CeTTa on this site (0.83x end to end, guards
-  included); docs/BENCHMARK.md says where the time goes.
-- The residual is built from the region CeTTa parsed. If the site source
-  cannot be parsed in the engine's language, the callable cannot answer at
-  all (it fails rather than guess).
-- One site is compiled. The compiler covers flat conjunctions over one space;
-  two spaces, nested patterns and non-symbol fields are refused at compile
-  time or by the schema guard.
+- One space per site; cross-space joins are refused (item 8).
+- Patching and replanning are stubs: after any change to the space, that pack
+  instance answers through the residual.
+- Stats drift is not measured.
+- The narrowing index costs memory: 564 MiB peak on the 128k KB, against
+  42 MiB for generic CeTTa.
+- Speed: the kernel is not faster than generic CeTTa on this site
+  (docs/BENCHMARK.md).

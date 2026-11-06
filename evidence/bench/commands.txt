@@ -1,35 +1,49 @@
 [main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode generic --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode hosted-generic --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode kernel --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode fallback --repeat 5
 [main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode generic --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode hosted-generic --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode kernel --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode fallback --repeat 5
 [main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode generic --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode hosted-generic --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode kernel --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode fallback --repeat 5
 [main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode generic --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode hosted-generic --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode kernel --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode fallback --repeat 5
 [main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode generic --repeat 5
 [main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode hosted-generic --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode kernel --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode fallback --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode generic --repeat 5
 [main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode hosted-generic --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode kernel --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode fallback --repeat 5
+[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode generic --repeat 5
 [main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode hosted-generic --repeat 5
-[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode hosted-generic --repeat 5
-[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode hosted-generic --repeat 5
-[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode kernel --repeat 5
-[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode kernel --repeat 5
-[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode kernel --repeat 5
-[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode kernel --repeat 5
 [main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode kernel --repeat 5
 [main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode fallback --repeat 5
-[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode fallback --repeat 5
-[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode fallback --repeat 5
-[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode fallback --repeat 5
-[main] build/cettapack-host bench --kb build/kb-main.metta --queries build/queries-main.txt --mode fallback --repeat 5
 [he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode generic --repeat 5
-[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode generic --repeat 5
-[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode generic --repeat 5
-[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode generic --repeat 5
-[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode generic --repeat 5
-[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode kernel --repeat 5
-[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode kernel --repeat 5
-[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode kernel --repeat 5
-[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode kernel --repeat 5
 [he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode kernel --repeat 5
 [he-scale] python3 bench/he_bench.py --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --limit 40
+[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode generic --repeat 5
+[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode kernel --repeat 5
 [he-scale] python3 bench/he_bench.py --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --limit 40
+[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode generic --repeat 5
+[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode kernel --repeat 5
 [he-scale] python3 bench/he_bench.py --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --limit 40
+[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode generic --repeat 5
+[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode kernel --repeat 5
 [he-scale] python3 bench/he_bench.py --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --limit 40
+[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode generic --repeat 5
+[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode kernel --repeat 5
+[he-scale] python3 bench/he_bench.py --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --limit 40
+[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode generic --repeat 5
+[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode kernel --repeat 5
+[he-scale] python3 bench/he_bench.py --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --limit 40
+[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode generic --repeat 5
+[he-scale] build/cettapack-host bench --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --mode kernel --repeat 5
 [he-scale] python3 bench/he_bench.py --kb build/kb-he-scale.metta --queries build/queries-he-scale.txt --limit 40
