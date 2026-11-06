@@ -32,6 +32,16 @@ mkdir -p "$OUT" build
   echo "RUNS=$RUNS REPEAT=$REPEAT HE_QUERIES=$HE_QUERIES"
 } > "$OUT/env.txt"
 : > "$OUT/commands.txt"
+# compile-time cost (§17): compiler wall time, median of 5 runs
+python3 - <<'EOF' | tee "$OUT/compile-cost.txt"
+import statistics, subprocess, time
+t = []
+for _ in range(5):
+    t0 = time.perf_counter()
+    subprocess.run(["python3", "tools/cpkc.py", "packs/target_expressed/site.metta", "--out-dir", "build/compile-cost"], check=True, capture_output=True)
+    t.append((time.perf_counter() - t0) * 1000)
+print(f"cpkc compile (plan + manifest, incl. langdef digest): median {statistics.median(t):.1f} ms over 5 runs")
+EOF
 
 suite() {
   local label=$1 modes=$2; shift 2

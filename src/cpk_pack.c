@@ -129,6 +129,16 @@ static bool canon_handle(const cetta_atom_t *a, char out[65], char **canon_out) 
     return ok;
 }
 
+/* sha256(tag "\n" text): one domain tag per identity field (A.5) */
+static void tagged_hash(const char *tag, const char *text, char out[65]) {
+    size_t n = strlen(tag) + 1 + strlen(text);
+    char *buf = malloc(n + 1);
+    if (!buf) { out[0] = 0; return; }
+    snprintf(buf, n + 1, "%s\n%s", tag, text);
+    cpk_sha256_hex(buf, n, out);
+    free(buf);
+}
+
 static cetta_atom_t *child(const cetta_atom_t *a, size_t i) {
     cetta_atom_t *c = NULL;
     if (!a || cetta_embed_atom_kind(a) != CETTA_ATOM_EXPRESSION ||
@@ -201,9 +211,18 @@ static bool pack_load(CpkPack *p, char *err, size_t errlen) {
                  text, sym_is(eq, "="), sym_is(head, plan->site), sym_is(mhead, "match"), sym_is(comma, ","),
                  eq ? (int)cetta_embed_atom_kind(eq) : -1, cetta_embed_status_name(s1), et, cetta_embed_status_name(s2), ft);
     }
-    if (ok) ok = canon_handle(p->region_handle, p->live_region, NULL) &&
-                 canon_handle(conj, p->live_pattern, NULL) &&
-                 canon_handle(tmpl, p->live_template, NULL);
+    if (ok) {
+        char dummy[65], *rc = NULL, *pc = NULL, *tc = NULL;
+        ok = canon_handle(p->region_handle, dummy, &rc) && canon_handle(conj, dummy, &pc) &&
+             canon_handle(tmpl, dummy, &tc);
+        if (ok) {
+            tagged_hash("cpk-normalized-v1", rc, p->live_normalized);
+            tagged_hash("cpk-meta-expanded-v1", rc, p->live_region);   /* meta-expansion = identity in M1 */
+            tagged_hash("cpk-pattern-v1", pc, p->live_pattern);
+            tagged_hash("cpk-template-v1", tc, p->live_template);
+        }
+        free(rc); free(pc); free(tc);
+    }
 
     /* slots, factor and template atoms, borrowed from the parsed region */
     if (ok) {
@@ -256,43 +275,65 @@ static bool pack_load(CpkPack *p, char *err, size_t errlen) {
     p->manifest = cpk_json_parse(mtext);
     free(mtext);
     if (!p->manifest) { snprintf(err, errlen, "manifest is not valid JSON"); return false; }
-    const char *version = cpk_json_str(p->manifest, "cettapack");
-    if (!version || strcmp(version, "0.2")) { snprintf(err, errlen, "manifest shape is not v0.2"); return false; }
-    const char *site = cpk_json_str(p->manifest, "site.name");
+    const char *kind = cpk_json_str(p->manifest, "artifact_kind");
+    const char *version = cpk_json_str(p->manifest, "manifest_version");
+    if (!kind || strcmp(kind, "cettapack") || !version || strcmp(version, "0.2")) {
+        snprintf(err, errlen, "not a CettaPack manifest v0.2 (A.2)"); return false;
+    }
+    const char *site = cpk_json_str(p->manifest, "x_cettapack.site.name");
     if (!site || strcmp(site, plan->site)) { snprintf(err, errlen, "manifest names another site"); return false; }
 
     /* fail closed: every hash must be present and well formed */
     struct { const char *path; const char **dst; } req[] = {
-        {"profile.digest", &p->m_profile}, {"langdef.digest", &p->m_langdef},
-        {"structure.region_hash", &p->m_region}, {"structure.pattern_hash", &p->m_pattern},
-        {"structure.template_hash", &p->m_template}, {"schema.digest", &p->m_schema},
+        {"identity.profile_digest", &p->m_profile}, {"identity.langdef_pack_digest", &p->m_langdef},
+        {"identity.source_span_hash", &p->m_span}, {"identity.normalized_region_hash", &p->m_normalized},
+        {"identity.meta_expanded_region_hash", &p->m_region}, {"identity.match_pattern_hash", &p->m_pattern},
+        {"x_cettapack.template_hash", &p->m_template}, {"spaces[0].schema_hash", &p->m_schema},
     };
+    const CpkJson *spaces = cpk_json_get(p->manifest, "spaces");
+    const CpkJson *space0 = spaces && spaces->kind == CPK_JSON_ARRAY && spaces->n > 0 ? spaces->items[0] : NULL;
     for (size_t i = 0; i < sizeof req / sizeof *req; i++) {
-        const char *v = cpk_json_str(p->manifest, req[i].path);
+        const char *v = strncmp(req[i].path, "spaces[0].", 10)
+            ? cpk_json_str(p->manifest, req[i].path)
+            : (space0 ? cpk_json_str(space0, req[i].path + 10) : NULL);
         bool hex = v && strlen(v) == 64;
         for (size_t c = 0; hex && c < 64; c++)
             hex = (v[c] >= '0' && v[c] <= '9') || (v[c] >= 'a' && v[c] <= 'f');
         if (!hex) { snprintf(err, errlen, "missing or malformed hash %s: not loading", req[i].path); return false; }
         *req[i].dst = v;
     }
-    const CpkJson *deps = cpk_json_get(p->manifest, "dependencies.spaces");
-    if (!deps || deps->kind != CPK_JSON_ARRAY || deps->n == 0) {
-        snprintf(err, errlen, "missing space dependency vector: not loading");
+    const char *mult = space0 ? cpk_json_str(space0, "multiplicity_source") : NULL;
+    const char *policy = space0 ? cpk_json_str(space0, "revision_policy") : NULL;
+    if (!space0 || !cpk_json_str(space0, "space_id") || !mult || strcmp(mult, "space_records") || !policy) {
+        snprintf(err, errlen, "missing or unsupported space dependency entry: not loading");
         return false;
+    }
+    {
+        /* source span hash: the site source bytes as read now */
+        size_t n = 0;
+        char *bytes = cpk_read_file(p->opt.site_path, &n);
+        if (!bytes) { snprintf(err, errlen, "cannot read site source"); return false; }
+        char *buf = malloc(n + 12);
+        if (!buf) { free(bytes); return false; }
+        memcpy(buf, "cpk-span-v1\n", 12);
+        memcpy(buf + 12, bytes, n);
+        cpk_sha256_hex(buf, n + 12, p->live_span);
+        free(buf); free(bytes);
     }
 
     /* live digests */
     cpk_live_profile_digest(p->opt.language, p->live_profile, NULL, 0);
     char langdef_root[1024];
     snprintf(langdef_root, sizeof langdef_root, "%s/langdef/%s", CPK_CETTA_ROOT,
-             cpk_json_str(p->manifest, "langdef.tree") ? cpk_json_str(p->manifest, "langdef.tree") : "he");
+             cpk_json_str(p->manifest, "x_cettapack.langdef_tree") ? cpk_json_str(p->manifest, "x_cettapack.langdef_tree") : "he");
     if (!cpk_tree_digest(langdef_root, p->live_langdef)) { snprintf(err, errlen, "cannot digest %s", langdef_root); return false; }
     cpk_plan_schema_digest(plan, p->live_schema);
 
     /* mismatches do not refuse loading: they make the guard fail */
     struct { const char *name, *live, *want; } cmp[] = {
         {"profile", p->live_profile, p->m_profile}, {"langdef", p->live_langdef, p->m_langdef},
-        {"region structural hash", p->live_region, p->m_region},
+        {"normalized region hash", p->live_normalized, p->m_normalized},
+        {"meta-expanded region hash", p->live_region, p->m_region},
         {"pattern structural hash", p->live_pattern, p->m_pattern},
         {"template structural hash", p->live_template, p->m_template},
         {"schema", p->live_schema, p->m_schema},
@@ -314,8 +355,12 @@ static CpkVerdict guard(CpkPack *p, Space *s, Atom *const *inputs, char *why, si
     /* profile, langdef, structural hashes and schema digest, compared every call */
     if (strcmp(p->live_profile, p->m_profile)) { snprintf(why, len, "profile mismatch"); return CPK_INVALID; }
     if (strcmp(p->live_langdef, p->m_langdef)) { snprintf(why, len, "langdef mismatch"); return CPK_INVALID; }
-    if (strcmp(p->live_region, p->m_region) || strcmp(p->live_pattern, p->m_pattern) ||
-        strcmp(p->live_template, p->m_template)) { snprintf(why, len, "structural hash mismatch"); return CPK_INVALID; }
+    if (strcmp(p->live_region, p->m_region)) { snprintf(why, len, "meta-expanded region hash mismatch"); return CPK_INVALID; }
+    if (strcmp(p->live_pattern, p->m_pattern)) { snprintf(why, len, "match pattern hash mismatch"); return CPK_INVALID; }
+    /* not in A.3, checked as well: the residual and the answers depend on them */
+    if (strcmp(p->live_template, p->m_template) || strcmp(p->live_normalized, p->m_normalized)) {
+        snprintf(why, len, "template or normalized region hash mismatch"); return CPK_INVALID;
+    }
     if (strcmp(p->live_schema, p->m_schema)) { snprintf(why, len, "schema digest mismatch"); return CPK_INVALID; }
     if (!s) { snprintf(why, len, "space input is not a space"); return CPK_INVALID; }
     for (uint8_t i = 0; i < plan->ninputs; i++) {
@@ -326,8 +371,18 @@ static CpkVerdict guard(CpkPack *p, Space *s, Atom *const *inputs, char *why, si
     if (!p->index) { snprintf(why, len, "no narrowing index"); return CPK_INVALID; }
     /* space dependency vector: the instantiated space, at the indexed revision */
     if (cpk_index_space(p->index) != s) { snprintf(why, len, "space differs from the instantiated dependency"); return CPK_INVALID; }
-    if (space_revision(s) != cpk_index_revision(p->index) || space_length64(s) != cpk_index_length(p->index)) {
-        snprintf(why, len, "space revision changed (PATCHABLE stub: falls back)");
+    /* revision policy append_only_epoch (A.3 check_revision_policy) */
+    uint64_t delta = 0;
+    switch (cpk_index_change(p->index, s, &delta)) {
+    case CPK_CHANGE_NONE: break;
+    case CPK_CHANGE_DESTRUCTIVE:
+        snprintf(why, len, "destructive write since instantiation"); return CPK_INVALID;
+    case CPK_CHANGE_APPEND:
+        if (delta > p->max_append_delta) {
+            snprintf(why, len, "append of %llu atoms over the patch budget %llu", (unsigned long long)delta, (unsigned long long)p->max_append_delta);
+            return CPK_REPLAN;
+        }
+        snprintf(why, len, "append-only delta of %llu atoms", (unsigned long long)delta);
         return CPK_PATCHABLE;
     }
     if (!cpk_index_schema_ok(p->index)) { snprintf(why, len, "schema: %s", cpk_index_schema_note(p->index)); return CPK_INVALID; }
@@ -371,6 +426,14 @@ static int sink_emit(void *sink, Atom *answer) {
     }
     c->raw[c->nraw++] = answer;
     return 0;
+}
+
+/* The pack's A.6 visitor: a CeTTa result bag carries multiplicity as
+ * repeated occurrences, so an answer of multiplicity m becomes m results. */
+static CpkVisitCtl visit_answer(void *user_data, Atom *answer, uint64_t multiplicity) {
+    for (uint64_t i = 0; i < multiplicity; i++)
+        if (sink_emit(user_data, answer) != 0) return CPK_VISIT_ERROR;
+    return CPK_VISIT_CONTINUE;
 }
 
 /* Answer construction: one deep copy of all answers into an engine-owned
@@ -492,6 +555,13 @@ static void compute(Cursor *c) {
     p->stats.guard_ns += cpk_now_ns() - g0;
     p->last_verdict = v;
 
+    if (v == CPK_PATCHABLE) {
+        /* A.4: apply_patches is an M1 stub that applies nothing, so the
+         * re-check cannot reach VALID: schedule replan (stub) and fall back */
+        p->stats.patch_attempts++;
+        snprintf(p->last_reason + strlen(p->last_reason), sizeof p->last_reason - strlen(p->last_reason),
+                 "; patching is an M1 stub: fallback");
+    }
     if (v == CPK_VALID) {
         uint64_t k0 = cpk_now_ns();
         Arena a;
@@ -500,7 +570,7 @@ static void compute(Cursor *c) {
             .plan = plan, .space = s, .index = p->index, .scratch = &a,
             .slot_vars = p->slot_vars, .factor_atoms = p->factor_atoms,
             .template_atom = p->template_atom, .inputs = inputs,
-            .demand = p->opt.demand, .emit = sink_emit, .sink = c, .stats = &p->stats,
+            .demand = p->opt.demand, .visitor = visit_answer, .user_data = c, .stats = &p->stats,
         };
         int rc = cpk_kernel_run(&call);
         if (rc == 0) {
@@ -555,6 +625,10 @@ cetta_status_t cpk_pack_open(cetta_engine_t *engine, const CpkPackOptions *opt, 
     p->opt = *opt;
     p->engine = engine;
     p->loaded = pack_load(p, p->load_error, sizeof p->load_error);
+    {
+        const CpkJson *b = p->manifest ? cpk_json_get(p->manifest, "amortization.max_append_delta_atoms") : NULL;
+        p->max_append_delta = b && b->kind == CPK_JSON_NUMBER && b->num >= 0 ? (uint64_t)b->num : 0;
+    }
     cetta_callback_descriptor_t d = {
         .size = sizeof d, .arity = opt->plan->ninputs, .kind = CETTA_CALLBACK_STREAM,
         .context = p, .retain = ctx_retain, .release = ctx_release,

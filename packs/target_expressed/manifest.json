@@ -1,41 +1,81 @@
 {
-  "cettapack": "0.2",
-  "pack_id": "cpk-site-target-expressed@516d445856d9",
-  "site": {
-    "name": "cpk-site-target-expressed",
-    "source": "packs/target_expressed/site.metta",
-    "region_kind": "equation; meta-expansion is the identity in M1 (no macros in the region)",
-    "params": [
-      "$space",
-      "$rs"
+  "artifact_kind": "cettapack",
+  "manifest_version": "0.2",
+  "identity": {
+    "source_span_hash": "08fa03941175decbc869fc0f11ed104d92f36bb0eaeafa354a8532ea0f6beea7",
+    "normalized_region_hash": "490857633587bd433665641d30392232acea3f71964485a5d5d9f7033eee1803",
+    "meta_expanded_region_hash": "197d65e3603e8aeff8792c3262d2b915d68c36f4e389d6e11ac2ca7f0b45f67d",
+    "match_pattern_hash": "493bfbc400571d00cfc001ee6f12ede9fb06dbc97d2dbf186ab4d9729cbee17d",
+    "langdef_pack_digest": "a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1",
+    "profile_digest": "9a662cc3be593e9201966cc1170929dfc205b84b3c11b147c20cf2d117b58742",
+    "operator_schema_hashes": [
+      "d245d662fb4fbceb9a7ec83f0406595939993b49cc47efea579850761dcd1b91",
+      "d5bd83e203481d2b852017d595ea7eb21326d131ad50e46b2cefb1c95987fd59"
     ],
-    "space_param": "$space"
+    "effect_policy_digest": "45f91ef6bbb149c7b9855688abf9cf085d05de60b849f5662a4b07c494638672",
+    "exactness_signature": "exact"
   },
-  "profile": {
-    "digest": "9a662cc3be593e9201966cc1170929dfc205b84b3c11b147c20cf2d117b58742",
-    "method": "cpk-profile-v1",
-    "components": {
+  "effects": {
+    "classes": [
+      "Read(space:evidence, scope:snapshot)"
+    ],
+    "isolation": "SnapshotIsolated"
+  },
+  "spaces": [
+    {
+      "role": "evidence",
+      "space_id": "input:0",
+      "schema_hash": "2f8d0e0cbde5a7c5b7cf0b67214b9969ac923391303aaca0ea738e3e21cb3a2e",
+      "revision_policy": "append_only_epoch",
+      "revision_or_epoch": "captured at instantiation (space revision and length)",
+      "stats_signature": "not computed in M1 (REPLAN is a stub)",
+      "multiplicity_source": "space_records",
+      "pathmap_coverage_hash": "be7c50aa930046ec911a33b5c1b7cbc69a0e2639fb3a68e96d96776828c712c6"
+    }
+  ],
+  "guards": {
+    "fast_path": "dependency_vector_equal",
+    "patch_path": "append_only_delta_under_budget (M1 stub: PATCHABLE falls back)",
+    "replan_path": "stats_drift_over_threshold (M1 stub: never raised)",
+    "invalid_path": "fallback_to_cetta"
+  },
+  "artifacts": {
+    "native_so_hash": null,
+    "native_plan_hash": "3b55a547b3d1baab66f26db904ee68bfce51b05c3a04e36bc6417c0dad36edff",
+    "pathmap_artifact_hashes": [],
+    "mm2_fragment_hashes": [],
+    "residual_metta_hash": "96da8f5fb1d5d0302d5045511c03b641c6b9f314f3dd365bcef2f52777de1949",
+    "transform_cert_hash": null
+  },
+  "amortization": {
+    "compile_cost_estimate_ms": 0,
+    "expected_calls": 0,
+    "expected_validity_window_ms": 0,
+    "max_patch_cost_ms": 0,
+    "max_stats_drift": 0.0,
+    "max_append_delta_atoms": 4096
+  },
+  "x_cettapack": {
+    "site": {
+      "name": "cpk-site-target-expressed",
+      "source": "packs/target_expressed/site.metta",
+      "params": [
+        "$space",
+        "$rs"
+      ],
+      "space_param": "$space"
+    },
+    "profile_components": {
+      "method": "cpk-profile-v1",
       "cetta": "4c285a97fd8c60e3c3fccd5ccd3b3e5e0ebccb4c",
       "patches": "b364468491f306b0fbda2c3260653e614b0e102a1c9ab08618c9aad3aee1e8f4",
       "build": "mork",
       "language": "he"
-    }
-  },
-  "langdef": {
-    "digest": "a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1",
-    "method": "cpk-tree-v1",
-    "tree": "he"
-  },
-  "structure": {
-    "method": "cpk-struct-v1",
-    "region_hash": "516d445856d9c8c547146ccd11b7af4c13bf21e852ef51228eb71cf1eefc9a5b",
-    "pattern_hash": "e8fa7dee2dfa0191681616036751ff4bccc784237092329d965ebfc9243d088f",
-    "template_hash": "edff4c2b226948f1cfdef98ec58124d85cf2cdb14e96d92852dff1bc33ba7a50",
-    "region_canonical": "(= (cpk-site-target-expressed $_0 $_1) (match $_0 (, (target $_1 $_2) (expressed $_2 $_3)) ($_2 $_3)))"
-  },
-  "schema": {
-    "digest": "2f8d0e0cbde5a7c5b7cf0b67214b9969ac923391303aaca0ea738e3e21cb3a2e",
-    "method": "cpk-schema-v1",
+    },
+    "langdef_tree": "he",
+    "template_hash": "d4349816076071a986fe12fa11806ce1862a0ca9b88c06b61d3b5499eab253aa",
+    "region_canonical": "(= (cpk-site-target-expressed $_0 $_1) (match $_0 (, (target $_1 $_2) (expressed $_2 $_3)) ($_2 $_3)))",
+    "meta_expansion": "identity: the region holds no macros or meta-rules; the hash is recomputed from CeTTa's parse at load",
     "relations": [
       {
         "head": "target",
@@ -53,48 +93,24 @@
           "sym"
         ]
       }
-    ]
-  },
-  "dependencies": {
-    "spaces": [
-      {
-        "input": 0,
-        "relations": [
-          "expressed",
-          "target"
-        ],
-        "revision": "captured at instantiation; any change -> PATCHABLE (M1 stub: fallback)"
-      }
-    ]
-  },
-  "kernel": {
-    "plan_symbol": "cpk_plan_cpk_site_target_expressed",
-    "plan_file": "packs/target_expressed/kernel_plan.c",
-    "plan_sha256": "3b55a547b3d1baab66f26db904ee68bfce51b05c3a04e36bc6417c0dad36edff",
-    "runtime": "src/cpk_kernel.c",
-    "join_order": [
-      0,
-      1
     ],
-    "narrowing": "PathMap via CeTTa's MORK bridge (candidate selection only)",
-    "rematch": "space_match_backend_match_atom_seeded (CeTTa native seeded rematch)"
-  },
-  "demand": {
-    "default": "bag",
-    "supported": [
-      "bag",
-      "support"
-    ]
-  },
-  "guard": {
-    "verdicts": {
-      "VALID": "kernel",
-      "INVALID": "residual fallback",
-      "PATCHABLE": "M1 stub: residual fallback",
-      "REPLAN": "M1 stub: residual fallback"
+    "kernel": {
+      "plan_symbol": "cpk_plan_cpk_site_target_expressed",
+      "plan_file": "packs/target_expressed/kernel_plan.c",
+      "runtime": "src/cpk_kernel.c",
+      "join_order": [
+        0,
+        1
+      ],
+      "backend_schema": "pathmap-candidate-native-rematch-v1"
     },
-    "fail_closed": "a missing or malformed hash refuses loading; the site then always runs the residual"
-  },
-  "residual": "generic CeTTa: (match <space> <conjunction with inputs substituted> <template>)",
-  "certificate": "packs/target_expressed/certificate.json"
+    "demand": {
+      "default": "bag",
+      "supported": [
+        "bag",
+        "support"
+      ]
+    },
+    "certificate": "packs/target_expressed/certificate.metta"
+  }
 }

@@ -32,10 +32,19 @@ build/cettapack-host: $(SRC) $(HDR) build/cetta.mk packs/target_expressed/manife
 build/kb.metta build/queries.txt: bench/gen_kb.py
 	python3 bench/gen_kb.py --out build/kb.metta --queries-out build/queries.txt
 
-test: build/cettapack-host build/kb.metta
+HE_KB_ARGS := --snps 240 --genes 60 --interactions 300 --annotations 200 --queries 40
+
+build/kb-small.metta build/queries-small.txt: bench/gen_kb.py
+	python3 bench/gen_kb.py $(HE_KB_ARGS) --out build/kb-small.metta --queries-out build/queries-small.txt
+
+# One command for every M1 check (A.9): hashes, differential tests, the HE
+# comparison (item 16), the cross-space refusal (item 8), the certificate.
+test: build/cettapack-host build/kb.metta build/kb-small.metta
 	./build/cettapack-host hashes
 	CPK_TEST_LOG=build/test-results.jsonl ./build/cettapack-host test --kb build/kb.metta
-	python3 tools/emit_certificate.py packs/target_expressed build/test-results.jsonl build/kb.metta
+	python3 tests/he_diff.py --host build/cettapack-host --kb build/kb-small.metta --queries build/queries-small.txt | tee build/test-he.txt
+	! python3 tools/cpkc.py tests/cross_space_site.metta --out-dir build/cross-space 2>build/test-cross.txt; cat build/test-cross.txt
+	python3 tools/emit_certificate.py packs/target_expressed build/test-results.jsonl build/kb.metta build/test-he.txt
 
 bench: build/cettapack-host build/kb.metta
 	bench/run_bench.sh

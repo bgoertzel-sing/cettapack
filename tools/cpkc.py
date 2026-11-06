@@ -78,6 +78,11 @@ def struct_hash(a):
     return hashlib.sha256(("cpk-struct-v1\n" + canon(a, {})).encode()).hexdigest()
 
 
+def tagged_hash(tag, text):
+    """sha256(tag + newline + text): one domain tag per identity field (A.5)."""
+    return hashlib.sha256((tag + "\n" + text).encode()).hexdigest()
+
+
 def first_vars(a, out):
     if isinstance(a, list):
         for c in a:
@@ -146,6 +151,11 @@ def compile_site(src_path):
     lhs, body = region[1], region[2]
     site, params = lhs[0], lhs[1:]
     space_var, conj, template = body[1], body[2], body[3]
+
+    def has_match(x):
+        return isinstance(x, list) and (x[:1] == ["match"] or any(has_match(y) for y in x))
+    if has_match(conj) or has_match(template):
+        raise SystemExit("refused: nested match / cross-space join is not supported in M1 (A.9 item 8)")
     if not (isinstance(conj, list) and conj and conj[0] == ","):
         raise SystemExit("match pattern must be a conjunction (, f1 ... fn)")
     factors = conj[1:]
@@ -247,64 +257,78 @@ def main(argv=None):
         fh.write(plan_c)
     prof, prof_text = profile(commit, pdig, a.build, a.language)
     factors_conj = c["factors"]
+    with open(a.site_source, "rb") as fh:
+        source_bytes = fh.read()
+    region_canon = canon(c["region"], {})
+    schema_rel = schema_digest(factors_conj)
+    op_schemas = sorted({f"{f[0]}/{len(f)}" for f in factors_conj})
     manifest = {
-        "cettapack": "0.2",
-        "pack_id": f"{c['site']}@{struct_hash(c['region'])[:12]}",
-        "site": {
-            "name": c["site"],
-            "source": src_rel,
-            "region_kind": "equation; meta-expansion is the identity in M1 (no macros in the region)",
-            "params": c["params"],
-            "space_param": c["space_var"],
+        # A.2 manifest v0.2. Values that M1 does not compute say so in place.
+        "artifact_kind": "cettapack",
+        "manifest_version": "0.2",
+        "identity": {
+            "source_span_hash": hashlib.sha256(b"cpk-span-v1\n" + source_bytes).hexdigest(),
+            "normalized_region_hash": tagged_hash("cpk-normalized-v1", region_canon),
+            "meta_expanded_region_hash": tagged_hash("cpk-meta-expanded-v1", region_canon),
+            "match_pattern_hash": tagged_hash("cpk-pattern-v1", canon(c["conj"], {})),
+            "langdef_pack_digest": tree_digest(os.path.join(a.cetta, "langdef", a.langdef_tree)),
+            "profile_digest": prof,
+            "operator_schema_hashes": [tagged_hash("cpk-opschema-v1", s) for s in op_schemas],
+            "effect_policy_digest": tagged_hash("cpk-effects-v1", "Read(space:evidence, scope:snapshot)\nisolation=SnapshotIsolated"),
+            "exactness_signature": "exact",
         },
-        "profile": {
-            "digest": prof,
-            "method": "cpk-profile-v1",
-            "components": {"cetta": commit, "patches": pdig, "build": a.build, "language": a.language},
+        "effects": {
+            "classes": ["Read(space:evidence, scope:snapshot)"],
+            "isolation": "SnapshotIsolated",
         },
-        "langdef": {"digest": tree_digest(os.path.join(a.cetta, "langdef", a.langdef_tree)),
-                    "method": "cpk-tree-v1", "tree": a.langdef_tree},
-        "structure": {
-            "method": "cpk-struct-v1",
-            "region_hash": struct_hash(c["region"]),
-            "pattern_hash": struct_hash(c["conj"]),
-            "template_hash": struct_hash(c["template"]),
-            "region_canonical": canon(c["region"], {}),
+        "spaces": [{
+            "role": "evidence",
+            "space_id": f"input:{c['params'].index(c['space_var'])}",
+            "schema_hash": schema_rel,
+            "revision_policy": "append_only_epoch",
+            "revision_or_epoch": "captured at instantiation (space revision and length)",
+            "stats_signature": "not computed in M1 (REPLAN is a stub)",
+            "multiplicity_source": "space_records",
+            "pathmap_coverage_hash": tagged_hash("cpk-coverage-v1", "\n".join(f[0] + "/" + str(len(f)) for f in factors_conj)),
+        }],
+        "guards": {
+            "fast_path": "dependency_vector_equal",
+            "patch_path": "append_only_delta_under_budget (M1 stub: PATCHABLE falls back)",
+            "replan_path": "stats_drift_over_threshold (M1 stub: never raised)",
+            "invalid_path": "fallback_to_cetta",
         },
-        "schema": {
-            "digest": schema_digest(factors_conj),
-            "method": "cpk-schema-v1",
-            "relations": [{"head": f[0], "arity": len(f), "fields": ["sym"] * (len(f) - 1)}
-                          for f in factors_conj],
+        "artifacts": {
+            "native_so_hash": None,
+            "native_plan_hash": hashlib.sha256(plan_c.encode()).hexdigest(),
+            "pathmap_artifact_hashes": [],
+            "mm2_fragment_hashes": [],
+            "residual_metta_hash": hashlib.sha256(b"cpk-residual-v1\n" + source_bytes).hexdigest(),
+            "transform_cert_hash": None,
         },
-        "dependencies": {
-            "spaces": [{"input": c["params"].index(c["space_var"]),
-                        "relations": sorted({f[0] for f in factors_conj}),
-                        "revision": "captured at instantiation; any change -> PATCHABLE (M1 stub: fallback)"}],
+        "amortization": {
+            "compile_cost_estimate_ms": 0, "expected_calls": 0, "expected_validity_window_ms": 0,
+            "max_patch_cost_ms": 0, "max_stats_drift": 0.0, "max_append_delta_atoms": 4096,
         },
-        "kernel": {
-            "plan_symbol": f"cpk_plan_{ident}",
-            "plan_file": os.path.relpath(os.path.join(a.out_dir, "kernel_plan.c"), ROOT),
-            "plan_sha256": hashlib.sha256(plan_c.encode()).hexdigest(),
-            "runtime": "src/cpk_kernel.c",
-            "join_order": c["order"],
-            "narrowing": "PathMap via CeTTa's MORK bridge (candidate selection only)",
-            "rematch": "space_match_backend_match_atom_seeded (CeTTa native seeded rematch)",
+        # cettapack extensions (not in A.2): what the loader and tools need
+        "x_cettapack": {
+            "site": {"name": c["site"], "source": src_rel, "params": c["params"], "space_param": c["space_var"]},
+            "profile_components": {"method": "cpk-profile-v1", "cetta": commit, "patches": pdig, "build": a.build, "language": a.language},
+            "langdef_tree": a.langdef_tree,
+            "template_hash": tagged_hash("cpk-template-v1", canon(c["template"], {})),
+            "region_canonical": region_canon,
+            "meta_expansion": "identity: the region holds no macros or meta-rules; the hash is recomputed from CeTTa's parse at load",
+            "relations": [{"head": f[0], "arity": len(f), "fields": ["sym"] * (len(f) - 1)} for f in factors_conj],
+            "kernel": {"plan_symbol": f"cpk_plan_{ident}", "plan_file": os.path.relpath(os.path.join(a.out_dir, "kernel_plan.c"), ROOT),
+                       "runtime": "src/cpk_kernel.c", "join_order": c["order"],
+                       "backend_schema": "pathmap-candidate-native-rematch-v1"},
+            "demand": {"default": "bag", "supported": ["bag", "support"]},
+            "certificate": os.path.relpath(os.path.join(a.out_dir, "certificate.metta"), ROOT),
         },
-        "demand": {"default": "bag", "supported": ["bag", "support"]},
-        "guard": {
-            "verdicts": {"VALID": "kernel", "INVALID": "residual fallback",
-                         "PATCHABLE": "M1 stub: residual fallback",
-                         "REPLAN": "M1 stub: residual fallback"},
-            "fail_closed": "a missing or malformed hash refuses loading; the site then always runs the residual",
-        },
-        "residual": "generic CeTTa: (match <space> <conjunction with inputs substituted> <template>)",
-        "certificate": os.path.relpath(os.path.join(a.out_dir, "certificate.json"), ROOT),
     }
     with open(os.path.join(a.out_dir, "manifest.json"), "w") as fh:
         json.dump(manifest, fh, indent=2)
         fh.write("\n")
-    print(f"compiled {c['site']}: order={c['order']} region_hash={manifest['structure']['region_hash'][:16]}")
+    print(f"compiled {c['site']}: order={c['order']} meta_expanded_region_hash={manifest['identity']['meta_expanded_region_hash'][:16]}")
     return 0
 
 

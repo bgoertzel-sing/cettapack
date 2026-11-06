@@ -91,6 +91,7 @@ struct CpkIndex {
     CettaIndex *rows;             /* source record positions in the borrowed space */
     bool schema_ok, pathmap_ok;
     bool direct_ok;               /* keys use MORK's inline symbol encoding: byte-prefix descent */
+    AtomId *ids;                  /* the space's record ids at instantiation (revision policy) */
     char note[256];
 };
 
@@ -104,10 +105,24 @@ uint64_t cpk_index_rows(const CpkIndex *ix) { return ix ? ix->nrows : 0; }
 const char *cpk_index_schema_note(const CpkIndex *ix) { return ix ? ix->note : "no index"; }
 bool cpk_index_direct_ok(const CpkIndex *ix) { return ix && ix->direct_ok; }
 
+/* append_only_epoch revision policy: the live space is an append of the
+ * indexed one when it is at least as long and its first records are the
+ * indexed records, in order. Read only on the slow path (revision changed). */
+CpkChange cpk_index_change(const CpkIndex *ix, Space *s, uint64_t *delta) {
+    uint64_t len = space_length64(s);
+    *delta = 0;
+    if (space_revision(s) == ix->revision && len == ix->length) return CPK_CHANGE_NONE;
+    if (len < ix->length) return CPK_CHANGE_DESTRUCTIVE;
+    for (uint64_t i = 0; i < ix->length; i++)
+        if (space_get_atom_id_at64(s, (CettaIndex)i) != ix->ids[i]) return CPK_CHANGE_DESTRUCTIVE;
+    *delta = len - ix->length;
+    return *delta ? CPK_CHANGE_APPEND : CPK_CHANGE_DESTRUCTIVE;   /* same records, new revision: rewritten */
+}
+
 void cpk_index_free(CpkIndex *ix) {
     if (!ix) return;
     if (ix->pm) cetta_mork_bridge_space_free(ix->pm);
-    free(ix->offsets); free(ix->rows);
+    free(ix->offsets); free(ix->rows); free(ix->ids);
     free(ix);
 }
 
@@ -254,7 +269,10 @@ CpkIndex *cpk_index_build(const CpkPlan *plan, Space *space, Arena *scratch,
     StrMap groups;
     Buf text = {0};
     bool ok = gid_of_row && strmap_init(&groups, 1024);
+    ix->ids = malloc(sizeof(AtomId) * (len ? len : 1));
+    ok = ok && ix->ids;
     for (uint64_t i = 0; ok && i < len; i++) {
+        ix->ids[i] = space_get_atom_id_at64(space, (CettaIndex)i);
         gid_of_row[i] = UINT64_MAX;
         Atom *a = space_get_at64(space, (CettaIndex)i);
         char note[160];
@@ -438,30 +456,33 @@ static bool put_sym(uint8_t *buf, size_t cap, size_t *len, const char *t) {
     return true;
 }
 
-static int join(JoinCtx *jc, uint8_t k, Bindings *env);
+/* join/emit return 0 = continue, 1 = visitor said STOP, -1 = error */
+static int join(JoinCtx *jc, uint8_t k, Bindings *env, uint64_t mult);
 
-static int emit_answer(JoinCtx *jc, Bindings *env) {
+static int emit_answer(JoinCtx *jc, Bindings *env, uint64_t mult) {
     const CpkKernelCall *c = jc->call;
     uint64_t t0 = cpk_now_ns();
-    int rc = 0;
     Atom *answer = bindings_apply(env, c->scratch, c->template_atom);
-    if (!answer) rc = -1;
-    if (!rc && c->demand == CPK_DEMAND_SUPPORT) {
+    if (!answer) return -1;
+    if (c->demand == CPK_DEMAND_SUPPORT) {
+        /* support demand: one occurrence per distinct answer */
         char *s = atom_to_parseable_string(c->scratch, answer);
         uint64_t v; bool inserted;
-        if (!s || !strmap_get_or_put(&jc->seen, s, 0, &v, &inserted)) rc = -1;
-        else if (!inserted) { c->stats->answer_ns += cpk_now_ns() - t0; return 0; }
+        if (!s || !strmap_get_or_put(&jc->seen, s, 0, &v, &inserted)) return -1;
+        if (!inserted) { c->stats->answer_ns += cpk_now_ns() - t0; return 0; }
+        mult = 1;
     }
-    if (!rc) rc = c->emit(c->sink, answer);
-    if (!rc) c->stats->answers++;
+    CpkVisitCtl ctl = c->visitor(c->user_data, answer, mult);
+    c->stats->visits++;
+    c->stats->answers += mult;
     c->stats->answer_ns += cpk_now_ns() - t0;
-    return rc;
+    return ctl == CPK_VISIT_CONTINUE ? 0 : ctl == CPK_VISIT_STOP ? 1 : -1;
 }
 
-static int join(JoinCtx *jc, uint8_t k, Bindings *env) {
+static int join(JoinCtx *jc, uint8_t k, Bindings *env, uint64_t mult) {
     const CpkKernelCall *c = jc->call;
     const CpkPlan *p = c->plan;
-    if (k == p->nfactors) return emit_answer(jc, env);
+    if (k == p->nfactors) return emit_answer(jc, env, mult);
     const CpkFactor *f = &p->factors[k];
 
     /* Narrowing query: constants and bound slots are ground, so the trie
@@ -516,25 +537,37 @@ static int join(JoinCtx *jc, uint8_t k, Bindings *env) {
     const CpkIndex *ix = c->index;
     for (uint64_t ci = 0; !rc && ci < cands.len; ci++) {
         uint64_t g = cands.items[ci];
-        for (uint64_t r = ix->offsets[g]; !rc && r < ix->offsets[g + 1]; r++) {
-            Bindings e;
-            if (!bindings_clone(&e, env)) { rc = -1; break; }
-            uint64_t t0 = cpk_now_ns();
-            /* CeTTa's native seeded rematch on this source record. */
-            bool m = space_match_backend_match_atom_seeded(
-                c->space, ix->rows[r], c->factor_atoms[k], &e, c->scratch);
-            c->stats->rematch_ns += cpk_now_ns() - t0;
-            c->stats->rematches++;
-            if (m) { c->stats->rematch_ok++; rc = join(jc, k + 1, &e); }
-            bindings_free(&e);
+        Bindings e;
+        if (!bindings_clone(&e, env)) { rc = -1; break; }
+        uint64_t t0 = cpk_now_ns();
+        /* CeTTa's native seeded rematch on the candidate, read from its
+         * first source record. Every record of a group is the same ground
+         * all-symbol atom (schema guard), so the rematch result is the same
+         * for each; the records only contribute their count. */
+        bool m = space_match_backend_match_atom_seeded(
+            c->space, ix->rows[ix->offsets[g]], c->factor_atoms[k], &e, c->scratch);
+        c->stats->rematch_ns += cpk_now_ns() - t0;
+        c->stats->rematches++;
+        if (m) {
+            uint64_t m0 = cpk_now_ns();
+            /* §10.1: multiplicity from the source space records, composed
+             * by product only after rematch confirmed compatibility */
+            uint64_t count = ix->offsets[g + 1] - ix->offsets[g];
+            uint64_t next = mult * count;
+            c->stats->records += count;
+            c->stats->mult_ns += cpk_now_ns() - m0;
+            c->stats->rematch_ok++;
+            if (count != 0 && next / count != mult) rc = -1;   /* overflow: fall back */
+            else rc = join(jc, k + 1, &e, next);
         }
+        bindings_free(&e);
     }
     free(cands.items);
     return rc;
 }
 
 int cpk_kernel_run(const CpkKernelCall *c) {
-    if (!c || !c->plan || !c->space || !c->index || !c->index->pm || !c->emit) return -1;
+    if (!c || !c->plan || !c->space || !c->index || !c->index->pm || !c->visitor) return -1;
     JoinCtx jc;
     memset(&jc, 0, sizeof jc);
     jc.call = c;
@@ -558,7 +591,8 @@ int cpk_kernel_run(const CpkKernelCall *c) {
         if (s < 0) continue;
         if (!bindings_add_var(&env, c->slot_vars[s], c->inputs[i])) rc = -1;
     }
-    if (!rc) rc = join(&jc, 0, &env);
+    if (!rc) rc = join(&jc, 0, &env, 1);
+    if (rc == 1) rc = 0;   /* the visitor stopped the stream: a complete run */
     bindings_free(&env);
     if (c->demand == CPK_DEMAND_SUPPORT) strmap_free(&jc.seen);
     if (jc.cursor) cetta_mork_bridge_cursor_free(jc.cursor);

@@ -221,6 +221,7 @@ typedef struct {
     long want_n;                 /* expected answer count, -1 to skip */
     const char *extra_after;     /* atoms added after instantiation (dependency change) */
     bool want_loaded;
+    const char *remove_after;    /* an atom removed after instantiation (destructive write) */
 } Case;
 
 static void run_case(T *t, const Case *c) {
@@ -229,13 +230,22 @@ static void run_case(T *t, const Case *c) {
                            c->pathmap, c->demand);
     cetta_atom_t *space = new_space(e);
     add_text(e, space, c->kb);
-    if (c->extra_after) {
+    if (c->extra_after || c->remove_after) {
         /* instantiate on the original space first, then change it */
         cetta_atom_t *x = site_expr(e, space, c->rs);
         Bag warm = eval_bag(e, x);
         bag_free(&warm);
         cetta_embed_atom_release(x);
-        add_text(e, space, c->extra_after);
+        if (c->extra_after) add_text(e, space, c->extra_after);
+        if (c->remove_after) {
+            cetta_space_t *sp = NULL;
+            cetta_embed_space_from_atom(e, space, &sp);
+            cetta_atom_t *ra = parse1(e, c->remove_after);
+            int removed = 0;
+            if (cetta_embed_space_remove_atom(sp, ra, &removed) != CETTA_OK || !removed) die("remove %s", c->remove_after);
+            cetta_embed_atom_release(ra);
+            cetta_embed_space_release(sp);
+        }
     }
     uint64_t len0 = space_len(e, space);
     cetta_atom_t *gx = generic_expr(e, space, c->rs), *kx = site_expr(e, space, c->rs);
@@ -269,6 +279,24 @@ static void run_case(T *t, const Case *c) {
     cetta_embed_atom_release(gx); cetta_embed_atom_release(kx); cetta_embed_atom_release(space);
     cpk_pack_close(p);
     cetta_embed_engine_release(e);
+}
+
+static char *write_replaced_manifest(const char *from, const char *to, const char *name) {
+    size_t n = 0;
+    char *m = cpk_read_file(g_manifest, &n);
+    if (!m) die("read manifest");
+    char *at = strstr(m, from);
+    if (!at) die("%s not in manifest", from);
+    char *path = malloc(512);
+    snprintf(path, 512, "%s/%s", getenv("CPK_TMP") ? getenv("CPK_TMP") : "/tmp", name);
+    FILE *f = fopen(path, "w");
+    if (!f) die("write %s", path);
+    fwrite(m, 1, (size_t)(at - m), f);
+    fputs(to, f);
+    fputs(at + strlen(from), f);
+    fclose(f);
+    free(m);
+    return path;
 }
 
 static char *write_variant_manifest(const char *field, const char *value, const char *name) {
@@ -323,9 +351,11 @@ static int cmd_test(const char *kbfile) {
     const char *longsym =
         "(target rs1 g1)\n(target rs1 gene_with_a_very_long_name_that_mork_interns_rather_than_inlining_xx)\n"
         "(expressed g1 liver)\n(expressed g1 liver)\n(expressed gene_with_a_very_long_name_that_mork_interns_rather_than_inlining_xx heart)\n";
-    char *m_profile = write_variant_manifest("digest", FAKE, "cpk-manifest-profile.json");
-    char *m_struct = write_variant_manifest("region_hash", FAKE, "cpk-manifest-struct.json");
-    char *m_missing = write_variant_manifest("pattern_hash", NULL, "cpk-manifest-missing.json");
+    char *m_profile = write_variant_manifest("profile_digest", FAKE, "cpk-manifest-profile.json");
+    char *m_struct = write_variant_manifest("meta_expanded_region_hash", FAKE, "cpk-manifest-struct.json");
+    char *m_missing = write_variant_manifest("match_pattern_hash", NULL, "cpk-manifest-missing.json");
+    char *m_schema = write_variant_manifest("schema_hash", FAKE, "cpk-manifest-schema.json");
+    char *m_budget = write_replaced_manifest("\"max_append_delta_atoms\": 4096", "\"max_append_delta_atoms\": 0", "cpk-manifest-budget.json");
 
     Case cases[] = {
         {"1", "ground match", base, "rs2", NULL, NULL, true, CPK_DEMAND_BAG, CPK_VALID, 1, NULL, true},
@@ -338,16 +368,19 @@ static int cmd_test(const char *kbfile) {
         {"6", "distinct variables", distinct, "rs1", NULL, NULL, true, CPK_DEMAND_BAG, CPK_VALID, 2, NULL, true},
         {"7", "result template", base, "rs1", NULL, NULL, true, CPK_DEMAND_BAG, CPK_VALID, 3, NULL, true},
         {"9", "profile mismatch -> fallback", dups, "rs1", m_profile, NULL, true, CPK_DEMAND_BAG, CPK_INVALID, 8, NULL, true},
-        {"10", "schema mismatch (variable record)", "(target rs1 g1)\n(target rs1 $g)\n(expressed g1 liver)\n(expressed g5 brain)\n",
+        {"10", "schema hash mismatch -> fallback", base, "rs1", m_schema, NULL, true, CPK_DEMAND_BAG, CPK_INVALID, 3, NULL, true},
+        {"10r", "schema violation (variable record)", "(target rs1 g1)\n(target rs1 $g)\n(expressed g1 liver)\n(expressed g5 brain)\n",
             "rs1", NULL, NULL, true, CPK_DEMAND_BAG, CPK_INVALID, -1, NULL, true},
-        {"10b", "schema mismatch (number field)", "(target rs1 g1)\n(target rs1 42)\n(expressed g1 liver)\n(expressed 42 brain)\n",
+        {"10b", "schema violation (number field)", "(target rs1 g1)\n(target rs1 42)\n(expressed g1 liver)\n(expressed 42 brain)\n",
             "rs1", NULL, NULL, true, CPK_DEMAND_BAG, CPK_INVALID, 2, NULL, true},
-        {"10c", "schema mismatch (variable head)", "(target rs1 g1)\n($rel rs1 g7)\n(expressed g1 liver)\n(expressed g7 bone)\n",
+        {"10c", "schema violation (variable head)", "(target rs1 g1)\n($rel rs1 g7)\n(expressed g1 liver)\n(expressed g7 bone)\n",
             "rs1", NULL, NULL, true, CPK_DEMAND_BAG, CPK_INVALID, -1, NULL, true},
-        {"11", "structural-hash mismatch -> fallback", base, "rs1", m_struct, NULL, true, CPK_DEMAND_BAG, CPK_INVALID, 3, NULL, true},
+        {"11", "meta-expanded hash mismatch -> fallback", base, "rs1", m_struct, NULL, true, CPK_DEMAND_BAG, CPK_INVALID, 3, NULL, true},
         {"11b", "missing hash -> not loaded (fail closed)", base, "rs1", m_missing, NULL, true, CPK_DEMAND_BAG, CPK_INVALID, 3, NULL, false},
         {"14", "PathMap disabled -> fallback", dups, "rs1", NULL, NULL, false, CPK_DEMAND_BAG, CPK_INVALID, 8, NULL, true},
-        {"dep", "space changed after instantiation", base, "rs1", NULL, NULL, true, CPK_DEMAND_BAG, CPK_PATCHABLE, 4, "(expressed g2 kidney)\n", true},
+        {"12", "append-only patching path (stub) -> fallback", base, "rs1", NULL, NULL, true, CPK_DEMAND_BAG, CPK_PATCHABLE, 4, "(expressed g2 kidney)\n", true},
+        {"12r", "append over patch budget -> REPLAN -> fallback", base, "rs1", m_budget, NULL, true, CPK_DEMAND_BAG, CPK_REPLAN, 4, "(expressed g2 kidney)\n", true},
+        {"13", "destructive write invalidation -> fallback", base, "rs1", NULL, NULL, true, CPK_DEMAND_BAG, CPK_INVALID, 2, NULL, true, "(expressed g1 brain)"},
         {"in", "non-symbol input -> fallback", base, "$x", NULL, NULL, true, CPK_DEMAND_BAG, CPK_INVALID, -1, NULL, true},
         {"long", "long symbol: MORK-query narrowing", longsym, "rs1", NULL, NULL, true, CPK_DEMAND_BAG, CPK_VALID, 3, NULL, true},
     };
@@ -387,7 +420,7 @@ static int cmd_test(const char *kbfile) {
     }
     printf("summary: %d passed, %d failed\n", t.pass, t.fail);
     if (t.log) fclose(t.log);
-    free(m_profile); free(m_struct); free(m_missing);
+    free(m_profile); free(m_struct); free(m_missing); free(m_schema); free(m_budget);
     return t.fail ? 1 : 0;
 }
 
@@ -457,6 +490,7 @@ static int cmd_bench(const char *kbfile, const char *qfile, const char *mode, in
            "\"index_groups\":%" PRIu64 ",\"index_rows\":%" PRIu64 ",\"calls\":%" PRIu64 ",\"kernel_calls\":%" PRIu64 ",\"fallbacks\":%" PRIu64 ","
            "\"guard_ns_per_call\":%.1f,\"narrow_ns_per_call\":%.1f,\"rematch_ns_per_call\":%.1f,\"answer_ns_per_call\":%.1f,"
            "\"kernel_ns_per_call\":%.1f,\"fallback_ns_per_call\":%.1f,"
+           "\"records_per_call\":%.3f,\"visits_per_call\":%.3f,\"mult_ns_per_call\":%.1f,\"fallback_frequency\":%.4f,"
            "\"candidates_per_call\":%.3f,\"rematches_per_call\":%.3f,\"rematch_ok_per_call\":%.3f,\"narrow_queries_per_call\":%.3f,"
            "\"last_verdict\":\"%s\",\"last_reason\":\"%s\",\"peak_rss_kb\":%ld}\n",
            mode, space_len(e, space), nq, repeat, answers, sorted[rr / 2], sorted[0], sorted[rr - 1],
@@ -464,6 +498,8 @@ static int cmd_bench(const char *kbfile, const char *qfile, const char *mode, in
            cpk_index_groups(p->index), cpk_index_rows(p->index), p->stats.calls, p->stats.kernel_calls, p->stats.fallbacks,
            p->stats.guard_ns / calls, p->stats.narrow_ns / calls, p->stats.rematch_ns / calls, p->stats.answer_ns / calls,
            p->stats.kernel_ns / calls, p->stats.fallback_ns / calls,
+           p->stats.records / calls, p->stats.visits / calls, p->stats.mult_ns / calls,
+           p->stats.calls ? (double)p->stats.fallbacks / (double)p->stats.calls : 0.0,
            p->stats.candidates / calls, p->stats.rematches / calls, p->stats.rematch_ok / calls, p->stats.narrow_queries / calls,
            generic ? "-" : cpk_verdict_name(p->last_verdict), generic ? "-" : p->last_reason, ru.ru_maxrss);
     free(batch); free(qs);
@@ -473,13 +509,46 @@ static int cmd_bench(const char *kbfile, const char *qfile, const char *mode, in
     return 0;
 }
 
+/* bags: for each seed, the kernel's answer bag (checked equal to generic
+ * CeTTa's), one line per seed: seed TAB sorted answers joined by " | ".
+ * tests/he_diff.py compares these lines with HE's (A.9 item 16). */
+static int cmd_bags(const char *kbfile, const char *qfile) {
+    char *kb = cpk_read_file(kbfile, NULL), *qs = cpk_read_file(qfile, NULL);
+    if (!kb || !qs) die("read inputs");
+    cetta_engine_t *e = engine_new("he");
+    CpkPack *p = open_pack(e, g_manifest, "he", true, CPK_DEMAND_BAG);
+    cetta_atom_t *space = new_space(e);
+    add_text(e, space, kb);
+    int bad = 0;
+    for (char *rs = strtok(qs, "\n"); rs; rs = strtok(NULL, "\n")) {
+        cetta_atom_t *gx = generic_expr(e, space, rs), *kx = site_expr(e, space, rs);
+        Bag g = eval_bag(e, gx), k = eval_bag(e, kx);
+        if (!bag_eq(&g, &k)) { bad++; fprintf(stderr, "kernel and generic CeTTa differ at %s\n", rs); }
+        printf("%s\t", rs);
+        for (size_t i = 0; i < k.n; i++) printf("%s%s", i ? " | " : "", k.items[i]);
+        printf("\n");
+        bag_free(&g); bag_free(&k);
+        cetta_embed_atom_release(gx); cetta_embed_atom_release(kx);
+    }
+    fprintf(stderr, "bags: kernel_calls=%llu fallbacks=%llu\n", (unsigned long long)p->stats.kernel_calls,
+            (unsigned long long)p->stats.fallbacks);
+    int rc = bad || p->stats.fallbacks ? 1 : 0;
+    cetta_embed_atom_release(space);
+    cpk_pack_close(p);
+    cetta_embed_engine_release(e);
+    free(kb); free(qs);
+    return rc;
+}
+
 static int cmd_hashes(void) {
     cetta_engine_t *e = engine_new("he");
     CpkPack *p = open_pack(e, g_manifest, "he", true, CPK_DEMAND_BAG);
     printf("loaded=%s error=%s\n", p->loaded ? "yes" : "no", p->load_error);
     printf("profile  live=%s manifest=%s\n", p->live_profile, p->m_profile ? p->m_profile : "-");
     printf("langdef  live=%s manifest=%s\n", p->live_langdef, p->m_langdef ? p->m_langdef : "-");
-    printf("region   live=%s manifest=%s\n", p->live_region, p->m_region ? p->m_region : "-");
+    printf("span     live=%s manifest=%s (recorded, not guarded: not semantic)\n", p->live_span, p->m_span ? p->m_span : "-");
+    printf("normal.  live=%s manifest=%s\n", p->live_normalized, p->m_normalized ? p->m_normalized : "-");
+    printf("meta-exp live=%s manifest=%s\n", p->live_region, p->m_region ? p->m_region : "-");
     printf("pattern  live=%s manifest=%s\n", p->live_pattern, p->m_pattern ? p->m_pattern : "-");
     printf("template live=%s manifest=%s\n", p->live_template, p->m_template ? p->m_template : "-");
     printf("schema   live=%s manifest=%s\n", p->live_schema, p->m_schema ? p->m_schema : "-");
@@ -530,6 +599,7 @@ int main(int argc, char **argv) {
     if (!strcmp(argv[1], "test")) return cmd_test(kb);
     if (!strcmp(argv[1], "bench")) { if (!kb || !q) die("bench needs --kb and --queries"); return cmd_bench(kb, q, mode, repeat < 1 ? 1 : repeat); }
     if (!strcmp(argv[1], "hashes")) return cmd_hashes();
+    if (!strcmp(argv[1], "bags")) { if (!kb || !q) die("bags needs --kb and --queries"); return cmd_bags(kb, q); }
     die("unknown command %s", argv[1]);
     return 2;
 }

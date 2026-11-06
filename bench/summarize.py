@@ -25,9 +25,9 @@ def fmt(x, nd=1):
 
 
 cols = ["mode", "processes", "queries/batch", "answers/batch", "per-query median (us)",
-        "guard ns/call", "narrow ns/call", "rematch ns/call", "answer ns/call",
-        "fallback ns/call", "candidates/call", "rematches/call", "index build (ms)",
-        "KB load (ms)", "peak RSS (MiB)"]
+        "guard ns/call", "narrow ns/call", "rematch ns/call", "multiplicity ns/call", "answer ns/call",
+        "fallback ns/call", "fallback freq", "candidates/call", "rematches/call", "records/call",
+        "index build (ms)", "KB load (ms)", "peak RSS (MiB)"]
 print("| " + " | ".join(cols) + " |")
 print("|" + "---|" * len(cols))
 for mode in ("generic", "hosted-generic", "kernel", "fallback", "he"):
@@ -38,8 +38,11 @@ for mode in ("generic", "hosted-generic", "kernel", "fallback", "he"):
         mode, str(len(rows[mode])), fmt(med(mode, "queries")), fmt(med(mode, "answers_per_batch")),
         fmt(med(mode, "per_query_us_median"), 2), fmt(med(mode, "guard_ns_per_call")),
         fmt(med(mode, "narrow_ns_per_call")), fmt(med(mode, "rematch_ns_per_call")),
+        fmt(med(mode, "mult_ns_per_call")),
         fmt(med(mode, "answer_ns_per_call")), fmt(med(mode, "fallback_ns_per_call")),
+        fmt(med(mode, "fallback_frequency"), 3),
         fmt(med(mode, "candidates_per_call"), 3), fmt(med(mode, "rematches_per_call"), 3),
+        fmt(med(mode, "records_per_call"), 3),
         fmt(med(mode, "index_build_ms")), fmt(med(mode, "kb_load_ms")),
         fmt(rss / 1024 if rss else None),
     ]) + " |")

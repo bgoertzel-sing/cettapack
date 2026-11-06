@@ -78,14 +78,20 @@ typedef struct {
     uint64_t guard_ns, narrow_ns, rematch_ns, answer_ns, fallback_ns, kernel_ns;
     uint64_t narrow_queries;
     uint64_t candidates;        /* distinct candidate atoms returned by narrowing */
-    uint64_t rematches;         /* source records rematched natively */
+    uint64_t rematches;         /* native seeded rematches (one per candidate atom) */
     uint64_t rematch_ok;        /* rematches that succeeded */
-    uint64_t answers;           /* answers emitted (occurrences) */
+    uint64_t records;           /* source records behind the successful candidates */
+    uint64_t visits;            /* visitor calls (distinct answer tuples) */
+    uint64_t answers;           /* answer occurrences: sum of visited multiplicities */
+    uint64_t mult_ns;           /* multiplicity reconstruction (record counts, products) */
+    uint64_t patch_attempts;    /* PATCHABLE verdicts (patching is an M1 stub) */
 } CpkStats;
 
-/* The sink receives each answer occurrence; the atom is borrowed. A nonzero
- * return aborts the kernel, and the caller then falls back. */
-typedef int (*CpkEmitFn)(void *sink, Atom *answer);
+/* A.6 visitor: one call per answer with its multiplicity, composed (§10.1)
+ * as the product of the source record counts of the joined candidates after
+ * rematch confirmed exact binding compatibility. The atom is borrowed. */
+typedef enum { CPK_VISIT_CONTINUE = 0, CPK_VISIT_STOP = 1, CPK_VISIT_ERROR = 2 } CpkVisitCtl;
+typedef CpkVisitCtl (*CpkAnswerFn)(void *user_data, Atom *answer, uint64_t multiplicity);
 
 typedef struct {
     const CpkPlan *plan;
@@ -97,14 +103,14 @@ typedef struct {
     Atom *template_atom;        /* borrowed: the result template */
     Atom *const *inputs;        /* borrowed: callable arguments */
     CpkDemand demand;
-    CpkEmitFn emit;
-    void *sink;
+    CpkAnswerFn visitor;
+    void *user_data;
     CpkStats *stats;
 } CpkKernelCall;
 
-/* Returns 0 when the kernel ran to completion; nonzero when it could not
- * (out of memory, bridge error, sink abort). The caller must then discard
- * any emitted answers and fall back. */
+/* Returns 0 when the kernel ran to completion or the visitor said STOP;
+ * nonzero when it could not (out of memory, bridge error, visitor ERROR).
+ * The caller must then discard any visited answers and fall back. */
 int cpk_kernel_run(const CpkKernelCall *call);
 
 /* Index lifecycle. Build reads the space's records once, never writes. */
@@ -120,6 +126,8 @@ uint64_t cpk_index_groups(const CpkIndex *index);
 uint64_t cpk_index_rows(const CpkIndex *index);
 const char *cpk_index_schema_note(const CpkIndex *index);
 bool cpk_index_direct_ok(const CpkIndex *index);
+typedef enum { CPK_CHANGE_NONE, CPK_CHANGE_APPEND, CPK_CHANGE_DESTRUCTIVE } CpkChange;
+CpkChange cpk_index_change(const CpkIndex *index, Space *space, uint64_t *delta);
 
 uint64_t cpk_now_ns(void);
 

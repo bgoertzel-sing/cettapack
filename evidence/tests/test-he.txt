@@ -1,0 +1,1 @@
+PASS A.9-16 kernel vs HE 0.2.10  same_bag=37/37 answers=355 kb=build/kb-small.metta

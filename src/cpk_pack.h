@@ -27,10 +27,13 @@ typedef struct {
     char load_error[256];
 
     /* live digests, computed at load */
+    /* live_region is the meta-expanded region hash (A.5): M1 regions hold no
+     * macros or meta-rules, so meta-expansion is the identity on CeTTa's parse */
     char live_profile[65], live_langdef[65], live_region[65], live_pattern[65],
-         live_template[65], live_schema[65];
+         live_template[65], live_schema[65], live_span[65], live_normalized[65];
     /* manifest digests (borrowed from the parsed manifest) */
-    const char *m_profile, *m_langdef, *m_region, *m_pattern, *m_template, *m_schema;
+    const char *m_profile, *m_langdef, *m_region, *m_pattern, *m_template, *m_schema,
+               *m_span, *m_normalized;
     bool digests_match;
     char digest_mismatch[160];
 
@@ -42,6 +45,7 @@ typedef struct {
     Atom *conj_atom, *template_atom;
 
     CpkIndex *index;               /* narrowing index for the instantiated space */
+    uint64_t max_append_delta;     /* amortization.max_append_delta_atoms: PATCHABLE vs REPLAN */
     uint64_t instantiate_ns;
     CpkStats stats;
     CpkVerdict last_verdict;

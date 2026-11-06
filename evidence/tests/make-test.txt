@@ -1,10 +1,16 @@
+python3 bench/gen_kb.py --out build/kb.metta --queries-out build/queries.txt
+seed=20261106 atoms=128576 distinct=118845 kb_sha256=8097f2f4ad2990cdf096cdcf428cf719397f4695536b6f51416fe9e3d5439f5c queries=200 queries_sha256=8851d340ff5760bf1f8ef8c060e624edf0d470877e29175ba76b1669783d8a8d
+python3 bench/gen_kb.py --snps 240 --genes 60 --interactions 300 --annotations 200 --queries 40 --out build/kb-small.metta --queries-out build/queries-small.txt
+seed=20261106 atoms=1264 distinct=1168 kb_sha256=1b3d0eb4d554962dfdf13567ccd590f3ac1941f0974cb63c34c50fbcd388dbb3 queries=40 queries_sha256=0b0b190fd6db1763035cc82b01d803d0e4093c6cdb0385b215abf52550ba7699
 ./build/cettapack-host hashes
 loaded=yes error=
 profile  live=9a662cc3be593e9201966cc1170929dfc205b84b3c11b147c20cf2d117b58742 manifest=9a662cc3be593e9201966cc1170929dfc205b84b3c11b147c20cf2d117b58742
 langdef  live=a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1 manifest=a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1
-region   live=516d445856d9c8c547146ccd11b7af4c13bf21e852ef51228eb71cf1eefc9a5b manifest=516d445856d9c8c547146ccd11b7af4c13bf21e852ef51228eb71cf1eefc9a5b
-pattern  live=e8fa7dee2dfa0191681616036751ff4bccc784237092329d965ebfc9243d088f manifest=e8fa7dee2dfa0191681616036751ff4bccc784237092329d965ebfc9243d088f
-template live=edff4c2b226948f1cfdef98ec58124d85cf2cdb14e96d92852dff1bc33ba7a50 manifest=edff4c2b226948f1cfdef98ec58124d85cf2cdb14e96d92852dff1bc33ba7a50
+span     live=08fa03941175decbc869fc0f11ed104d92f36bb0eaeafa354a8532ea0f6beea7 manifest=08fa03941175decbc869fc0f11ed104d92f36bb0eaeafa354a8532ea0f6beea7 (recorded, not guarded: not semantic)
+normal.  live=490857633587bd433665641d30392232acea3f71964485a5d5d9f7033eee1803 manifest=490857633587bd433665641d30392232acea3f71964485a5d5d9f7033eee1803
+meta-exp live=197d65e3603e8aeff8792c3262d2b915d68c36f4e389d6e11ac2ca7f0b45f67d manifest=197d65e3603e8aeff8792c3262d2b915d68c36f4e389d6e11ac2ca7f0b45f67d
+pattern  live=493bfbc400571d00cfc001ee6f12ede9fb06dbc97d2dbf186ab4d9729cbee17d manifest=493bfbc400571d00cfc001ee6f12ede9fb06dbc97d2dbf186ab4d9729cbee17d
+template live=d4349816076071a986fe12fa11806ce1862a0ca9b88c06b61d3b5499eab253aa manifest=d4349816076071a986fe12fa11806ce1862a0ca9b88c06b61d3b5499eab253aa
 schema   live=2f8d0e0cbde5a7c5b7cf0b67214b9969ac923391303aaca0ea738e3e21cb3a2e manifest=2f8d0e0cbde5a7c5b7cf0b67214b9969ac923391303aaca0ea738e3e21cb3a2e
 digests_match=yes 
 CPK_TEST_LOG=build/test-results.jsonl ./build/cettapack-host test --kb build/kb.metta
@@ -18,16 +24,23 @@ PASS A.9-5 co-reference                       generic=2 kernel=2 same_bag=yes ve
 PASS A.9-6 distinct variables                 generic=2 kernel=2 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes
 PASS A.9-7 result template                    generic=3 kernel=3 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes
 PASS A.9-9 profile mismatch -> fallback       generic=8 kernel=8 same_bag=yes verdict=INVALID(profile mismatch) path=fallback loaded=yes space_unchanged=yes
-PASS A.9-10 schema mismatch (variable record)  generic=3 kernel=3 same_bag=yes verdict=INVALID(schema: record 1: non-symbol field in a target record) path=fallback loaded=yes space_unchanged=yes
-PASS A.9-10b schema mismatch (number field)     generic=2 kernel=2 same_bag=yes verdict=INVALID(schema: record 1: non-symbol field in a target record) path=fallback loaded=yes space_unchanged=yes
-PASS A.9-10c schema mismatch (variable head)    generic=2 kernel=2 same_bag=yes verdict=INVALID(schema: record 1: non-symbol head on arity-3 record) path=fallback loaded=yes space_unchanged=yes
-PASS A.9-11 structural-hash mismatch -> fallback generic=3 kernel=3 same_bag=yes verdict=INVALID(structural hash mismatch) path=fallback loaded=yes space_unchanged=yes
-PASS A.9-11b missing hash -> not loaded (fail closed) generic=3 kernel=3 same_bag=yes verdict=INVALID(pack not loaded (fail closed): missing or malformed hash structure.pattern_hash: not loading) path=fallback loaded=no space_unchanged=yes
+PASS A.9-10 schema hash mismatch -> fallback   generic=3 kernel=3 same_bag=yes verdict=INVALID(schema digest mismatch) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-10r schema violation (variable record) generic=3 kernel=3 same_bag=yes verdict=INVALID(schema: record 1: non-symbol field in a target record) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-10b schema violation (number field)    generic=2 kernel=2 same_bag=yes verdict=INVALID(schema: record 1: non-symbol field in a target record) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-10c schema violation (variable head)   generic=2 kernel=2 same_bag=yes verdict=INVALID(schema: record 1: non-symbol head on arity-3 record) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-11 meta-expanded hash mismatch -> fallback generic=3 kernel=3 same_bag=yes verdict=INVALID(meta-expanded region hash mismatch) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-11b missing hash -> not loaded (fail closed) generic=3 kernel=3 same_bag=yes verdict=INVALID(pack not loaded (fail closed): missing or malformed hash identity.match_pattern_hash: not loading) path=fallback loaded=no space_unchanged=yes
 PASS A.9-14 PathMap disabled -> fallback       generic=8 kernel=8 same_bag=yes verdict=INVALID(PathMap narrowing disabled or unavailable) path=fallback loaded=yes space_unchanged=yes
-PASS A.9-dep space changed after instantiation  generic=4 kernel=4 same_bag=yes verdict=PATCHABLE(space revision changed (PATCHABLE stub: falls back)) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-12 append-only patching path (stub) -> fallback generic=4 kernel=4 same_bag=yes verdict=PATCHABLE(append-only delta of 1 atoms; patching is an M1 stub: fallback) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-12r append over patch budget -> REPLAN -> fallback generic=4 kernel=4 same_bag=yes verdict=REPLAN(append of 1 atoms over the patch budget 0) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-13 destructive write invalidation -> fallback generic=2 kernel=2 same_bag=yes verdict=INVALID(destructive write since instantiation) path=fallback loaded=yes space_unchanged=yes
 PASS A.9-in non-symbol input -> fallback       generic=4 kernel=4 same_bag=yes verdict=INVALID(input 1 is not a ground symbol) path=fallback loaded=yes space_unchanged=yes
 PASS A.9-long long symbol: MORK-query narrowing  generic=3 kernel=3 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes
 PASS A.9-15 generic CeTTa vs kernel, 300 seeds same=300/300 answers=2656 kernel_calls=300 fallbacks=0 kb_atoms=128576
-summary: 20 passed, 0 failed
-python3 tools/emit_certificate.py packs/target_expressed build/test-results.jsonl build/kb.metta
-wrote packs/target_expressed/certificate.json: 20 items, claim bag-tested-adequate
+summary: 23 passed, 0 failed
+python3 tests/he_diff.py --host build/cettapack-host --kb build/kb-small.metta --queries build/queries-small.txt | tee build/test-he.txt
+PASS A.9-16 kernel vs HE 0.2.10  same_bag=37/37 answers=355 kb=build/kb-small.metta
+! python3 tools/cpkc.py tests/cross_space_site.metta --out-dir build/cross-space 2>build/test-cross.txt; cat build/test-cross.txt
+refused: nested match / cross-space join is not supported in M1 (A.9 item 8)
+python3 tools/emit_certificate.py packs/target_expressed build/test-results.jsonl build/kb.metta build/test-he.txt
+wrote packs/target_expressed/certificate.metta: 23 items + HE, claim bag-tested-adequate
