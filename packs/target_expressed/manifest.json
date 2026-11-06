@@ -1,0 +1,100 @@
+{
+  "cettapack": "0.2",
+  "pack_id": "cpk-site-target-expressed@516d445856d9",
+  "site": {
+    "name": "cpk-site-target-expressed",
+    "source": "packs/target_expressed/site.metta",
+    "region_kind": "equation; meta-expansion is the identity in M1 (no macros in the region)",
+    "params": [
+      "$space",
+      "$rs"
+    ],
+    "space_param": "$space"
+  },
+  "profile": {
+    "digest": "9a662cc3be593e9201966cc1170929dfc205b84b3c11b147c20cf2d117b58742",
+    "method": "cpk-profile-v1",
+    "components": {
+      "cetta": "4c285a97fd8c60e3c3fccd5ccd3b3e5e0ebccb4c",
+      "patches": "b364468491f306b0fbda2c3260653e614b0e102a1c9ab08618c9aad3aee1e8f4",
+      "build": "mork",
+      "language": "he"
+    }
+  },
+  "langdef": {
+    "digest": "a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1",
+    "method": "cpk-tree-v1",
+    "tree": "he"
+  },
+  "structure": {
+    "method": "cpk-struct-v1",
+    "region_hash": "516d445856d9c8c547146ccd11b7af4c13bf21e852ef51228eb71cf1eefc9a5b",
+    "pattern_hash": "e8fa7dee2dfa0191681616036751ff4bccc784237092329d965ebfc9243d088f",
+    "template_hash": "edff4c2b226948f1cfdef98ec58124d85cf2cdb14e96d92852dff1bc33ba7a50",
+    "region_canonical": "(= (cpk-site-target-expressed $_0 $_1) (match $_0 (, (target $_1 $_2) (expressed $_2 $_3)) ($_2 $_3)))"
+  },
+  "schema": {
+    "digest": "2f8d0e0cbde5a7c5b7cf0b67214b9969ac923391303aaca0ea738e3e21cb3a2e",
+    "method": "cpk-schema-v1",
+    "relations": [
+      {
+        "head": "target",
+        "arity": 3,
+        "fields": [
+          "sym",
+          "sym"
+        ]
+      },
+      {
+        "head": "expressed",
+        "arity": 3,
+        "fields": [
+          "sym",
+          "sym"
+        ]
+      }
+    ]
+  },
+  "dependencies": {
+    "spaces": [
+      {
+        "input": 0,
+        "relations": [
+          "expressed",
+          "target"
+        ],
+        "revision": "captured at instantiation; any change -> PATCHABLE (M1 stub: fallback)"
+      }
+    ]
+  },
+  "kernel": {
+    "plan_symbol": "cpk_plan_cpk_site_target_expressed",
+    "plan_file": "packs/target_expressed/kernel_plan.c",
+    "plan_sha256": "3b55a547b3d1baab66f26db904ee68bfce51b05c3a04e36bc6417c0dad36edff",
+    "runtime": "src/cpk_kernel.c",
+    "join_order": [
+      0,
+      1
+    ],
+    "narrowing": "PathMap via CeTTa's MORK bridge (candidate selection only)",
+    "rematch": "space_match_backend_match_atom_seeded (CeTTa native seeded rematch)"
+  },
+  "demand": {
+    "default": "bag",
+    "supported": [
+      "bag",
+      "support"
+    ]
+  },
+  "guard": {
+    "verdicts": {
+      "VALID": "kernel",
+      "INVALID": "residual fallback",
+      "PATCHABLE": "M1 stub: residual fallback",
+      "REPLAN": "M1 stub: residual fallback"
+    },
+    "fail_closed": "a missing or malformed hash refuses loading; the site then always runs the residual"
+  },
+  "residual": "generic CeTTa: (match <space> <conjunction with inputs substituted> <template>)",
+  "certificate": "packs/target_expressed/certificate.json"
+}
