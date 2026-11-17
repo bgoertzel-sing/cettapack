@@ -60,5 +60,7 @@ one walk of the subtree. Measured effect: see "Tested".
 cettapack `make test` (M1's 23 differential items plus the HE comparison, and
 the new per-site differential bag tests on four sites, 36 items) on a
 `BUILD=mork` build of `a9b3a811` + 0001 + this patch, gcc 11.4, Ubuntu 22.04; the
-kernel's narrowing uses this call. Benchmark numbers: cettapack
-`docs/BENCHMARK.md` (narrowing ns/call, bulk vs per-byte cursor, same binary).
+kernel's narrowing uses this call. Narrowing per kernel call, same binary,
+this call vs the per-byte cursor calls: 2.3 vs 8.3 us on a selective lookup
+(8.7 keys), 7.3 vs 23.5 us (38 keys), 0.93 vs 2.42 ms (4,255 keys); 2.6x to
+3.6x less (cettapack `docs/BENCHMARK.md`, RUNS=7 REPEAT=5).

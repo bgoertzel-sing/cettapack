@@ -67,11 +67,25 @@ print()
 ans = {m: med(m, "answers_per_batch") for m in modes if m != "he"}
 if len(set(ans.values())) > 1:
     print(f"- WARNING: answers per batch differ between modes: {ans}")
+def paired(base, other):
+    """generic/other per interleaved run (run i of each mode ran back to back)"""
+    a, b = vals(base, "per_query_us_median"), vals(other, "per_query_us_median")
+    rs = [x / y for x, y in zip(a, b) if y]
+    if not rs:
+        return ""
+    return f"; paired by run: median {statistics.median(rs):.2f}x, range {min(rs):.2f}-{max(rs):.2f}x, faster in {sum(r > 1 for r in rs)}/{len(rs)} runs"
+
+
 g = med("generic", "per_query_us_median")
 for m in ("kernel", "kernel-cursor", "hosted-generic", "fallback"):
     x = med(m, "per_query_us_median")
     if g and x:
-        print(f"- {m} vs generic CeTTa (same pin), end to end: {g / x:.2f}x per query (>1 means faster than generic)")
+        print(f"- {m} vs generic CeTTa (same pin), end to end: {g / x:.2f}x per query (>1 means faster than generic){paired('generic', m)}")
+hg, kx = med("hosted-generic", "per_query_us_median"), med("kernel", "per_query_us_median")
+if hg and kx:
+    print(f"- kernel vs CeTTa's matcher behind the same callable (hosted-generic): {hg / kx:.2f}x{paired('hosted-generic', 'kernel')}")
+if med("m1-generic", "per_query_us_median") and kx:
+    print(f"- kernel (this branch) vs M1-pin generic CeTTa: {med('m1-generic', 'per_query_us_median') / kx:.2f}x{paired('m1-generic', 'kernel')}")
 mg, mk = med("m1-generic", "per_query_us_median"), med("m1-kernel", "per_query_us_median")
 if mg and mk:
     print(f"- M1 baseline rerun (old pin): kernel vs generic {mg / mk:.2f}x per query")

@@ -1,7 +1,9 @@
 # PR: embedding: in-process native borrowing for compiled kernels
 
 Patch: `0001-embedding-in-process-native-borrowing-for-compiled-k.patch`
-Applies to: zariuq/CeTTa `4c285a97fd8c60e3c3fccd5ccd3b3e5e0ebccb4c` (`git am`).
+Applies to: zariuq/CeTTa `a9b3a81186529fd99649e437809bdb6f58fce2fd` (`git am`); first written
+against `4c285a97` and rebased on 2026-11-17 (only the `#include` context in
+`src/embedding.c` changed).
 Size: 3 files, +69/-1 (new header, three functions in `src/embedding.c`, one
 Makefile dependency).
 
@@ -48,4 +50,6 @@ change.
 ## Tested
 
 `make test` in cettapack (differential tests against generic CeTTa, 19 items)
-on a build of `4c285a97` + this patch, BUILD=mork, gcc 11.4.
+on a build of `4c285a97` + this patch, BUILD=mork, gcc 11.4; again on
+2026-11-17 on `a9b3a811` + this patch + 0002 (M1's 23 items, the HE
+comparison and the per-site differential bag tests on four sites).

@@ -1,0 +1,11 @@
+site cpk-site-gene_variants
+PASS A.9-d1 differential bags                  seeds=17 same=17 answers=4 kernel_calls=17 fallbacks=0 bag
+PASS A.9-d1s differential bags                  seeds=17 same=17 answers=4 kernel_calls=17 fallbacks=0 support
+PASS A.9-d2 differential bags                  seeds=11 same=11 answers=10 kernel_calls=11 fallbacks=0 bag
+PASS A.9-d2s differential bags                  seeds=11 same=11 answers=4 kernel_calls=11 fallbacks=0 support
+PASS A.9-d3 differential bags                  seeds=10 same=10 answers=3 kernel_calls=10 fallbacks=0 bag
+PASS A.9-d3s differential bags                  seeds=10 same=10 answers=3 kernel_calls=10 fallbacks=0 support
+PASS A.9-d4 differential bags                  seeds=9 same=9 answers=3 kernel_calls=9 fallbacks=0 bag
+PASS A.9-d4s differential bags                  seeds=9 same=9 answers=2 kernel_calls=9 fallbacks=0 support
+PASS A.9-kb generic CeTTa vs kernel, benchmark KB seeds=200 same=200 answers=7377 kernel_calls=200 fallbacks=0 kb_atoms=128576
+summary: 9 passed, 0 failed

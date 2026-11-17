@@ -1,0 +1,13 @@
+site cpk-site-target-expressed
+PASS A.9-kb generic CeTTa vs kernel, benchmark KB seeds=200 same=200 answers=1653 kernel_calls=200 fallbacks=0 kb_atoms=128576
+summary: 9 passed, 0 failed
+site cpk-site-gene_variants
+PASS A.9-kb generic CeTTa vs kernel, benchmark KB seeds=200 same=200 answers=7377 kernel_calls=200 fallbacks=0 kb_atoms=128576
+summary: 9 passed, 0 failed
+site cpk-site-tissue_fanout
+PASS A.9-kb generic CeTTa vs kernel, benchmark KB seeds=200 same=200 answers=866427 kernel_calls=200 fallbacks=0 kb_atoms=128576
+summary: 9 passed, 0 failed
+site cpk-site-variant_interactor
+PASS A.9-kb generic CeTTa vs kernel, benchmark KB seeds=200 same=200 answers=9835 kernel_calls=200 fallbacks=0 kb_atoms=128576
+summary: 9 passed, 0 failed
+DONE
