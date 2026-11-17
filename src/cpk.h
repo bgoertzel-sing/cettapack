@@ -53,6 +53,15 @@ typedef struct {
     uint8_t conj_index;            /* position of this factor in the source conjunction */
     uint8_t arity;                 /* fields, head included */
     CpkField fields[CPK_MAX_FIELDS];
+    /* Narrowing key layout (chosen by the compiler): the index stores this
+     * factor's records as (key_head f[key_order[1]] ... f[key_order[n-1]]),
+     * so the fields that are ground when the factor is reached (constants
+     * and slots bound earlier) come first and the trie descends on all of
+     * them. key_order[0] is always 0 (the head). When the order is the
+     * identity, key_head is the relation's head and the key is the record
+     * itself (the M1 layout); otherwise it is a factor-specific symbol. */
+    uint8_t key_order[CPK_MAX_FIELDS];
+    const char *key_head;
 } CpkFactor;
 
 typedef struct {
@@ -65,6 +74,10 @@ typedef struct {
     uint8_t ninputs;               /* callable arity */
     int8_t input_slot[CPK_MAX_SLOTS];     /* input position -> slot, -1 for the space */
     const char *region_text;       /* the source region the kernel was compiled from */
+    /* the generic CeTTa form of the site for the test and benchmark host:
+     * (_ <conjunction> <template>) with each occurrence of the one non-space
+     * input written %1$s */
+    const char *generic_fmt;
 } CpkPlan;
 
 /* ---- narrowing index (PathMap/MORK), owned by a pack instance ---- */

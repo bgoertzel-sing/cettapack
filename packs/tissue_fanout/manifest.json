@@ -1,0 +1,128 @@
+{
+  "artifact_kind": "cettapack",
+  "manifest_version": "0.2",
+  "identity": {
+    "source_span_hash": "77f3edec9c67c888d6351e20badf5f9e6dade9cc450f86f6996100ed015bcaa4",
+    "normalized_region_hash": "5fa487b499c5cfc6fa4e85179a5fdc6c02e92bde4c942264e70dad5715640bf7",
+    "meta_expanded_region_hash": "135be864290ee486a0f597ef65a4e2ab1f744a89d19e72411bc80aa0d7187c19",
+    "match_pattern_hash": "2d80f78cb736045ebfa4fa3be4da98f2188627ac5714dd9d8306509022b39573",
+    "langdef_pack_digest": "a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1",
+    "profile_digest": "e2af5b5e375ac2d350ae48e26b16b619773bffe2de9b44902c239500cb09d0e7",
+    "operator_schema_hashes": [
+      "d245d662fb4fbceb9a7ec83f0406595939993b49cc47efea579850761dcd1b91",
+      "d5bd83e203481d2b852017d595ea7eb21326d131ad50e46b2cefb1c95987fd59"
+    ],
+    "effect_policy_digest": "45f91ef6bbb149c7b9855688abf9cf085d05de60b849f5662a4b07c494638672",
+    "exactness_signature": "exact"
+  },
+  "effects": {
+    "classes": [
+      "Read(space:evidence, scope:snapshot)"
+    ],
+    "isolation": "SnapshotIsolated"
+  },
+  "spaces": [
+    {
+      "role": "evidence",
+      "space_id": "input:0",
+      "schema_hash": "79bf0a9aad31ccddba94732447a1889a43f140c8a234d098c7c66527fae13167",
+      "revision_policy": "append_only_epoch",
+      "revision_or_epoch": "captured at instantiation (space revision and length)",
+      "stats_signature": "not computed in M1 (REPLAN is a stub)",
+      "multiplicity_source": "space_records",
+      "pathmap_coverage_hash": "b8ee534f569798265b9a5563ed94e0f1f4006264ce68f3730ab1d08bbc8e5c74"
+    }
+  ],
+  "guards": {
+    "fast_path": "dependency_vector_equal",
+    "patch_path": "append_only_delta_under_budget (M1 stub: PATCHABLE falls back)",
+    "replan_path": "stats_drift_over_threshold (M1 stub: never raised)",
+    "invalid_path": "fallback_to_cetta"
+  },
+  "artifacts": {
+    "native_so_hash": null,
+    "native_plan_hash": "e6e663c721bd44f29365c56ead9732459e66dfa4eae1adb94fea458cc9cc7cb3",
+    "pathmap_artifact_hashes": [],
+    "mm2_fragment_hashes": [],
+    "residual_metta_hash": "d50dfd8f8265783d53b4021d4df1cfe650253b4a81da17e7e450d9f20e30aa11",
+    "transform_cert_hash": null
+  },
+  "amortization": {
+    "compile_cost_estimate_ms": 0,
+    "expected_calls": 0,
+    "expected_validity_window_ms": 0,
+    "max_patch_cost_ms": 0,
+    "max_stats_drift": 0.0,
+    "max_append_delta_atoms": 4096
+  },
+  "x_cettapack": {
+    "site": {
+      "name": "cpk-site-tissue_fanout",
+      "source": "packs/tissue_fanout/site.metta",
+      "params": [
+        "$space",
+        "$tissue"
+      ],
+      "space_param": "$space"
+    },
+    "profile_components": {
+      "method": "cpk-profile-v1",
+      "cetta": "a9b3a81186529fd99649e437809bdb6f58fce2fd",
+      "patches": "1a678fd13091e05e1c727ad7c18297e1a5f1f0857a732b06c520e550d8e3c463",
+      "build": "mork",
+      "language": "he"
+    },
+    "langdef_tree": "he",
+    "template_hash": "d4349816076071a986fe12fa11806ce1862a0ca9b88c06b61d3b5499eab253aa",
+    "region_canonical": "(= (cpk-site-tissue_fanout $_0 $_1) (match $_0 (, (expressed $_2 $_1) (target $_3 $_2)) ($_3 $_2)))",
+    "meta_expansion": "identity: the region holds no macros or meta-rules; the hash is recomputed from CeTTa's parse at load",
+    "relations": [
+      {
+        "head": "expressed",
+        "arity": 3,
+        "fields": [
+          "sym",
+          "sym"
+        ]
+      },
+      {
+        "head": "target",
+        "arity": 3,
+        "fields": [
+          "sym",
+          "sym"
+        ]
+      }
+    ],
+    "kernel": {
+      "plan_symbol": "cpk_plan_cpk_site_tissue_fanout",
+      "plan_file": "packs/tissue_fanout/kernel_plan.c",
+      "runtime": "src/cpk_kernel.c",
+      "join_order": [
+        0,
+        1
+      ],
+      "key_orders": [
+        [
+          0,
+          2,
+          1
+        ],
+        [
+          0,
+          2,
+          1
+        ]
+      ],
+      "backend_schema": "pathmap-candidate-native-rematch-v1"
+    },
+    "demand": {
+      "default": "bag",
+      "supported": [
+        "bag",
+        "support"
+      ]
+    },
+    "certificate": "packs/tissue_fanout/certificate.metta"
+  }
+}

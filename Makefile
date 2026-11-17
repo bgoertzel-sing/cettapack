@@ -11,23 +11,34 @@ C := $(CPK_CETTA_ROOT)
 CPK_INC := $(foreach f,$(filter -I%,$(CPK_CPPFLAGS)),$(if $(filter -I/%,$(f)),$(f),-I$(C)/$(patsubst -I%,%,$(f)))) $(filter -D%,$(CPK_CPPFLAGS)) \
            -include $(C)/$(lastword $(CPK_CPPFLAGS)) -I$(C)/include -Isrc
 CPK_DEFS := -DCPK_CETTA_COMMIT='"$(CPK_CETTA_COMMIT)"' -DCPK_PATCHES_SHA256='"$(CPK_PATCHES_SHA256)"' \
-            -DCPK_BUILD_MODE='"$(CPK_BUILD_MODE)"' -DCPK_CETTA_ROOT='"$(C)"' \
-            -DCPK_PACK_DIR='"$(CURDIR)/packs/target_expressed"'
+            -DCPK_BUILD_MODE='"$(CPK_BUILD_MODE)"' -DCPK_CETTA_ROOT='"$(C)"'
 CFLAGS_CPK := -O2 -Wall -Werror -Wno-format-truncation -std=c11 -pthread
 LINK_OBJ := $(addprefix $(C)/,$(CPK_OBJ))
 LINK_LD := $(patsubst runtime/%,$(C)/runtime/%,$(CPK_LDFLAGS))
 
-SRC := src/cpk_host.c src/cpk_pack.c src/cpk_kernel.c src/cpk_support.c packs/target_expressed/kernel_plan.c
+SRC := src/cpk_host.c src/cpk_pack.c src/cpk_kernel.c src/cpk_support.c
 HDR := src/cpk.h src/cpk_pack.h src/cpk_support.h
 
-all: build/cettapack-host
+# M1's site plus the option-B sites (docs/SITES.md); one host binary per site.
+SITES := target_expressed gene_variants tissue_fanout variant_interactor
+HOSTS := $(addprefix build/cettapack-host-,$(SITES))
 
-packs/target_expressed/kernel_plan.c packs/target_expressed/manifest.json: packs/target_expressed/site.metta tools/cpkc.py
-	python3 tools/cpkc.py packs/target_expressed/site.metta --out-dir packs/target_expressed
+all: build/cettapack-host $(HOSTS)
 
-build/cettapack-host: $(SRC) $(HDR) build/cetta.mk packs/target_expressed/manifest.json
+packs/%/kernel_plan.c packs/%/manifest.json: packs/%/site.metta tools/cpkc.py upstream/cetta/*.patch
+	python3 tools/cpkc.py packs/$*/site.metta --out-dir packs/$*
+
+.SECONDARY: $(foreach s,$(SITES),packs/$(s)/kernel_plan.c packs/$(s)/manifest.json)
+
+build/cettapack-host-%: $(SRC) $(HDR) build/cetta.mk packs/%/manifest.json packs/%/kernel_plan.c
 	@test -n "$(C)" || (echo "run scripts/build_cetta.sh first" && false)
-	gcc $(CFLAGS_CPK) $(CPK_INC) $(CPK_DEFS) -o $@ $(SRC) $(LINK_OBJ) $(LINK_LD)
+	@echo "gcc ... -o $@ (site $*)"
+	@gcc $(CFLAGS_CPK) $(CPK_INC) $(CPK_DEFS) -DCPK_PACK_DIR='"$(CURDIR)/packs/$*"' \
+	    -DCPK_PLAN_SYM=cpk_plan_cpk_site_$* -o $@ $(SRC) packs/$*/kernel_plan.c $(LINK_OBJ) $(LINK_LD)
+
+# M1's binary name, kept for the M1 commands below
+build/cettapack-host: build/cettapack-host-target_expressed
+	cp $< $@
 
 build/kb.metta build/queries.txt: bench/gen_kb.py
 	python3 bench/gen_kb.py --out build/kb.metta --queries-out build/queries.txt
@@ -45,6 +56,18 @@ test: build/cettapack-host build/kb.metta build/kb-small.metta
 	python3 tests/he_diff.py --host build/cettapack-host --kb build/kb-small.metta --queries build/queries-small.txt | tee build/test-he.txt
 	! python3 tools/cpkc.py tests/cross_space_site.metta --out-dir build/cross-space 2>build/test-cross.txt; cat build/test-cross.txt
 	python3 tools/emit_certificate.py packs/target_expressed build/test-results.jsonl build/kb.metta build/test-he.txt
+	$(MAKE) -s difftest
+
+# Differential bag tests on every site (bag and support demand on small
+# spaces, then the benchmark KB with the site's own seeds): kernel against
+# generic CeTTa, every call on the kernel path.
+seeds_kind = $(if $(filter gene_variants,$(1)),gene,$(if $(filter tissue_fanout,$(1)),tissue,rs))
+difftest: $(HOSTS) build/kb.metta
+	@set -e; $(foreach s,$(SITES),\
+	  python3 bench/gen_kb.py --query-kind $(call seeds_kind,$(s)) --out build/kb-diff.metta --queries-out build/queries-diff-$(s).txt >/dev/null; \
+	  cmp -s build/kb-diff.metta build/kb.metta; \
+	  ./build/cettapack-host-$(s) difftest --kb build/kb.metta --queries build/queries-diff-$(s).txt > build/difftest-$(s).txt 2>&1 || { cat build/difftest-$(s).txt; exit 1; }; \
+	  cat build/difftest-$(s).txt;)
 
 bench: build/cettapack-host build/kb.metta
 	bench/run_bench.sh
@@ -52,4 +75,4 @@ bench: build/cettapack-host build/kb.metta
 clean:
 	rm -f build/cettapack-host
 
-.PHONY: all test bench clean
+.PHONY: all test bench clean difftest

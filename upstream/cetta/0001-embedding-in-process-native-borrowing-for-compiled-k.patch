@@ -1,4 +1,4 @@
-From 92868c53d87d8b1e3b3ab57a5cc235403f7de2c4 Mon Sep 17 00:00:00 2001
+From 6a18b56c2d70f7ecd8e5336fdc601b20281ce886 Mon Sep 17 00:00:00 2001
 From: "ProtoCosmo (cettapack)" <protocosmo@users.noreply.github.com>
 Date: Thu, 5 Nov 2026 22:11:43 -0700
 Subject: [PATCH] embedding: in-process native borrowing for compiled kernels
@@ -22,10 +22,10 @@ Nothing here mutates a space, and the stable ABI is unchanged.
  create mode 100644 include/cetta_embed_native.h
 
 diff --git a/Makefile b/Makefile
-index d957a450..230f87b3 100644
+index 788fe9e4..1027d45d 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -48967,7 +48967,7 @@ EMBED_STATIC_LIB = runtime/libcetta-$(EMBED_TAG).a
+@@ -49698,7 +49698,7 @@ EMBED_STATIC_LIB = runtime/libcetta-$(EMBED_TAG).a
  EMBED_TEST = runtime/test_embedding-$(EMBED_TAG)
  -include $(EMBED_OBJ:.o=.d)
  
@@ -79,7 +79,7 @@ index 00000000..916552ef
 +
 +#endif
 diff --git a/src/embedding.c b/src/embedding.c
-index 3bcb390d..018e8173 100644
+index a7b5604d..f87de651 100644
 --- a/src/embedding.c
 +++ b/src/embedding.c
 @@ -8,6 +8,7 @@
@@ -87,10 +87,10 @@ index 3bcb390d..018e8173 100644
  #endif
  #include "cetta_embed.h"
 +#include "cetta_embed_native.h"
+ #include "embedding_python.h"
+ #include "foreign.h"
  #include "runtime_names.h"
- #include "eval.h"
- #include "eval_invocation.h"
-@@ -1551,3 +1552,32 @@ const char *cetta_embed_status_name(cetta_status_t status) {
+@@ -1626,3 +1627,32 @@ const char *cetta_embed_status_name(cetta_status_t status) {
          "query-closed", "invalidated", "preparation-required", "buffer-incompatible", "io-error", "halted"};
      return (unsigned)status < sizeof(names) / sizeof(*names) ? names[status] : "unknown-status";
  }

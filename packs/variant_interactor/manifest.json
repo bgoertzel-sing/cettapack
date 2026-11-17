@@ -1,0 +1,143 @@
+{
+  "artifact_kind": "cettapack",
+  "manifest_version": "0.2",
+  "identity": {
+    "source_span_hash": "4acab084eb33a3ba804d5060fd50d37ddd6d1ba8d11383f425f31bfaa1482da8",
+    "normalized_region_hash": "b624ca75e0a6af82ccf2f02ddc32b4c1dd0b5dc275340b019c937b325caedca3",
+    "meta_expanded_region_hash": "cab81e2105e1e24a0822088ac6fb562ef5535b67c1e4c42a92dd28803fe7a1ca",
+    "match_pattern_hash": "7e956250efc47574d076e90dfbea8c472fe5d999c1c20a8bf10530a9458a7119",
+    "langdef_pack_digest": "a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1",
+    "profile_digest": "e2af5b5e375ac2d350ae48e26b16b619773bffe2de9b44902c239500cb09d0e7",
+    "operator_schema_hashes": [
+      "d245d662fb4fbceb9a7ec83f0406595939993b49cc47efea579850761dcd1b91",
+      "69e45d2502b273559b6fe7dab096c560f77dbb2189a553d31d5ea75893b8848a",
+      "d5bd83e203481d2b852017d595ea7eb21326d131ad50e46b2cefb1c95987fd59"
+    ],
+    "effect_policy_digest": "45f91ef6bbb149c7b9855688abf9cf085d05de60b849f5662a4b07c494638672",
+    "exactness_signature": "exact"
+  },
+  "effects": {
+    "classes": [
+      "Read(space:evidence, scope:snapshot)"
+    ],
+    "isolation": "SnapshotIsolated"
+  },
+  "spaces": [
+    {
+      "role": "evidence",
+      "space_id": "input:0",
+      "schema_hash": "da97e9ba57ccdfa3fc05cf2827671394f778d23ab0a7c58cd775d4d8b34ee779",
+      "revision_policy": "append_only_epoch",
+      "revision_or_epoch": "captured at instantiation (space revision and length)",
+      "stats_signature": "not computed in M1 (REPLAN is a stub)",
+      "multiplicity_source": "space_records",
+      "pathmap_coverage_hash": "ac396224ec2f0238cd79902c1fd518fcebf3d999ff197684bb9f634f59b5a3e1"
+    }
+  ],
+  "guards": {
+    "fast_path": "dependency_vector_equal",
+    "patch_path": "append_only_delta_under_budget (M1 stub: PATCHABLE falls back)",
+    "replan_path": "stats_drift_over_threshold (M1 stub: never raised)",
+    "invalid_path": "fallback_to_cetta"
+  },
+  "artifacts": {
+    "native_so_hash": null,
+    "native_plan_hash": "eef1b16b9c9b550bb796a8e6c330bcb4d67f1cf5819f92a7c2aaf17b05f4f263",
+    "pathmap_artifact_hashes": [],
+    "mm2_fragment_hashes": [],
+    "residual_metta_hash": "8f81df149092845d2b6bb57ba0d5ae31e9e2b6611ab329188c8735f603470ecf",
+    "transform_cert_hash": null
+  },
+  "amortization": {
+    "compile_cost_estimate_ms": 0,
+    "expected_calls": 0,
+    "expected_validity_window_ms": 0,
+    "max_patch_cost_ms": 0,
+    "max_stats_drift": 0.0,
+    "max_append_delta_atoms": 4096
+  },
+  "x_cettapack": {
+    "site": {
+      "name": "cpk-site-variant_interactor",
+      "source": "packs/variant_interactor/site.metta",
+      "params": [
+        "$space",
+        "$rs"
+      ],
+      "space_param": "$space"
+    },
+    "profile_components": {
+      "method": "cpk-profile-v1",
+      "cetta": "a9b3a81186529fd99649e437809bdb6f58fce2fd",
+      "patches": "1a678fd13091e05e1c727ad7c18297e1a5f1f0857a732b06c520e550d8e3c463",
+      "build": "mork",
+      "language": "he"
+    },
+    "langdef_tree": "he",
+    "template_hash": "d4349816076071a986fe12fa11806ce1862a0ca9b88c06b61d3b5499eab253aa",
+    "region_canonical": "(= (cpk-site-variant_interactor $_0 $_1) (match $_0 (, (target $_1 $_2) (interacts $_3 $_2) (expressed $_3 $_4)) ($_3 $_4)))",
+    "meta_expansion": "identity: the region holds no macros or meta-rules; the hash is recomputed from CeTTa's parse at load",
+    "relations": [
+      {
+        "head": "target",
+        "arity": 3,
+        "fields": [
+          "sym",
+          "sym"
+        ]
+      },
+      {
+        "head": "interacts",
+        "arity": 3,
+        "fields": [
+          "sym",
+          "sym"
+        ]
+      },
+      {
+        "head": "expressed",
+        "arity": 3,
+        "fields": [
+          "sym",
+          "sym"
+        ]
+      }
+    ],
+    "kernel": {
+      "plan_symbol": "cpk_plan_cpk_site_variant_interactor",
+      "plan_file": "packs/variant_interactor/kernel_plan.c",
+      "runtime": "src/cpk_kernel.c",
+      "join_order": [
+        0,
+        1,
+        2
+      ],
+      "key_orders": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          2,
+          1
+        ],
+        [
+          0,
+          1,
+          2
+        ]
+      ],
+      "backend_schema": "pathmap-candidate-native-rematch-v1"
+    },
+    "demand": {
+      "default": "bag",
+      "supported": [
+        "bag",
+        "support"
+      ]
+    },
+    "certificate": "packs/variant_interactor/certificate.metta"
+  }
+}

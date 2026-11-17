@@ -17,8 +17,12 @@
 #include <string.h>
 #include <sys/resource.h>
 
-extern const CpkPlan cpk_plan_cpk_site_target_expressed;
-#define PLAN (&cpk_plan_cpk_site_target_expressed)
+/* one host binary per site: the Makefile passes the plan symbol and pack dir */
+#ifndef CPK_PLAN_SYM
+#define CPK_PLAN_SYM cpk_plan_cpk_site_target_expressed
+#endif
+extern const CpkPlan CPK_PLAN_SYM;
+#define PLAN (&CPK_PLAN_SYM)
 
 #ifndef CPK_PACK_DIR
 #define CPK_PACK_DIR "packs/target_expressed"
@@ -127,10 +131,14 @@ static Bag bag_support(const Bag *a) {
     return b;
 }
 
-/* The generic site, written as a user would: (match <space> (, (target RS $gene) (expressed $gene $tissue)) ($gene $tissue)) */
+/* The generic site, written as a user would: (match <space> <conjunction> <template>)
+ * with the seed in place of the site's input (plan->generic_fmt, from cpkc). */
 static cetta_atom_t *generic_expr(cetta_engine_t *e, cetta_atom_t *space, const char *rs) {
-    char text[512];
-    snprintf(text, sizeof text, "(_ (, (target %s $gene) (expressed $gene $tissue)) ($gene $tissue))", rs);
+    char text[1024];
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+    snprintf(text, sizeof text, PLAN->generic_fmt, rs);
+#pragma GCC diagnostic pop
     cetta_atom_t *p = parse1(e, text);
     cetta_atom_t *items[4] = {sym(e, "match"), space, child(p, 1), child(p, 2)};
     cetta_atom_t *x = expr(e, items, 4);
@@ -438,7 +446,10 @@ static int cmd_bench(const char *kbfile, const char *qfile, const char *mode, in
     char *queries[4096]; int nq = 0;
     for (char *s = strtok(qs, "\n"); s && nq < 4096; s = strtok(NULL, "\n")) queries[nq++] = s;
 
-    bool kernel = !strcmp(mode, "kernel"), fallback = !strcmp(mode, "fallback"), generic = !strcmp(mode, "generic");
+    /* kernel-cursor: the kernel narrowing through M1's per-byte cursor calls
+     * instead of the bulk bridge call (option A comparison, same binary) */
+    if (!strcmp(mode, "kernel-cursor")) setenv("CPK_NARROW", "cursor", 1);
+    bool kernel = !strcmp(mode, "kernel") || !strcmp(mode, "kernel-cursor"), fallback = !strcmp(mode, "fallback"), generic = !strcmp(mode, "generic");
     bool hosted_generic = !strcmp(mode, "hosted-generic");
     if (!kernel && !fallback && !generic && !hosted_generic) die("mode must be generic, hosted-generic, kernel or fallback");
     cetta_engine_t *e = engine_new("he");
@@ -540,6 +551,102 @@ static int cmd_bags(const char *kbfile, const char *qfile) {
     return rc;
 }
 
+/* difftest: site-independent differential bag tests against generic CeTTa.
+ * Small hand-written spaces (duplicates, co-reference, distinct variables,
+ * dangling joins, a long interned symbol) with every symbol of the space as a
+ * seed plus an absent one, under bag and support demand; then, with --kb and
+ * --queries, every seed of the query file on the benchmark KB. Every call must
+ * take the kernel path (guard VALID, no fallback) and give generic CeTTa's bag. */
+static int difftest_space(T *t, const char *id, const char *kbtext, CpkDemand demand) {
+    cetta_engine_t *e = engine_new("he");
+    CpkPack *p = open_pack(e, g_manifest, "he", true, demand);
+    cetta_atom_t *space = new_space(e);
+    add_text(e, space, kbtext);
+    /* seeds: every distinct token of the space, then an absent one */
+    char *copy = strdup(kbtext), *seeds[512]; int ns = 0;
+    for (char *s = strtok(copy, " ()\n"); s && ns < 511; s = strtok(NULL, " ()\n")) {
+        bool dup = false;
+        for (int i = 0; i < ns; i++) if (!strcmp(seeds[i], s)) dup = true;
+        if (!dup) seeds[ns++] = s;
+    }
+    seeds[ns++] = "absent_seed_zz";
+    int same = 0, answers = 0;
+    uint64_t k0 = p->stats.kernel_calls;
+    for (int i = 0; i < ns; i++) {
+        cetta_atom_t *gx = generic_expr(e, space, seeds[i]), *kx = site_expr(e, space, seeds[i]);
+        Bag g = eval_bag(e, gx), k = eval_bag(e, kx);
+        Bag gs = demand == CPK_DEMAND_SUPPORT ? bag_support(&g) : (Bag){0};
+        const Bag *ref = demand == CPK_DEMAND_SUPPORT ? &gs : &g;
+        if (bag_eq(ref, &k)) same++;
+        else { fprintf(stderr, "  %s: mismatch at %s\n", id, seeds[i]); show_bag("generic", ref); show_bag("kernel", &k); }
+        answers += (int)k.n;
+        bag_free(&g); bag_free(&k); bag_free(&gs);
+        cetta_embed_atom_release(gx); cetta_embed_atom_release(kx);
+    }
+    bool ok = same == ns && p->stats.fallbacks == 0 && p->stats.kernel_calls - k0 == (uint64_t)ns;
+    report(t, id, "differential bags", ok, "seeds=%d same=%d answers=%d kernel_calls=%" PRIu64 " fallbacks=%" PRIu64 " %s",
+           ns, same, answers, p->stats.kernel_calls - k0, p->stats.fallbacks,
+           demand == CPK_DEMAND_SUPPORT ? "support" : "bag");
+    free(copy);
+    cetta_embed_atom_release(space);
+    cpk_pack_close(p);
+    cetta_embed_engine_release(e);
+    return ok ? 0 : 1;
+}
+
+static int cmd_difftest(const char *kbfile, const char *qfile) {
+    T t = {0};
+    t.log = fopen(getenv("CPK_TEST_LOG") ? getenv("CPK_TEST_LOG") : "/dev/null", "w");
+    printf("site %s\n", PLAN->site);
+    static const char *spaces[][2] = {
+        {"d1", "(target rs1 g1)\n(target rs1 g2)\n(target rs2 g3)\n(target rs9 g9)\n(expressed g1 liver)\n(expressed g1 brain)\n"
+               "(expressed g2 heart)\n(expressed g3 skin)\n(interacts g1 g2)\n(interacts g3 g1)\n(annotated g1 go7)\n"},
+        {"d2", "(target rs1 g1)\n(target rs1 g1)\n(target rs1 g1)\n(target rs1 g2)\n(target rs2 g1)\n(expressed g1 liver)\n"
+               "(expressed g1 liver)\n(expressed g2 heart)\n(expressed g2 lung)\n(interacts g2 g1)\n(interacts g2 g1)\n(interacts g1 g1)\n"},
+        {"d3", "(target rs1 g1)\n(target rs1 g2)\n(expressed g2 heart)\n(expressed g3 liver)\n(expressed g1 g1)\n"
+               "(interacts g1 g2)\n(interacts g2 g2)\n(target g1 g1)\n"},
+        {"d4", "(target rs1 g1)\n(target rs1 gene_with_a_very_long_name_that_mork_interns_rather_than_inlining_xx)\n"
+               "(expressed g1 liver)\n(expressed g1 liver)\n(expressed gene_with_a_very_long_name_that_mork_interns_rather_than_inlining_xx heart)\n"
+               "(interacts gene_with_a_very_long_name_that_mork_interns_rather_than_inlining_xx g1)\n"},
+    };
+    int bad = 0;
+    for (size_t i = 0; i < sizeof spaces / sizeof *spaces; i++) {
+        bad += difftest_space(&t, spaces[i][0], spaces[i][1], CPK_DEMAND_BAG);
+        char sid[16]; snprintf(sid, sizeof sid, "%ss", spaces[i][0]);
+        bad += difftest_space(&t, sid, spaces[i][1], CPK_DEMAND_SUPPORT);
+    }
+    if (kbfile && qfile) {
+        char *kb = cpk_read_file(kbfile, NULL), *qs = cpk_read_file(qfile, NULL);
+        if (!kb || !qs) die("read inputs");
+        cetta_engine_t *e = engine_new("he");
+        CpkPack *p = open_pack(e, g_manifest, "he", true, CPK_DEMAND_BAG);
+        cetta_atom_t *space = new_space(e);
+        add_text(e, space, kb);
+        int same = 0, total = 0; size_t answers = 0;
+        for (char *s = strtok(qs, "\n"); s; s = strtok(NULL, "\n")) {
+            cetta_atom_t *gx = generic_expr(e, space, s), *kx = site_expr(e, space, s);
+            Bag g = eval_bag(e, gx), k = eval_bag(e, kx);
+            total++;
+            if (bag_eq(&g, &k)) same++; else { fprintf(stderr, "  mismatch at %s\n", s); show_bag("generic", &g); show_bag("kernel", &k); }
+            answers += g.n;
+            bag_free(&g); bag_free(&k);
+            cetta_embed_atom_release(gx); cetta_embed_atom_release(kx);
+        }
+        bool ok = same == total && p->stats.fallbacks == 0 && p->stats.kernel_calls == (uint64_t)total;
+        report(&t, "kb", "generic CeTTa vs kernel, benchmark KB", ok,
+               "seeds=%d same=%d answers=%zu kernel_calls=%" PRIu64 " fallbacks=%" PRIu64 " kb_atoms=%" PRIu64,
+               total, same, answers, p->stats.kernel_calls, p->stats.fallbacks, space_len(e, space));
+        if (!ok) bad++;
+        cetta_embed_atom_release(space);
+        cpk_pack_close(p);
+        cetta_embed_engine_release(e);
+        free(kb); free(qs);
+    }
+    printf("summary: %d passed, %d failed\n", t.pass, t.fail);
+    if (t.log) fclose(t.log);
+    return bad || t.fail ? 1 : 0;
+}
+
 static int cmd_hashes(void) {
     cetta_engine_t *e = engine_new("he");
     CpkPack *p = open_pack(e, g_manifest, "he", true, CPK_DEMAND_BAG);
@@ -599,6 +706,7 @@ int main(int argc, char **argv) {
     if (!strcmp(argv[1], "test")) return cmd_test(kb);
     if (!strcmp(argv[1], "bench")) { if (!kb || !q) die("bench needs --kb and --queries"); return cmd_bench(kb, q, mode, repeat < 1 ? 1 : repeat); }
     if (!strcmp(argv[1], "hashes")) return cmd_hashes();
+    if (!strcmp(argv[1], "difftest")) return cmd_difftest(kb, q);
     if (!strcmp(argv[1], "bags")) { if (!kb || !q) die("bags needs --kb and --queries"); return cmd_bags(kb, q); }
     die("unknown command %s", argv[1]);
     return 2;

@@ -6,7 +6,7 @@
   :normalized-region-hash "490857633587bd433665641d30392232acea3f71964485a5d5d9f7033eee1803"
   :meta-expanded-region-hash "197d65e3603e8aeff8792c3262d2b915d68c36f4e389d6e11ac2ca7f0b45f67d"
   :match-pattern-hash "493bfbc400571d00cfc001ee6f12ede9fb06dbc97d2dbf186ab4d9729cbee17d"
-  :profile-digest "9a662cc3be593e9201966cc1170929dfc205b84b3c11b147c20cf2d117b58742"
+  :profile-digest "e2af5b5e375ac2d350ae48e26b16b619773bffe2de9b44902c239500cb09d0e7"
   :langdef-pack-digest "a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1"
   :effect-summary ("Read(space:evidence, scope:snapshot)" (isolation SnapshotIsolated))
   :space-dependency-vector (((space-id "input:0") (schema-hash "2f8d0e0cbde5a7c5b7cf0b67214b9969ac923391303aaca0ea738e3e21cb3a2e") (revision-policy append_only_epoch) (multiplicity-source space_records) (revision-or-epoch instantiation)))
@@ -21,16 +21,16 @@
      (native-seeded-rematch-parity step-id-5 (evidence "space_match_backend_match_atom_seeded on every candidate"))
      (result-template-instantiation step-id-6 (evidence "bindings_apply on the parsed template; A.9 item 7"))
      (multiplicity-reconstruction step-id-7 (evidence "record counts per candidate, product over the join after rematch; A.9 items 4 and 15"))
-     (residualize-to-c-kernel step-id-8 (evidence "packs/target_expressed/kernel_plan.c sha256 3b55a547b3d1baab66f26db904ee68bfce51b05c3a04e36bc6417c0dad36edff")))
+     (residualize-to-c-kernel step-id-8 (evidence "packs/target_expressed/kernel_plan.c sha256 b145644fbad1ad6818ddb3734feb222d63116dd2df4281e0904cd4ab09ea8d57")))
   :evidence
     ((tests "1 2 2b 3 4 4s 5 6 7 9 10 10r 10b 10c 11 11b 14 12 12r 13 in long 15")
      (test-log-sha256 "edf9c602a99dbbc73a77ebe44529adbd8b75558062d65cd3503a3158d4b10aaf")
      (he-comparison "PASS A.9-16 kernel vs HE 0.2.10  same_bag=37/37 answers=355 kb=build/kb-small.metta")
      (kb-sha256 "8097f2f4ad2990cdf096cdcf428cf719397f4695536b6f51416fe9e3d5439f5c")
      (kb-generator "bench/gen_kb.py --seed 20261106")
-     (manifest-sha256 "570eedb24af86d3dc6e65c50504b8b5e886fdbeda3e3e8a1c7bff84cfd9edc33")
-     (cettapack-commit "5c22929b18232d11a703dccb88ee9f59bda4a10d")
-     (cetta-commit "4c285a97fd8c60e3c3fccd5ccd3b3e5e0ebccb4c"))
+     (manifest-sha256 "f0ca1e16d63764815895acfa35bcade9c48644e927c5d579c42767c26894870b")
+     (cettapack-commit "d2df1cc816101cce8419e5ce69ba8728355b00ba")
+     (cetta-commit "a9b3a81186529fd99649e437809bdb6f58fce2fd"))
   :open-obligations
     ("rule-sound-on-fragment: VALID guard implies kernel bag = generic bag for all spaces of the fragment (unproved)"
      "candidate soundness and completeness of the PathMap prefix (step-id-4)"

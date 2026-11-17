@@ -7,7 +7,7 @@
     "meta_expanded_region_hash": "197d65e3603e8aeff8792c3262d2b915d68c36f4e389d6e11ac2ca7f0b45f67d",
     "match_pattern_hash": "493bfbc400571d00cfc001ee6f12ede9fb06dbc97d2dbf186ab4d9729cbee17d",
     "langdef_pack_digest": "a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1",
-    "profile_digest": "9a662cc3be593e9201966cc1170929dfc205b84b3c11b147c20cf2d117b58742",
+    "profile_digest": "e2af5b5e375ac2d350ae48e26b16b619773bffe2de9b44902c239500cb09d0e7",
     "operator_schema_hashes": [
       "d245d662fb4fbceb9a7ec83f0406595939993b49cc47efea579850761dcd1b91",
       "d5bd83e203481d2b852017d595ea7eb21326d131ad50e46b2cefb1c95987fd59"
@@ -41,7 +41,7 @@
   },
   "artifacts": {
     "native_so_hash": null,
-    "native_plan_hash": "3b55a547b3d1baab66f26db904ee68bfce51b05c3a04e36bc6417c0dad36edff",
+    "native_plan_hash": "b145644fbad1ad6818ddb3734feb222d63116dd2df4281e0904cd4ab09ea8d57",
     "pathmap_artifact_hashes": [],
     "mm2_fragment_hashes": [],
     "residual_metta_hash": "96da8f5fb1d5d0302d5045511c03b641c6b9f314f3dd365bcef2f52777de1949",
@@ -67,8 +67,8 @@
     },
     "profile_components": {
       "method": "cpk-profile-v1",
-      "cetta": "4c285a97fd8c60e3c3fccd5ccd3b3e5e0ebccb4c",
-      "patches": "b364468491f306b0fbda2c3260653e614b0e102a1c9ab08618c9aad3aee1e8f4",
+      "cetta": "a9b3a81186529fd99649e437809bdb6f58fce2fd",
+      "patches": "1a678fd13091e05e1c727ad7c18297e1a5f1f0857a732b06c520e550d8e3c463",
       "build": "mork",
       "language": "he"
     },
@@ -101,6 +101,18 @@
       "join_order": [
         0,
         1
+      ],
+      "key_orders": [
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          1,
+          2
+        ]
       ],
       "backend_schema": "pathmap-candidate-native-rematch-v1"
     },
