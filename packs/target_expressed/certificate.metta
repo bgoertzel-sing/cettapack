@@ -6,7 +6,7 @@
   :normalized-region-hash "490857633587bd433665641d30392232acea3f71964485a5d5d9f7033eee1803"
   :meta-expanded-region-hash "197d65e3603e8aeff8792c3262d2b915d68c36f4e389d6e11ac2ca7f0b45f67d"
   :match-pattern-hash "493bfbc400571d00cfc001ee6f12ede9fb06dbc97d2dbf186ab4d9729cbee17d"
-  :profile-digest "e2af5b5e375ac2d350ae48e26b16b619773bffe2de9b44902c239500cb09d0e7"
+  :profile-digest "e167bdbb490bba7aeff20d3352cf5774f0352d8f3fd4f9e4108b0d8b83183f09"
   :langdef-pack-digest "a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1"
   :effect-summary ("Read(space:evidence, scope:snapshot)" (isolation SnapshotIsolated))
   :space-dependency-vector (((space-id "input:0") (schema-hash "2f8d0e0cbde5a7c5b7cf0b67214b9969ac923391303aaca0ea738e3e21cb3a2e") (revision-policy append_only_epoch) (multiplicity-source space_records) (revision-or-epoch instantiation)))
@@ -28,8 +28,8 @@
      (he-comparison "PASS A.9-16 kernel vs HE 0.2.10  same_bag=37/37 answers=355 kb=build/kb-small.metta")
      (kb-sha256 "8097f2f4ad2990cdf096cdcf428cf719397f4695536b6f51416fe9e3d5439f5c")
      (kb-generator "bench/gen_kb.py --seed 20261106")
-     (manifest-sha256 "f0ca1e16d63764815895acfa35bcade9c48644e927c5d579c42767c26894870b")
-     (cettapack-commit "d2df1cc816101cce8419e5ce69ba8728355b00ba")
+     (manifest-sha256 "f7b970523a8c4e15848dd90e54ceda80a21d991a05651a29c71eed9ea337d67b")
+     (cettapack-commit "a65e9182ec491e568c41020a0d9c7d649827afed")
      (cetta-commit "a9b3a81186529fd99649e437809bdb6f58fce2fd"))
   :open-obligations
     ("rule-sound-on-fragment: VALID guard implies kernel bag = generic bag for all spaces of the fragment (unproved)"
