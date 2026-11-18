@@ -1,0 +1,4 @@
+target_expressed exit=0
+gene_variants exit=0
+tissue_fanout exit=0
+variant_interactor exit=0

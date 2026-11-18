@@ -17,7 +17,7 @@ for line in open(sys.argv[1]):
     if line.startswith("{"):
         r = json.loads(line)
         rows[r["mode"]].append(r)
-site = next(iter(rows.values()))[0]["site"]
+site = rows["generic"][0]["site"] if "generic" in rows else next(iter(rows.values()))[0]["site"]
 
 
 def vals(mode, key):
@@ -34,6 +34,8 @@ def paired(ref, other):
 
 
 def route(mode):
+    if "route_before" not in rows[mode][0]:
+        return "not recorded (cettapack-host bench)"
     b = {(r["route_before"]["backend"], r["route_before"]["native_rows"], r["route_before"]["dense_facts"],
           r["route_after"]["native_rows"], r["route_after"]["dense_facts"]) for r in rows[mode]}
     return "; ".join(f"{k[0]}, rows+dense {k[1]:,}+{k[2]:,} -> {k[3]:,}+{k[4]:,}" for k in sorted(b))
@@ -41,12 +43,12 @@ def route(mode):
 
 def path(mode):
     r = rows[mode]
-    calls = sum(x["site_calls"] for x in r)
-    k = sum(x["kernel_calls"] for x in r)
-    f = sum(x["fallbacks"] for x in r)
-    fc = sum(x["fn_calls"] for x in r)
-    fs = sum(x["fn_spec_calls"] for x in r)
-    ff = sum(x["fn_fallbacks"] for x in r)
+    calls = sum(x.get("site_calls", x.get("calls", 0)) for x in r)
+    k = sum(x.get("kernel_calls", 0) for x in r)
+    f = sum(x.get("fallbacks", 0) for x in r)
+    fc = sum(x.get("fn_calls", 0) for x in r)
+    fs = sum(x.get("fn_spec_calls", 0) for x in r)
+    ff = sum(x.get("fn_fallbacks", 0) for x in r)
     parts = []
     if calls:
         parts.append(f"site calls {calls:,}, kernel {k:,}, fallback {f:,}")
@@ -82,7 +84,8 @@ def table(title, modes, ref, note=None):
 
 print(f"## {site}\n")
 print(f"{len(rows.get('generic', []))} processes per mode, interleaved run by run.\n")
-table("Probe 1: direct entry point (match-rows, upstream/cetta/0003)", ["generic", "hosted-generic", "direct", "kernel", "fallback"], "hosted-generic")
+table("Probe 1: direct entry point (match-rows, upstream/cetta/0003)", ["generic", "hosted-generic", "direct", "kernel", "fallback", "m-generic", "m-hosted-generic"], "hosted-generic",
+      "m-generic / m-hosted-generic: the same modes measured by cettapack-host bench, the docs/BENCHMARK.md method (query atoms built inside the timed loop; generic parses the whole match text per query).")
 table("Probe 2: fusing several matches (nested matches vs one fused kernel)", ["nested", "generic", "hosted-generic", "kernel", "fallback"], "hosted-generic",
       "nested: the same matches written one inside the other, run by CeTTa; kernel: the compiled kernel of the fused conjunction.")
 table("Probe 3: specialising a whole function", ["fn-generic", "fn-hosted", "fn-kernel", "fn-spec", "fn-fallback"], "fn-hosted",

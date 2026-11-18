@@ -13,7 +13,10 @@ RUNS=${RUNS:-7}
 REPEAT=${REPEAT:-5}
 OUT=${OUT:-evidence/probes}
 SUITES=${SUITES:-"target_expressed gene_variants tissue_fanout variant_interactor"}
-MODES=${MODES:-"generic nested direct hosted-generic kernel fallback fn-generic fn-hosted fn-kernel fn-spec fn-fallback"}
+# m-generic / m-hosted-generic: build/cettapack-host-<site> bench, the docs/BENCHMARK.md method
+# (query atoms built inside the timed loop: generic parses the match text per query,
+# the callable modes parse only the seed), interleaved with the probe modes
+MODES=${MODES:-"generic nested direct hosted-generic kernel fallback fn-generic fn-hosted fn-kernel fn-spec fn-fallback m-generic m-hosted-generic"}
 mkdir -p "$OUT" build
 {
   echo "date: $(date -u +%FT%TZ)"
@@ -40,9 +43,16 @@ for site in $SUITES; do
   : > "$OUT/runs-$site.jsonl"
   for r in $(seq 1 "$RUNS"); do
     for mode in $MODES; do
-      cmd="build/cettapack-probe-$site bench --kb $kb --queries $q --mode $mode --repeat $REPEAT"
+      case $mode in
+        m-*) cmd="build/cettapack-host-$site bench --kb $kb --queries $q --mode ${mode#m-} --repeat $REPEAT" ;;
+        *) cmd="build/cettapack-probe-$site bench --kb $kb --queries $q --mode $mode --repeat $REPEAT" ;;
+      esac
       echo "[$site] $cmd" >> "$OUT/commands.txt"
-      $cmd | sed "s/^{/{\"run\":$r,/" | tee -a "$OUT/runs-$site.jsonl"
+      if [ "${mode#m-}" != "$mode" ]; then
+        $cmd | sed "s/^{\"mode\":\"/{\"run\":$r,\"site\":\"$site\",\"mode\":\"m-/" | tee -a "$OUT/runs-$site.jsonl"
+      else
+        $cmd | sed "s/^{/{\"run\":$r,/" | tee -a "$OUT/runs-$site.jsonl"
+      fi
     done
   done
   echo "load average at end of $site: $(cut -d' ' -f1-3 /proc/loadavg)" >> "$OUT/env.txt"
