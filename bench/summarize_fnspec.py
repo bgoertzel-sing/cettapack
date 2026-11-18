@@ -81,7 +81,8 @@ def main():
             if not same:
                 checks.append('{}: answers per batch differ between modes: {} {}'.format(s, ans, items))
             a0, i0 = ans['fn-spec'][0], items['fn-spec'][0]
-            anstxt = '{:,}'.format(a0) + (' ({:,} items)'.format(i0) if i0 != a0 else '') + ('' if same else ' DIFFER')
+            collapse = shape.startswith('collapse')
+            anstxt = '{:,}'.format(a0) + (' tuples, {:,} items'.format(i0) if collapse else '') + ('' if same else ' DIFFER')
             rss_s = statistics.median(r['peak_rss_kb'] for r in rows['fn-spec']) / 1024
             rss_h = statistics.median(r['peak_rss_kb'] for r in rows['fn-hosted']) / 1024
             fs, fb = rows['fn-spec'], rows['fn-fallback']
