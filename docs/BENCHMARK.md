@@ -47,6 +47,10 @@ Per-query time: median over the 7 processes, and the min-max range over them.
 - Kernel vs generic CeTTa, same pin: **1.24x** (paired 1.16x, 1.07-1.28x, faster in 7/7 runs).
 - Kernel vs generic CeTTa on M1's pin: 1.07x (paired 1.05x, 0.89-1.34x, 4/7 runs): a wash.
 - Generic CeTTa got slower with the pin move on this site: 46.2 vs 39.8 us (paired 0.92x, 1/7 runs faster).
+  Route check (docs/ROUTE_CHECK.md, 2026-11-17): both pins run this on CeTTa's native backend with native rows,
+  through the same matcher with identical per-query counters; 35 stats-off reruns put the new pin at 0-4%
+  slower (pooled paired median 1.03x), so the 14% gap of this session did not reproduce. No row here ran on a
+  PathMap-only route; no numbers are changed.
 - Kernel vs hosted-generic (CeTTa's matcher behind the same callable): 0.93x (paired 0.99x, 3/7).
 
 ### Site 2, gene_variants: `(, (target $rs $gene) (expressed $gene $tissue))`, seed $gene

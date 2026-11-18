@@ -1,0 +1,4 @@
+5ae97a09 mork bridge: bulk prefix lookup (mork_space_prefix_vals)
+6a18b56c embedding: in-process native borrowing for compiled kernels
+a9b3a811 Improve native PeTTa matching, iteration and memory use
+11be5c37 Merge opt into pre-main: typed fast paths and checked constructor builds

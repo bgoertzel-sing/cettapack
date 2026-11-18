@@ -1,0 +1,6 @@
+route-probe {"phase":"after-load","mode":"generic","backend":"native","backend_kind":0,"native_rows":55315,"native_dense":true,"dense_facts":73261,"strict":false,"imported_len":0,"pathmap_native_shadow_synced":null,"env_CETTA_PATHMAP_QUERY_INDEX":"","index_forced_without_rows":0}
+route-probe {"phase":"before-timed","mode":"generic","backend":"native","backend_kind":0,"native_rows":55315,"native_dense":true,"dense_facts":73261,"strict":false,"imported_len":0,"pathmap_native_shadow_synced":null,"env_CETTA_PATHMAP_QUERY_INDEX":"","index_forced_without_rows":0}
+route-probe stats-reset generic enabled=0 build_with_stats=0
+route-probe counter generic symbol-table-entries 32888
+route-probe counters-summary generic nonzero=1 of 1129 build_with_stats=0
+route-probe {"phase":"after-timed","mode":"generic","backend":"native","backend_kind":0,"native_rows":82177,"native_dense":true,"dense_facts":46399,"strict":false,"imported_len":0,"pathmap_native_shadow_synced":null,"env_CETTA_PATHMAP_QUERY_INDEX":"","index_forced_without_rows":0}
