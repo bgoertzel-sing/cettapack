@@ -36,6 +36,18 @@ build/cettapack-host-%: $(SRC) $(HDR) build/cetta.mk packs/%/manifest.json packs
 	@gcc $(CFLAGS_CPK) $(CPK_INC) $(CPK_DEFS) -DCPK_PACK_DIR='"$(CURDIR)/packs/$*"' \
 	    -DCPK_PLAN_SYM=cpk_plan_cpk_site_$* -o $@ $(SRC) packs/$*/kernel_plan.c $(LINK_OBJ) $(LINK_LD)
 
+# Next-step probes (docs/NEXT_STEP_PROBES.md): the same pack sources, cpk_probe.c as the host
+PROBE_SRC := src/cpk_probe.c src/cpk_pack.c src/cpk_kernel.c src/cpk_support.c
+PROBES := $(addprefix build/cettapack-probe-,$(SITES))
+
+build/cettapack-probe-%: $(PROBE_SRC) $(HDR) build/cetta.mk packs/%/manifest.json packs/%/kernel_plan.c
+	@test -n "$(C)" || (echo "run scripts/build_cetta.sh first" && false)
+	@echo "gcc ... -o $@ (probe host, site $*)"
+	@gcc $(CFLAGS_CPK) $(CPK_INC) $(CPK_DEFS) -DCPK_PACK_DIR='"$(CURDIR)/packs/$*"' \
+	    -DCPK_PLAN_SYM=cpk_plan_cpk_site_$* -o $@ $(PROBE_SRC) packs/$*/kernel_plan.c $(LINK_OBJ) $(LINK_LD)
+
+probes: $(PROBES)
+
 # M1's binary name, kept for the M1 commands below
 build/cettapack-host: build/cettapack-host-target_expressed
 	cp $< $@
@@ -75,4 +87,4 @@ bench: build/cettapack-host build/kb.metta
 clean:
 	rm -f build/cettapack-host
 
-.PHONY: all test bench clean difftest
+.PHONY: all test bench clean difftest probes
