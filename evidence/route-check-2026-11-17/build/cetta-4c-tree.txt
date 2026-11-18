@@ -1,0 +1,4 @@
+29f29cec embedding: in-process native borrowing for compiled kernels
+4c285a97   WIP: make pre-main shareable and preserve benchmark evidence
+2ca1c923 Merge branch 'cetta-shared-opt-audit-20260807' into pre-main-20261023
+11a83570 WIP :)

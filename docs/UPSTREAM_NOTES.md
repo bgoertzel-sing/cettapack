@@ -1,6 +1,8 @@
 # CeTTa feedback found during M1 (for the humans to file as issues)
 
 These are observations on zariuq/CeTTa `4c285a97`; no issue has been filed.
+On 2026-11-17 the build of `a9b3a811` still needed the same two host
+workarounds (`scripts/build_cetta.sh` unchanged).
 
 1. **DT_RELR probe accepts what the loader rejects (glibc < 2.36).**
    `Makefile:701` enables `-Wl,-z,pack-relative-relocs` when a link test

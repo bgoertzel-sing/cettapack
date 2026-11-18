@@ -32,7 +32,8 @@ Any guard failure runs the residual, generic CeTTa's own `match`.
 | Design note (Ben, 2026-07-06) | `docs/cetta-guarded-supercompilation-2026-07-06.pdf` |
 | How M1 maps to the note | `docs/DESIGN.md` |
 | Build | `docs/BUILD.md` |
-| Benchmark results | `docs/BENCHMARK.md`, raw logs in `evidence/bench/` |
+| Benchmark results | `docs/BENCHMARK.md`, raw logs in `evidence/bench/` (M1) and `evidence/bench-2026-11-17/` |
+| Sites (M1 + option B), key layout | `docs/SITES.md`, `packs/*/site.metta` |
 | Test output | `evidence/tests/` |
 
 ```bash

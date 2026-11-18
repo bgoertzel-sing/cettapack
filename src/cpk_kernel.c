@@ -93,6 +93,8 @@ struct CpkIndex {
     CettaIndex *rows;             /* source record positions in the borrowed space */
     bool schema_ok, pathmap_ok;
     bool direct_ok;               /* keys use MORK's inline symbol encoding: byte-prefix descent */
+    bool bulk;                    /* narrow with one bulk bridge call (upstream/cetta 0002), else per-byte cursor */
+    uint64_t nkeys;               /* PathMap keys: one per group and key layout */
     AtomId *ids;                  /* the space's record ids at instantiation (revision policy) */
     char note[256];
 };
@@ -239,6 +241,23 @@ static bool key_gid(const uint8_t *b, size_t n, uint64_t *gid) {
 
 /* every stored key must decode to an in-range group id */
 static bool direct_selfcheck(CpkIndex *ix) {
+    if (ix->bulk) {
+        /* the whole trie in one bulk call: every key decodes */
+        uint8_t *packet = NULL; size_t plen = 0; uint64_t rows = 0;
+        if (!cetta_mork_bridge_space_prefix_vals(ix->pm, NULL, 0, 0, &packet, &plen, &rows)) return false;
+        size_t off = 0; uint64_t seen = 0; bool ok = true;
+        while (ok && off < plen) {
+            if (off + 4 > plen) { ok = false; break; }
+            uint32_t n = ((uint32_t)packet[off] << 24) | ((uint32_t)packet[off + 1] << 16) |
+                         ((uint32_t)packet[off + 2] << 8) | (uint32_t)packet[off + 3];
+            off += 4;
+            uint64_t g = 0;
+            ok = off + n <= plen && key_gid(packet + off, n, &g) && g < ix->ngroups;
+            off += n; seen++;
+        }
+        if (packet) cetta_mork_bridge_bytes_free(packet, plen);
+        return ok && seen == rows && seen == ix->nkeys;
+    }
     CettaMorkCursorHandle *c = cetta_mork_bridge_cursor_new(ix->pm);
     if (!c) return false;
     bool moved = true, ok = true;
@@ -250,7 +269,31 @@ static bool direct_selfcheck(CpkIndex *ix) {
         seen++;
     }
     cetta_mork_bridge_cursor_free(c);
-    return ok && seen == ix->ngroups;
+    return ok && seen == ix->nkeys;
+}
+
+/* Key layouts: factors with the same key head and order share their keys. */
+static bool same_layout(const CpkFactor *a, const CpkFactor *b) {
+    if (a->arity != b->arity || strcmp(a->key_head, b->key_head)) return false;
+    for (uint8_t i = 0; i < a->arity; i++) if (a->key_order[i] != b->key_order[i]) return false;
+    return true;
+}
+
+static bool layout_owner(const CpkPlan *plan, uint8_t f) {
+    for (uint8_t g = 0; g < f; g++) if (same_layout(&plan->factors[g], &plan->factors[f])) return false;
+    return true;
+}
+
+/* one key line: ((<key_head> <fields in key order>) <gid>) */
+static bool put_key(Buf *text, Arena *scratch, const CpkFactor *f, Atom *a, uint64_t g) {
+    bool ok = buf_puts(text, "((") && buf_puts(text, f->key_head);
+    for (uint8_t j = 1; ok && j < f->arity; j++) {
+        char *s = atom_to_parseable_string(scratch, a->expr.elems[f->key_order[j]]);
+        ok = s && buf_puts(text, " ") && buf_puts(text, s);
+    }
+    char tail[32];
+    snprintf(tail, sizeof tail, ") %" PRIu64 ")\n", g);
+    return ok && buf_puts(text, tail);
 }
 
 CpkIndex *cpk_index_build(const CpkPlan *plan, Space *space, Arena *scratch,
@@ -262,6 +305,10 @@ CpkIndex *cpk_index_build(const CpkPlan *plan, Space *space, Arena *scratch,
     ix->revision = space_revision(space);
     ix->length = space_length64(space);
     ix->schema_ok = true;
+    {
+        const char *mode = getenv("CPK_NARROW");
+        ix->bulk = !(mode && !strcmp(mode, "cursor"));
+    }
     snprintf(ix->note, sizeof ix->note, "ok");
 
     SymbolId heads[CPK_MAX_FACTORS];
@@ -301,9 +348,15 @@ CpkIndex *cpk_index_build(const CpkPlan *plan, Space *space, Arena *scratch,
         if (!strmap_get_or_put(&groups, s, ix->ngroups, &g, &inserted)) { ok = false; break; }
         if (inserted) {
             ix->ngroups++;
-            char tail[32];
-            snprintf(tail, sizeof tail, " %" PRIu64 ")\n", g);
-            ok = buf_puts(&text, "(") && buf_puts(&text, s) && buf_puts(&text, tail);
+            /* one key per key layout of the factors this record can serve */
+            for (uint8_t f = 0; ok && f < plan->nfactors; f++) {
+                const CpkFactor *fa = &plan->factors[f];
+                if (a->expr.elems[0]->sym_id != heads[f] || fa->arity != a->expr.len) continue;
+                if (!layout_owner(plan, f)) continue;
+                if (direct && !plain_symbol_text(fa->key_head)) direct = false;
+                ok = put_key(&text, scratch, fa, a, g);
+                ix->nkeys++;
+            }
         }
         gid_of_row[i] = g;
         ix->nrows++;
@@ -455,6 +508,35 @@ static bool narrow_direct(const CpkIndex *ix, CettaMorkCursorHandle *c,
     return ok;
 }
 
+/* Bulk narrowing (upstream/cetta 0002): one bridge call returns every key
+ * below the prefix; each key's suffix ends with its group id. */
+static bool narrow_bulk(const CpkIndex *ix, const uint8_t *prefix, size_t plen,
+                        U64Vec *out, CpkStats *st) {
+    uint64_t t0 = cpk_now_ns();
+    uint8_t *packet = NULL; size_t n = 0; uint64_t rows = 0;
+    bool ok = cetta_mork_bridge_space_prefix_vals(ix->pm, prefix, plen, 0, &packet, &n, &rows);
+    uint8_t key[1024];
+    size_t off = 0; uint64_t seen = 0;
+    while (ok && off < n) {
+        if (off + 4 > n) { ok = false; break; }
+        uint32_t sl = ((uint32_t)packet[off] << 24) | ((uint32_t)packet[off + 1] << 16) |
+                      ((uint32_t)packet[off + 2] << 8) | (uint32_t)packet[off + 3];
+        off += 4;
+        uint64_t g = 0;
+        ok = off + sl <= n && plen + sl <= sizeof key;
+        if (!ok) break;
+        memcpy(key, prefix, plen);
+        memcpy(key + plen, packet + off, sl);
+        ok = key_gid(key, plen + sl, &g) && g < ix->ngroups && u64_push(out, g);
+        off += sl; seen++;
+    }
+    if (ok && seen != rows) ok = false;
+    if (packet) cetta_mork_bridge_bytes_free(packet, n);
+    st->narrow_ns += cpk_now_ns() - t0;
+    st->narrow_queries++;
+    return ok;
+}
+
 /* ---------------------------------------------------------------------- */
 /* the join                                                                */
 
@@ -508,12 +590,12 @@ static int join(JoinCtx *jc, uint8_t k, Bindings *env, uint64_t mult) {
      * descends on them; unbound slots stay variables. Bindings read here are
      * used only to shape the query: answers come from rematch below. */
     Buf q = {0};
-    bool ok = buf_puts(&q, "((");
+    bool ok = buf_puts(&q, "((") && buf_puts(&q, f->key_head);
     bool named[CPK_MAX_SLOTS] = {0};
     uint8_t nvars = 0;
-    for (uint8_t i = 0; ok && i < f->arity; i++) {
-        const CpkField *fd = &f->fields[i];
-        if (i) ok = buf_puts(&q, " ");
+    for (uint8_t j = 1; ok && j < f->arity; j++) {
+        const CpkField *fd = &f->fields[f->key_order[j]];
+        ok = buf_puts(&q, " ");
         if (!ok) break;
         if (fd->kind == CPK_FIELD_CONST) { ok = buf_puts(&q, fd->text); continue; }
         if (jc->bound[k][fd->slot]) {
@@ -533,12 +615,13 @@ static int join(JoinCtx *jc, uint8_t k, Bindings *env, uint64_t mult) {
     /* direct trie descent when the key prefix can be written byte for byte */
     uint8_t prefix[512];
     size_t plen = 0;
-    bool direct = ok && jc->cursor != NULL;
+    bool direct = ok && c->index->direct_ok;
     if (direct) {
         prefix[plen++] = 0x02;
         prefix[plen++] = f->arity;
-        for (uint8_t i = 0; direct && i < f->arity; i++) {
-            const CpkField *fd = &f->fields[i];
+        direct = put_sym(prefix, sizeof prefix, &plen, f->key_head);
+        for (uint8_t j = 1; direct && j < f->arity; j++) {
+            const CpkField *fd = &f->fields[f->key_order[j]];
             if (fd->kind == CPK_FIELD_CONST) { direct = put_sym(prefix, sizeof prefix, &plen, fd->text); continue; }
             if (!jc->bound[k][fd->slot]) break;
             Atom *v = bindings_apply(env, c->scratch, c->slot_vars[fd->slot]);
@@ -546,7 +629,8 @@ static int join(JoinCtx *jc, uint8_t k, Bindings *env, uint64_t mult) {
                      put_sym(prefix, sizeof prefix, &plen, atom_to_parseable_string(c->scratch, v));
         }
     }
-    if (direct) ok = narrow_direct(c->index, jc->cursor, prefix, plen, &cands, c->stats);
+    if (direct && c->index->bulk) ok = narrow_bulk(c->index, prefix, plen, &cands, c->stats);
+    else if (direct && jc->cursor) ok = narrow_direct(c->index, jc->cursor, prefix, plen, &cands, c->stats);
     else if (ok) ok = narrow(c->index, q.buf, nvars, &cands, c->stats);
     free(q.buf);
     if (!ok) { free(cands.items); return -1; }
@@ -600,7 +684,10 @@ int cpk_kernel_run(const CpkKernelCall *c) {
                 jc.bound[k + 1][p->factors[k].fields[i].slot] = true;
     }
     if (c->demand == CPK_DEMAND_SUPPORT && !strmap_init(&jc.seen, 64)) return -1;
-    if (c->index->direct_ok) jc.cursor = cetta_mork_bridge_cursor_new(c->index->pm);
+    if (c->index->direct_ok && !c->index->bulk) {
+        jc.cursor = cetta_mork_bridge_cursor_new(c->index->pm);
+        if (!jc.cursor) { if (c->demand == CPK_DEMAND_SUPPORT) strmap_free(&jc.seen); return -1; }
+    }
 
     Bindings env;
     bindings_init(&env);

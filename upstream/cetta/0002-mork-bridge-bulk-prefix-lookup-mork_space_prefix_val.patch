@@ -1,0 +1,210 @@
+From 5ae97a094c7b567aa5ecdd7a3ddb37954875148c Mon Sep 17 00:00:00 2001
+From: "ProtoCosmo (cettapack)" <protocosmo@users.noreply.github.com>
+Date: Tue, 17 Nov 2026 15:19:31 -0700
+Subject: [PATCH] mork bridge: bulk prefix lookup (mork_space_prefix_vals)
+
+One bridge call that descends a PathMap prefix once and returns every key
+at or below it, instead of one FFI call per key byte and per value. Used by
+cettapack's compiled match kernels to narrow candidates.
+---
+ rust/cetta-space-bridge/src/lib.rs | 70 ++++++++++++++++++++++++++++++
+ src/mork_space_bridge_runtime.c    | 50 +++++++++++++++++++++
+ src/mork_space_bridge_runtime.h    | 12 +++++
+ 3 files changed, 132 insertions(+)
+
+diff --git a/rust/cetta-space-bridge/src/lib.rs b/rust/cetta-space-bridge/src/lib.rs
+index 1cf9181f..dca49811 100644
+--- a/rust/cetta-space-bridge/src/lib.rs
++++ b/rust/cetta-space-bridge/src/lib.rs
+@@ -5538,6 +5538,76 @@ pub extern "C" fn mork_cursor_next_expr_rows(
+     })
+ }
+ 
++/// Bulk prefix lookup: descends the space's trie to `prefix` once and returns
++/// every stored key at or below it in one packet, so a caller does not pay one
++/// FFI round trip per key byte and per value (each per-byte cursor call
++/// re-descends from the root).
++///
++/// Packet: for each key, in trie order, a big-endian u32 length followed by
++/// the key bytes after `prefix` (empty when `prefix` itself is a key).
++/// The buffer count is the number of keys. A prefix with no keys below it
++/// yields an empty packet and count 0. Keys are trie paths, independent of the
++/// space's storage mode; the space is only read.
++///
++/// `max_rows` bounds the answer (0 = no bound): when more keys exist the call
++/// fails with `MorkStatusCode::Parse`, so a caller never mistakes a truncated set
++/// for a complete one.
++#[unsafe(no_mangle)]
++pub extern "C" fn mork_space_prefix_vals(
++    space: *const MorkSpace,
++    prefix: *const u8,
++    prefix_len: usize,
++    max_rows: u64,
++) -> MorkBuffer {
++    with_catch_buffer(|| unsafe {
++        let bridge = match bridge_space_ref(space) {
++            Ok(space) => space,
++            Err(err) => {
++                return MorkBuffer::err(
++                    MorkStatusCode::Null,
++                    if err.message.is_null() {
++                        b"null MorkSpace".to_vec()
++                    } else {
++                        Vec::from_raw_parts(err.message, err.message_len, err.message_len)
++                    },
++                );
++            }
++        };
++        if prefix.is_null() && prefix_len != 0 {
++            return MorkBuffer::err(MorkStatusCode::Null, b"null prefix".to_vec());
++        }
++        let prefix: &[u8] = if prefix_len == 0 {
++            &[]
++        } else {
++            std::slice::from_raw_parts(prefix, prefix_len)
++        };
++        let mut packet = Vec::new();
++        let mut rows = 0u64;
++        let mut rz = bridge.inner.btm.read_zipper_at_path(prefix);
++        if !rz.path_exists() {
++            return MorkBuffer::ok(packet, 0);
++        }
++        let over = || MorkBuffer::err(MorkStatusCode::Parse, b"prefix_vals: more than max_rows keys".to_vec());
++        if rz.is_val() {
++            if max_rows != 0 && rows >= max_rows {
++                return over();
++            }
++            packet.extend_from_slice(&0u32.to_be_bytes());
++            rows += 1;
++        }
++        while rz.to_next_val() {
++            if max_rows != 0 && rows >= max_rows {
++                return over();
++            }
++            let suffix = rz.path();
++            packet.extend_from_slice(&(suffix.len() as u32).to_be_bytes());
++            packet.extend_from_slice(suffix);
++            rows += 1;
++        }
++        MorkBuffer::ok(packet, rows)
++    })
++}
++
+ #[unsafe(no_mangle)]
+ pub extern "C" fn mork_cursor_fork(cursor: *const MorkCursor) -> *mut MorkCursor {
+     with_catch(|| unsafe {
+diff --git a/src/mork_space_bridge_runtime.c b/src/mork_space_bridge_runtime.c
+index a4d1dcd6..af295d1d 100644
+--- a/src/mork_space_bridge_runtime.c
++++ b/src/mork_space_bridge_runtime.c
+@@ -230,6 +230,10 @@ extern CettaMorkStatus mork_cursor_next_val(CettaMorkCursorHandle *cursor);
+ extern CettaMorkBuffer mork_cursor_next_expr_rows(CettaMorkCursorHandle *cursor,
+                                                   uint64_t max_rows,
+                                                   uint64_t max_bytes);
++extern CettaMorkBuffer mork_space_prefix_vals(const CettaMorkSpaceHandle *space,
++                                              const uint8_t *prefix,
++                                              size_t prefix_len,
++                                              uint64_t max_rows);
+ extern CettaMorkCursorHandle *mork_cursor_fork(const CettaMorkCursorHandle *cursor);
+ extern CettaMorkSpaceHandle *mork_cursor_make_map(const CettaMorkCursorHandle *cursor);
+ extern CettaMorkSpaceHandle *mork_cursor_make_snapshot_map(const CettaMorkCursorHandle *cursor);
+@@ -1260,6 +1264,23 @@ bool cetta_mork_bridge_cursor_next_expr_rows(CettaMorkCursorHandle *cursor,
+                               bridge_free_bytes);
+ }
+ 
++bool cetta_mork_bridge_space_prefix_vals(const CettaMorkSpaceHandle *space,
++                                         const uint8_t *prefix,
++                                         size_t prefix_len,
++                                         uint64_t max_rows,
++                                         uint8_t **out_packet,
++                                         size_t *out_len,
++                                         uint64_t *out_rows) {
++    if (!space || (!prefix && prefix_len)) {
++        bridge_set_error("cannot read prefix values from null MORK space or prefix");
++        return false;
++    }
++    return bridge_take_buffer("mork_space_prefix_vals failed: ",
++                              mork_space_prefix_vals(space, prefix, prefix_len, max_rows),
++                              out_packet, out_len, out_rows,
++                              bridge_free_bytes);
++}
++
+ CettaMorkCursorHandle *cetta_mork_bridge_cursor_fork(
+     const CettaMorkCursorHandle *cursor) {
+     CettaMorkCursorHandle *forked;
+@@ -2375,6 +2396,10 @@ typedef struct CettaMorkBridgeApi {
+     CettaMorkBuffer (*cursor_next_expr_rows)(CettaMorkCursorHandle *cursor,
+                                              uint64_t max_rows,
+                                              uint64_t max_bytes);
++    CettaMorkBuffer (*space_prefix_vals)(const CettaMorkSpaceHandle *space,
++                                         const uint8_t *prefix,
++                                         size_t prefix_len,
++                                         uint64_t max_rows);
+     CettaMorkCursorHandle *(*cursor_fork)(const CettaMorkCursorHandle *cursor);
+     CettaMorkSpaceHandle *(*cursor_make_map)(const CettaMorkCursorHandle *cursor);
+     CettaMorkSpaceHandle *(*cursor_make_snapshot_map)(const CettaMorkCursorHandle *cursor);
+@@ -2812,6 +2837,9 @@ static bool bridge_load_api(void) {
+     bridge_resolve_symbol_optional(
+         (void **)&g_mork_bridge_api.cursor_next_expr_rows,
+         "mork_cursor_next_expr_rows");
++    bridge_resolve_symbol_optional(
++        (void **)&g_mork_bridge_api.space_prefix_vals,
++        "mork_space_prefix_vals");
+     bridge_resolve_symbol_optional(
+         (void **)&g_mork_bridge_api.cursor_fork,
+         "mork_cursor_fork");
+@@ -4021,6 +4049,28 @@ bool cetta_mork_bridge_cursor_next_expr_rows(CettaMorkCursorHandle *cursor,
+                               bridge_free_bytes);
+ }
+ 
++bool cetta_mork_bridge_space_prefix_vals(const CettaMorkSpaceHandle *space,
++                                         const uint8_t *prefix,
++                                         size_t prefix_len,
++                                         uint64_t max_rows,
++                                         uint8_t **out_packet,
++                                         size_t *out_len,
++                                         uint64_t *out_rows) {
++    if (!space || (!prefix && prefix_len) || !bridge_load_api()) {
++        bridge_set_error("cannot read prefix values from null or unavailable MORK space");
++        return false;
++    }
++    if (!g_mork_bridge_api.space_prefix_vals) {
++        bridge_set_error("mork_space_prefix_vals is unavailable in the loaded MORK bridge");
++        return false;
++    }
++    return bridge_take_buffer("mork_space_prefix_vals failed: ",
++                              g_mork_bridge_api.space_prefix_vals(
++                                  space, prefix, prefix_len, max_rows),
++                              out_packet, out_len, out_rows,
++                              bridge_free_bytes);
++}
++
+ CettaMorkCursorHandle *cetta_mork_bridge_cursor_fork(
+     const CettaMorkCursorHandle *cursor) {
+     CettaMorkCursorHandle *forked;
+diff --git a/src/mork_space_bridge_runtime.h b/src/mork_space_bridge_runtime.h
+index 7546a28f..112c4241 100644
+--- a/src/mork_space_bridge_runtime.h
++++ b/src/mork_space_bridge_runtime.h
+@@ -266,6 +266,18 @@ bool cetta_mork_bridge_cursor_next_expr_rows(CettaMorkCursorHandle *cursor,
+                                              uint8_t **out_packet,
+                                              size_t *out_len,
+                                              uint64_t *out_rows);
++/* Bulk prefix lookup (one bridge call): every key of space at or below
++ * prefix, as a packet of (big-endian u32 length, key bytes after prefix)
++ * records in trie order; *out_rows is the key count. max_rows bounds the
++ * answer (0 = none): more keys than that is an error, never a truncation.
++ * Free the packet with cetta_mork_bridge_bytes_free. */
++bool cetta_mork_bridge_space_prefix_vals(const CettaMorkSpaceHandle *space,
++                                         const uint8_t *prefix,
++                                         size_t prefix_len,
++                                         uint64_t max_rows,
++                                         uint8_t **out_packet,
++                                         size_t *out_len,
++                                         uint64_t *out_rows);
+ CettaMorkCursorHandle *cetta_mork_bridge_cursor_fork(
+     const CettaMorkCursorHandle *cursor);
+ CettaMorkSpaceHandle *cetta_mork_bridge_cursor_make_map(
+-- 
+2.34.1
+

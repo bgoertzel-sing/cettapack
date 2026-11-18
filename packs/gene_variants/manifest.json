@@ -1,0 +1,128 @@
+{
+  "artifact_kind": "cettapack",
+  "manifest_version": "0.2",
+  "identity": {
+    "source_span_hash": "cd232e8b87c7d3c022c5a7632b08c2da8effb74b0580383e46322166336c7b9f",
+    "normalized_region_hash": "a71ab5aa8d6f041346c84e9a2ce9e686a25abd9d2901f88d1ec4312ec3be1665",
+    "meta_expanded_region_hash": "3c70f02a255a61f8352465a67df9f017906f7328d731dc4cefd1ad51ca51750d",
+    "match_pattern_hash": "493bfbc400571d00cfc001ee6f12ede9fb06dbc97d2dbf186ab4d9729cbee17d",
+    "langdef_pack_digest": "a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1",
+    "profile_digest": "e2af5b5e375ac2d350ae48e26b16b619773bffe2de9b44902c239500cb09d0e7",
+    "operator_schema_hashes": [
+      "d245d662fb4fbceb9a7ec83f0406595939993b49cc47efea579850761dcd1b91",
+      "d5bd83e203481d2b852017d595ea7eb21326d131ad50e46b2cefb1c95987fd59"
+    ],
+    "effect_policy_digest": "45f91ef6bbb149c7b9855688abf9cf085d05de60b849f5662a4b07c494638672",
+    "exactness_signature": "exact"
+  },
+  "effects": {
+    "classes": [
+      "Read(space:evidence, scope:snapshot)"
+    ],
+    "isolation": "SnapshotIsolated"
+  },
+  "spaces": [
+    {
+      "role": "evidence",
+      "space_id": "input:0",
+      "schema_hash": "2f8d0e0cbde5a7c5b7cf0b67214b9969ac923391303aaca0ea738e3e21cb3a2e",
+      "revision_policy": "append_only_epoch",
+      "revision_or_epoch": "captured at instantiation (space revision and length)",
+      "stats_signature": "not computed in M1 (REPLAN is a stub)",
+      "multiplicity_source": "space_records",
+      "pathmap_coverage_hash": "be7c50aa930046ec911a33b5c1b7cbc69a0e2639fb3a68e96d96776828c712c6"
+    }
+  ],
+  "guards": {
+    "fast_path": "dependency_vector_equal",
+    "patch_path": "append_only_delta_under_budget (M1 stub: PATCHABLE falls back)",
+    "replan_path": "stats_drift_over_threshold (M1 stub: never raised)",
+    "invalid_path": "fallback_to_cetta"
+  },
+  "artifacts": {
+    "native_so_hash": null,
+    "native_plan_hash": "f53e998f579a6edc4356009f1e5157d89cd20817b0cfeed61d582abaf93cdd5c",
+    "pathmap_artifact_hashes": [],
+    "mm2_fragment_hashes": [],
+    "residual_metta_hash": "8702e50d0b8d4fbf3f44e168ee87ebdd82b99917ff634fa8700e1a8c72574984",
+    "transform_cert_hash": null
+  },
+  "amortization": {
+    "compile_cost_estimate_ms": 0,
+    "expected_calls": 0,
+    "expected_validity_window_ms": 0,
+    "max_patch_cost_ms": 0,
+    "max_stats_drift": 0.0,
+    "max_append_delta_atoms": 4096
+  },
+  "x_cettapack": {
+    "site": {
+      "name": "cpk-site-gene_variants",
+      "source": "packs/gene_variants/site.metta",
+      "params": [
+        "$space",
+        "$gene"
+      ],
+      "space_param": "$space"
+    },
+    "profile_components": {
+      "method": "cpk-profile-v1",
+      "cetta": "a9b3a81186529fd99649e437809bdb6f58fce2fd",
+      "patches": "1a678fd13091e05e1c727ad7c18297e1a5f1f0857a732b06c520e550d8e3c463",
+      "build": "mork",
+      "language": "he"
+    },
+    "langdef_tree": "he",
+    "template_hash": "d4349816076071a986fe12fa11806ce1862a0ca9b88c06b61d3b5499eab253aa",
+    "region_canonical": "(= (cpk-site-gene_variants $_0 $_1) (match $_0 (, (target $_2 $_1) (expressed $_1 $_3)) ($_2 $_3)))",
+    "meta_expansion": "identity: the region holds no macros or meta-rules; the hash is recomputed from CeTTa's parse at load",
+    "relations": [
+      {
+        "head": "target",
+        "arity": 3,
+        "fields": [
+          "sym",
+          "sym"
+        ]
+      },
+      {
+        "head": "expressed",
+        "arity": 3,
+        "fields": [
+          "sym",
+          "sym"
+        ]
+      }
+    ],
+    "kernel": {
+      "plan_symbol": "cpk_plan_cpk_site_gene_variants",
+      "plan_file": "packs/gene_variants/kernel_plan.c",
+      "runtime": "src/cpk_kernel.c",
+      "join_order": [
+        0,
+        1
+      ],
+      "key_orders": [
+        [
+          0,
+          2,
+          1
+        ],
+        [
+          0,
+          1,
+          2
+        ]
+      ],
+      "backend_schema": "pathmap-candidate-native-rematch-v1"
+    },
+    "demand": {
+      "default": "bag",
+      "supported": [
+        "bag",
+        "support"
+      ]
+    },
+    "certificate": "packs/gene_variants/certificate.metta"
+  }
+}

@@ -1,0 +1,4 @@
+CPK_ROUTE_PROBE=1 build/rc/probe-4c-stats1/cettapack-host-target_expressed bench --kb build/rc/inputs/kb-main.metta --queries build/rc/inputs/queries-main.txt --mode generic --repeat 5
+CPK_ROUTE_PROBE=1 build/rc/probe-4c-stats1/cettapack-host-target_expressed bench --kb build/rc/inputs/kb-main.metta --queries build/rc/inputs/queries-main.txt --mode hosted-generic --repeat 5
+CPK_ROUTE_PROBE=1 build/rc/probe-4c-stats1/cettapack-host-target_expressed bench --kb build/rc/inputs/kb-main.metta --queries build/rc/inputs/queries-main.txt --mode kernel --repeat 5
+CPK_ROUTE_PROBE=1 build/rc/probe-4c-stats1/cettapack-host-target_expressed bench --kb build/rc/inputs/kb-main.metta --queries build/rc/inputs/queries-main.txt --mode fallback --repeat 5

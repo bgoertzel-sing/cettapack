@@ -33,6 +33,9 @@ def main(argv=None):
     ap.add_argument("--dup-rate", type=float, default=0.06,
                     help="probability that a fact gets extra copies")
     ap.add_argument("--queries", type=int, default=200)
+    ap.add_argument("--query-kind", choices=("rs", "gene", "tissue"), default="rs",
+                    help="seed kind: variants (M1 site), genes or tissues (option-B sites); "
+                         "the KB bytes do not depend on it")
     ap.add_argument("--out", required=True)
     ap.add_argument("--queries-out", required=True)
     a = ap.parse_args(argv)
@@ -64,8 +67,14 @@ def main(argv=None):
         fh.write(data)
 
     # Query seeds: mostly present variants, 5% absent ones (the no-result path).
-    qs = [f"rs{rng.randrange(a.snps)}" for _ in range(a.queries - a.queries // 20)]
-    qs += [f"rs{a.snps + i}" for i in range(a.queries // 20)]
+    if a.query_kind == "rs":
+        prefix, n = "rs", a.snps
+    elif a.query_kind == "gene":
+        prefix, n = "gene", a.genes
+    else:
+        prefix, n = "tissue", a.tissues
+    qs = [f"{prefix}{rng.randrange(n)}" for _ in range(a.queries - a.queries // 20)]
+    qs += [f"{prefix}{n + i}" for i in range(a.queries // 20)]
     rng.shuffle(qs)
     qdata = "".join(q + "\n" for q in qs).encode()
     with open(a.queries_out, "wb") as fh:

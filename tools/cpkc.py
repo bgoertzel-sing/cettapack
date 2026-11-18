@@ -184,10 +184,36 @@ def compile_site(src_path):
         left.remove(best)
         bound |= {x for x in factors[best] if is_var(x)}
 
+    # narrowing key layout per factor (in join order): the head, then the
+    # fields that are ground when the factor is reached (constants, slots bound
+    # by the inputs or by earlier factors) in source order, then the rest. The
+    # trie then descends on every ground field, wherever it sits in the record.
+    bound = {p for p in params if p != space_var}
+    key_orders = []
+    for ci in order:
+        f = factors[ci]
+        ground = [i for i in range(1, len(f)) if not is_var(f[i]) or f[i] in bound]
+        free = [i for i in range(1, len(f)) if i not in ground]
+        key_orders.append([0] + ground + free)
+        bound |= {x for x in f if is_var(x)}
+
+    # generic CeTTa form for the host: (_ <conj> <template>), input as %s
+    inputs = [p for p in params if p != space_var]
+    if len(inputs) != 1:
+        raise SystemExit("the test/benchmark host supports sites with one non-space input")
+
+    def show(a):
+        if isinstance(a, list):
+            return "(" + " ".join(show(x) for x in a) + ")"
+        if a == inputs[0]:
+            return "%1$s"   # positional: the input may occur more than once
+        return a.replace("%", "%%")
+    generic_fmt = "(_ " + show(conj) + " " + show(template) + ")"
+
     return {
         "region": region, "site": site, "params": params, "space_var": space_var,
         "conj": conj, "template": template, "factors": factors, "slots": slots,
-        "slot": slot, "order": order,
+        "slot": slot, "order": order, "key_orders": key_orders, "generic_fmt": generic_fmt,
     }
 
 
@@ -208,7 +234,7 @@ def emit_plan_c(c, src_rel):
         f"    .nfactors = {len(c['factors'])},",
         "    .factors = {",
     ]
-    for ci in c["order"]:
+    for k, ci in enumerate(c["order"]):
         f = c["factors"][ci]
         fields = []
         for x in f:
@@ -216,13 +242,17 @@ def emit_plan_c(c, src_rel):
                 fields.append(f"{{CPK_FIELD_SLOT, {c['slot'][x]}, 0}}")
             else:
                 fields.append(f"{{CPK_FIELD_CONST, 0, {c_str(x)}}}")
-        lines.append(f"        {{ .conj_index = {ci}, .arity = {len(f)}, .fields = {{{', '.join(fields)}}} }},")
+        ko = c["key_orders"][k]
+        head = f[0] if ko == list(range(len(f))) else f"cpk{k}_{f[0]}"
+        lines.append(f"        {{ .conj_index = {ci}, .arity = {len(f)}, .fields = {{{', '.join(fields)}}},")
+        lines.append(f"          .key_order = {{{', '.join(str(i) for i in ko)}}}, .key_head = {c_str(head)} }},")
     lines.append("    },")
     lines.append(f"    .space_input = {c['params'].index(c['space_var'])},")
     lines.append(f"    .ninputs = {len(c['params'])},")
     ins = [(-1 if p == c["space_var"] else c["slot"][p]) for p in c["params"]]
     lines.append("    .input_slot = {" + ", ".join(str(x) for x in ins) + "},")
     lines.append(f"    .region_text = {c_str(canon(c['region'], {}))},")
+    lines.append(f"    .generic_fmt = {c_str(c['generic_fmt'])},")
     lines.append("};")
     return "\n".join(lines) + "\n", ident
 
@@ -319,7 +349,7 @@ def main(argv=None):
             "meta_expansion": "identity: the region holds no macros or meta-rules; the hash is recomputed from CeTTa's parse at load",
             "relations": [{"head": f[0], "arity": len(f), "fields": ["sym"] * (len(f) - 1)} for f in factors_conj],
             "kernel": {"plan_symbol": f"cpk_plan_{ident}", "plan_file": os.path.relpath(os.path.join(a.out_dir, "kernel_plan.c"), ROOT),
-                       "runtime": "src/cpk_kernel.c", "join_order": c["order"],
+                       "runtime": "src/cpk_kernel.c", "join_order": c["order"], "key_orders": c["key_orders"],
                        "backend_schema": "pathmap-candidate-native-rematch-v1"},
             "demand": {"default": "bag", "supported": ["bag", "support"]},
             "certificate": os.path.relpath(os.path.join(a.out_dir, "certificate.metta"), ROOT),

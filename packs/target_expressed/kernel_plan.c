@@ -7,11 +7,14 @@ const CpkPlan cpk_plan_cpk_site_target_expressed = {
     .slot_names = {"$space", "$rs", "$gene", "$tissue"},
     .nfactors = 2,
     .factors = {
-        { .conj_index = 0, .arity = 3, .fields = {{CPK_FIELD_CONST, 0, "target"}, {CPK_FIELD_SLOT, 1, 0}, {CPK_FIELD_SLOT, 2, 0}} },
-        { .conj_index = 1, .arity = 3, .fields = {{CPK_FIELD_CONST, 0, "expressed"}, {CPK_FIELD_SLOT, 2, 0}, {CPK_FIELD_SLOT, 3, 0}} },
+        { .conj_index = 0, .arity = 3, .fields = {{CPK_FIELD_CONST, 0, "target"}, {CPK_FIELD_SLOT, 1, 0}, {CPK_FIELD_SLOT, 2, 0}},
+          .key_order = {0, 1, 2}, .key_head = "target" },
+        { .conj_index = 1, .arity = 3, .fields = {{CPK_FIELD_CONST, 0, "expressed"}, {CPK_FIELD_SLOT, 2, 0}, {CPK_FIELD_SLOT, 3, 0}},
+          .key_order = {0, 1, 2}, .key_head = "expressed" },
     },
     .space_input = 0,
     .ninputs = 2,
     .input_slot = {-1, 1},
     .region_text = "(= (cpk-site-target-expressed $_0 $_1) (match $_0 (, (target $_1 $_2) (expressed $_2 $_3)) ($_2 $_3)))",
+    .generic_fmt = "(_ (, (target %1$s $gene) (expressed $gene $tissue)) ($gene $tissue))",
 };
