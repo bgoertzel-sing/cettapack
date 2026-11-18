@@ -17,6 +17,7 @@ Patches applied to the scratch copy of CeTTa, in order:
 |---|---|---|
 | `upstream/cetta/0001-embedding-in-process-native-borrowing-for-compiled-k.patch` | CeTTa `a9b3a811` (rebased from `4c285a97`; only the `#include` context in `src/embedding.c` changed) | three accessors (`include/cetta_embed_native.h`) so a callback can borrow the runtime Atom/Space behind embedding handles and return an engine-owned copy; see `upstream/cetta/PR_DESCRIPTION.md` |
 | `upstream/cetta/0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch` | CeTTa `a9b3a811` (+0001, independent of it) | `mork_space_prefix_vals` / `cetta_mork_bridge_space_prefix_vals`: every PathMap key below a prefix in one bridge call; see `upstream/cetta/PR_DESCRIPTION-0002.md` |
+| `upstream/cetta/0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch` | CeTTa `a9b3a811` (+0001, +0002; independent of both) | `(match-rows <space> <pattern> <row>)`: CeTTa's conjunction matcher, rows returned as data; probe 1 of docs/NEXT_STEP_PROBES.md; see `upstream/cetta/PR_DESCRIPTION-0003.md` |
 
 The patch series digest is part of every pack's profile digest
 (`tools/cpkc.py --print-profile-components`), so a pack compiled against one

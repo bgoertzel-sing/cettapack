@@ -1,5 +1,10 @@
 # Benchmark (§17)
 
+> Note (2026-11-18, docs/NEXT_STEP_PROBES.md): with every query atom built before the timed loop, generic CeTTa
+> and hosted-generic are within noise on M1's site (31.1 vs 29.4 us). About 12 us of the generic times below on that
+> site is the host parsing the whole match text per query, which the callable modes do not do; the hosted-generic
+> gain on the larger sites stands. Kernel vs hosted-generic is not affected. Numbers below are unchanged.
+
 ## After M1 (2026-11-17): CeTTa a9b3a811, bulk lookup, option-B sites
 
 Task t-2026-11-17-cettapack-m1-numbers. Run:
