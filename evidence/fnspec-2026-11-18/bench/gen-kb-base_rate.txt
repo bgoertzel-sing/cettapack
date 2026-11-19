@@ -1,0 +1,1 @@
+base_rate: 105107 atoms, sha256 65c6bee1a2ee8d192400c83b15fef48b71e1f871cb4439c1508dd542c2ee4d42; 200 queries

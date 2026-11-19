@@ -1,0 +1,70 @@
+From 72f79d03614e202abd8b408a3c7ac44c9edbcea1 Mon Sep 17 00:00:00 2001
+From: cettapack <cettapack@localhost>
+Date: Wed, 18 Nov 2026 13:57:17 -0700
+Subject: [PATCH] eval: match-rows, a direct entry to the conjunction matcher
+
+---
+ src/eval.c   | 34 ++++++++++++++++++++++++++++++++++
+ src/symbol.h |  1 +
+ 2 files changed, 35 insertions(+)
+
+diff --git a/src/eval.c b/src/eval.c
+index 308e7b25..f1cfb745 100644
+--- a/src/eval.c
++++ b/src/eval.c
+@@ -60798,6 +60798,40 @@ petta_lowered_to_shared_form:
+         }
+     }
+ 
++    /* ── match-rows (direct entry to the conjunction matcher) ───────────
++     * (match-rows <space> <pattern> <row>): CeTTa's conjunction matcher on
++     * <pattern> (one pattern, or a flat (, p1 ... pn)), and for each binding
++     * row the <row> atom with that row's bindings applied, as data: no
++     * template is evaluated.  Multiplicity is the matcher's: one row per
++     * binding set it returns.  Narrow primitive for compiled hosts. */
++    if (head_id == g_builtin_syms.match_rows && nargs == 3u) {
++        Atom *space_ref = expr_arg(atom, 0);
++        Atom *pattern = expr_arg(atom, 1);
++        Atom *row = expr_arg(atom, 2);
++        Space *ms = resolve_single_space_arg(s, a, space_ref, fuel);
++        if (!ms) {
++            outcome_set_add(os, space_arg_error(a, atom,
++                "match-rows expects a space as its first argument"), &_empty);
++            return;
++        }
++        BindingSet rows;
++        if (pattern->kind == ATOM_EXPR && pattern->expr.len >= 2u &&
++            atom_is_symbol_id(pattern->expr.elems[0], g_builtin_syms.comma)) {
++            space_query_conjunction(ms, a, pattern->expr.elems + 1u,
++                                    pattern->expr.len - 1u, NULL, &rows);
++        } else {
++            space_query_conjunction(ms, a, &pattern, 1u, NULL, &rows);
++        }
++        for (CettaIndex ri = 0; ri < rows.len; ri++) {
++            Atom *value = bindings_apply(&rows.items[ri], a, row);
++            outcome_set_add(os, value ? value
++                                      : atom_error(a, atom, atom_symbol(a, "OutOfMemory")),
++                            &_empty);
++        }
++        binding_set_free(&rows);
++        return;
++    }
++
+     /* ── match (with nested-match fusion + join reordering) ──────────── */
+     if (language_id == CETTA_LANGUAGE_HE &&
+         he_canonical_match_schedule(s, a, atom, etype, fuel,
+diff --git a/src/symbol.h b/src/symbol.h
+index 69a13c78..e3daca29 100644
+--- a/src/symbol.h
++++ b/src/symbol.h
+@@ -234,6 +234,7 @@ static inline SymbolSpelling symbol_spelling(
+     X(remove_atom, "remove-atom") \
+     X(get_atoms, "get-atoms") \
+     X(count_atoms, "count-atoms") \
++    X(match_rows, "match-rows") \
+     X(collapse_bind, "collapse-bind") \
+     X(singleton_visible_witness, "singleton-visible-witness") \
+     X(superpose_bind, "superpose-bind") \
+-- 
+2.34.1
+
