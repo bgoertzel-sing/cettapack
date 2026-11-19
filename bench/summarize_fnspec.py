@@ -12,12 +12,17 @@ and compares the result with the committed summary.
 import glob, json, os, statistics, sys
 from collections import defaultdict
 
-SHAPES = ['collapse-data', 'stream-data', 'collapse-filter', 'stream-filter']
+SHAPES = ['collapse-data', 'stream-data', 'collapse-filter', 'stream-filter',
+          'exist-filter', 'once-data', 'exist-data', 'once-filter']
 SHAPE_NOTE = {
     'collapse-data': 'survey rank 1',
     'stream-data': 'survey rank 2',
     'collapse-filter': 'survey rank 3',
     'stream-filter': "the probe's shape (survey rank 8), kept for the probe sites",
+    'exist-filter': 'existence test + filter, survey rank 4',
+    'once-data': 'collapse(once) + data, survey rank 5',
+    'exist-data': 'existence test + data, survey rank 6',
+    'once-filter': 'collapse(once) + filter, survey rank 7',
 }
 
 def load(d):
@@ -83,6 +88,15 @@ def main():
             a0, i0 = ans['fn-spec'][0], items['fn-spec'][0]
             collapse = shape.startswith('collapse')
             anstxt = '{:,}'.format(a0) + (' tuples, {:,} items'.format(i0) if collapse else '') + ('' if same else ' DIFFER')
+            if shape.startswith('once') or shape.startswith('exist'):
+                key = 'nonempty_tuples_first_batch' if shape.startswith('once') else 'true_answers_first_batch'
+                vals = {m: sorted({r[key] for r in rows[m]}) for m in rows}
+                if len({tuple(v) for v in vals.values()}) != 1:
+                    checks.append('{}: {} differ between modes: {}'.format(s, key, vals))
+                    anstxt += ' DIFFER'
+                n0 = vals['fn-spec'][0]
+                anstxt = ('{:,} tuples, {:,} non-empty'.format(a0, n0) if shape.startswith('once')
+                          else '{:,} answers, {:,} True'.format(a0, n0)) + ('' if same else ' DIFFER')
             rss_s = statistics.median(r['peak_rss_kb'] for r in rows['fn-spec']) / 1024
             rss_h = statistics.median(r['peak_rss_kb'] for r in rows['fn-hosted']) / 1024
             fs, fb = rows['fn-spec'], rows['fn-fallback']
@@ -103,7 +117,22 @@ def main():
         for s, rows in ss:
             print('- {}: {}'.format(s, route(rows)))
         print()
+    # fnspec 2 cross-site check: an existence test and the collapse(once) of the same match on
+    # the same queries must agree (True exactly where the first-row tuple is non-empty)
+    pairs = [(k + '_exist_data', k + '_once_data') for k in ('te', 'gv', 'tf', 'vi')] + \
+            [(k + '_exist_filter', k + '_once_filter') for k in ('te', 'gv', 'tf', 'vi')] + [('rs_sk_needed', 'rs_sk_needed_depth')]
+    agree = []
+    for e, o in pairs:
+        if e in sites and o in sites:
+            t = {r['true_answers_first_batch'] for rs in sites[e].values() for r in rs}
+            n = {r['nonempty_tuples_first_batch'] for rs in sites[o].values() for r in rs}
+            if t == n and len(t) == 1:
+                agree.append('{} {:,} True = {} {:,} non-empty'.format(e, next(iter(t)), o, next(iter(n))))
+            else:
+                checks.append('{} True answers {} vs {} non-empty tuples {}'.format(e, sorted(t), o, sorted(n)))
     print('## Checks\n')
+    for x in agree:
+        print('- existence test agrees with collapse(once): ' + x)
     if checks:
         for c in checks:
             print('- FAIL ' + c)

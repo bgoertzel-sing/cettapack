@@ -29,6 +29,7 @@ static uint64_t cpk_now_ns(void) {
 #include "space_match_backend.h"
 
 #include <dirent.h>
+#include <unistd.h>
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -43,9 +44,13 @@ static void die(const char *f, ...) {
     exit(2);
 }
 
-static cetta_engine_t *engine_new(void) {
+/* the profile engines are opened with: the plan's, unless a test overrides it */
+static bool g_profile_override;
+static const char *g_profile;
+static cetta_engine_t *engine_new(const char *profile) {
+    if (g_profile_override) profile = g_profile;
     cetta_engine_config_t cfg = {.size = sizeof cfg, .abi_version = CETTA_EMBED_ABI_VERSION,
-                                 .language = "he", .resource_root = CPK_CETTA_ROOT};
+                                 .language = "he", .profile = profile, .resource_root = CPK_CETTA_ROOT};
     cetta_engine_t *e = NULL;
     cetta_status_t st = cetta_embed_engine_new(&cfg, &e);
     if (st != CETTA_OK) die("engine: %s", cetta_embed_status_name(st));
@@ -173,14 +178,58 @@ static void add_text(cetta_engine_t *e, cetta_atom_t *space, const char *text) {
     cetta_embed_space_release(s);
 }
 
+/* load: import (docs/FNSPEC_2.md, item 2): the site's definitions are a module file that
+ * &self imports; &cpkmod names the module's own space (the same instance), so a test
+ * can change the function's definition where it lives */
+static bool imported(const FsPlan *p) { return p->load && (!strcmp(p->load, "import") || !strcmp(p->load, "import2")); }
+/* import2: the module defining the function is imported by an outer module, which &self imports */
+static bool nested(const FsPlan *p) { return p->load && !strcmp(p->load, "import2"); }
+/* absolute paths: a relative import! inside a module resolves against that module's directory */
+static void module_path(const FsPlan *p, char *out, size_t n) {
+    const char *d = getenv("CPK_FNSPEC_MODULE_DIR");
+    char cwd[700];
+    if (!getcwd(cwd, sizeof cwd)) die("getcwd");
+    if (d && *d && d[0] == '/') snprintf(out, n, "%s/cpkmod_%s.metta", d, p->site);
+    else snprintf(out, n, "%s/%s/cpkmod_%s.metta", cwd, d && *d ? d : "build/fnspec-modules", p->site);
+}
+static void outer_path(const char *inner, char *out, size_t n) {
+    snprintf(out, n, "%.*s_outer.metta", (int)(strlen(inner) - 6), inner);
+}
+static void write_module(const FsPlan *p) {
+    char path[1024]; module_path(p, path, sizeof path);
+    char dir[1024]; snprintf(dir, sizeof dir, "%s", path);
+    char *sl = strrchr(dir, '/');
+    if (sl) { *sl = 0; char cmd[1200]; snprintf(cmd, sizeof cmd, "mkdir -p '%s'", dir); if (system(cmd) != 0) die("mkdir %s", dir); }
+    FILE *f = fopen(path, "w");
+    if (!f) die("write %s", path);
+    fprintf(f, "%s\n", p->definitions);
+    fclose(f);
+    if (nested(p)) {
+        char outer[1200]; outer_path(path, outer, sizeof outer);
+        f = fopen(outer, "w");
+        if (!f) die("write %s", outer);
+        fprintf(f, "!(import! &self \"%s\")\n(= (cpk-outer-module-fn $x) (cpk-outer $x))\n", path);
+        fclose(f);
+    }
+}
+
 static Env env_open(const FsPlan *p, const Mode *m, const char *kbtext) {
     Env v = {.p = p, .m = m};
-    v.e = engine_new();
+    v.e = engine_new(fs_profile(p));
     if (p->space_token) {
         char t[256]; snprintf(t, sizeof t, "!(bind! %s (new-space))\n", p->space_token);
         run_text(v.e, t);
     }
-    run_text(v.e, p->definitions);
+    if (imported(p)) {
+        write_module(p);
+        char path[1024]; module_path(p, path, sizeof path);
+        char t[2400];
+        char outer[1200]; outer_path(path, outer, sizeof outer);
+        snprintf(t, sizeof t, "!(import! &self \"%s\")\n!(import! &cpkmod \"%s\")\n", nested(p) ? outer : path, path);
+        run_text(v.e, t);
+    } else {
+        run_text(v.e, p->definitions);
+    }
     if (!strcmp(m->name, "fn-hosted")) run_text(v.e, p->hosted_def);
     if (p->space_token) {
         char t[256]; snprintf(t, sizeof t, "!(quote %s)", p->space_token);
@@ -319,7 +368,7 @@ static int cmd_bench(const FsPlan *p, const char *kbfile, const char *qfile, con
     char route0[256], route1[256];
     route_json(v.space, route0, sizeof route0);
     uint64_t *batch = calloc((size_t)repeat, sizeof(uint64_t));
-    size_t answers = 0, items = 0, bad = 0;
+    size_t answers = 0, items = 0, bad = 0, trues = 0, nonempty = 0;
     for (int r = 0; r < repeat; r++) {
         uint64_t b0 = cpk_now_ns();
         size_t a = 0, it = 0;
@@ -335,6 +384,8 @@ static int cmd_bench(const FsPlan *p, const char *kbfile, const char *qfile, con
                     cetta_embed_result_get(res, j, &h);
                     it += cetta_embed_atom_kind(h) == CETTA_ATOM_EXPRESSION ? cetta_embed_atom_arity(h) : 1;
                     bad += bad_answer(p, h);
+                    if (cetta_embed_atom_kind(h) == CETTA_ATOM_EXPRESSION) nonempty += cetta_embed_atom_arity(h) > 0;
+                    else { char *t = fmt_atom(h); trues += !strcmp(t, "True"); free(t); }
                     cetta_embed_atom_release(h);
                 }
             cetta_embed_result_release(res);
@@ -351,9 +402,9 @@ static int cmd_bench(const FsPlan *p, const char *kbfile, const char *qfile, con
     struct rusage ru; getrusage(RUSAGE_SELF, &ru);
     char st[1024]; stats_json(v.rt, st, sizeof st);
     printf("{\"mode\":\"%s\",\"site\":\"%s\",\"shape\":\"%s\",\"queries\":%d,\"repeat\":%d,\"answers_per_batch\":%zu,"
-           "\"answer_items_first_batch\":%zu,\"bad_answers_first_batch\":%zu,\"batch_ns_median\":%" PRIu64 ",\"batch_ns_min\":%" PRIu64 ",\"batch_ns_max\":%" PRIu64 ","
+           "\"answer_items_first_batch\":%zu,\"true_answers_first_batch\":%zu,\"nonempty_tuples_first_batch\":%zu,\"bad_answers_first_batch\":%zu,\"batch_ns_median\":%" PRIu64 ",\"batch_ns_min\":%" PRIu64 ",\"batch_ns_max\":%" PRIu64 ","
            "\"per_query_us_median\":%.3f,\"kb_load_ms\":%.1f,%s,\"route_before\":%s,\"route_after\":%s,\"peak_rss_kb\":%ld}\n",
-           mode, p->site, fs_shape_name(p->shape), nq, repeat, answers, items, bad, sorted[rr / 2], sorted[0], sorted[rr - 1],
+           mode, p->site, fs_shape_name(p->shape), nq, repeat, answers, items, trues, nonempty, bad, sorted[rr / 2], sorted[0], sorted[rr - 1],
            (double)sorted[rr / 2] / 1000.0 / nq, load_ns / 1e6, st, route0, route1, ru.ru_maxrss);
     for (int i = 0; i < nq; i++) cetta_embed_atom_release(qa[i]);
     free(qa); free(batch); free(qs);
@@ -455,21 +506,49 @@ static void mutation_test(const FsPlan *p, const char *label, const char *kbtext
     unsigned shadow_ar = p->builtins[p->n_builtins - 1].arity;
     char sv[256] = "";
     for (unsigned i = 0, n = 0; i < shadow_ar; i++) n += snprintf(sv + n, sizeof sv - n, " $s%u", i);
-    Step steps[12]; int ns = 0;
+    Step steps[24]; int ns = 0;
     steps[ns++] = (Step){"baseline", NULL, EXPECT_SPEC};
     steps[ns++] = (Step){"second-equation-added", fmtx("!(add-atom &self (= %s cpk-extra))", lhs), EXPECT_RESIDUAL};
     steps[ns++] = (Step){"second-equation-removed", fmtx("!(remove-atom &self (= %s cpk-extra))", lhs), EXPECT_SPEC};
-    steps[ns++] = (Step){"redefined", fmtx("!(remove-atom &self %s)\n!(add-atom &self %s)", eq, redef), EXPECT_RESIDUAL};
-    steps[ns++] = (Step){"restored", fmtx("!(remove-atom &self %s)\n!(add-atom &self %s)", redef, eq), EXPECT_SPEC};
+    if (!imported(p)) {
+        steps[ns++] = (Step){"redefined", fmtx("!(remove-atom &self %s)\n!(add-atom &self %s)", eq, redef), EXPECT_RESIDUAL};
+        steps[ns++] = (Step){"restored", fmtx("!(remove-atom &self %s)\n!(add-atom &self %s)", redef, eq), EXPECT_SPEC};
+    } else {
+        /* the equation is the module's: &self cannot remove it, only add a definition beside it */
+        steps[ns++] = (Step){"self-redefinition-added", fmtx("!(add-atom &self %s)", redef), EXPECT_RESIDUAL};
+        steps[ns++] = (Step){"self-redefinition-removed", fmtx("!(remove-atom &self %s)", redef), EXPECT_SPEC};
+    }
     steps[ns++] = (Step){"builtin-shadowed", fmtx("!(add-atom &self (= (%s%s) cpk-shadow))", shadow_op, sv), EXPECT_RESIDUAL};
     steps[ns++] = (Step){"builtin-unshadowed", fmtx("!(remove-atom &self (= (%s%s) cpk-shadow))", shadow_op, sv), EXPECT_SPEC};
     steps[ns++] = (Step){"declaration-added", fmtx("!(add-atom &self (: %s (-> Atom Atom)))", p->function), EXPECT_RESIDUAL};
     steps[ns++] = (Step){"declaration-removed", fmtx("!(remove-atom &self (: %s (-> Atom Atom)))", p->function), EXPECT_SPEC};
+    if (imported(p)) {
+        /* the same changes made in the imported module's own space, not in &self */
+        steps[ns++] = (Step){"module-equation-added", fmtx("!(add-atom &cpkmod (= %s cpk-extra))", lhs), EXPECT_RESIDUAL};
+        steps[ns++] = (Step){"module-equation-removed", fmtx("!(remove-atom &cpkmod (= %s cpk-extra))", lhs), EXPECT_SPEC};
+        steps[ns++] = (Step){"module-redefined", fmtx("!(remove-atom &cpkmod %s)\n!(add-atom &cpkmod %s)", eq, redef), EXPECT_RESIDUAL};
+        steps[ns++] = (Step){"module-restored", fmtx("!(remove-atom &cpkmod %s)\n!(add-atom &cpkmod %s)", redef, eq), EXPECT_SPEC};
+        steps[ns++] = (Step){"module-declaration-added", fmtx("!(add-atom &cpkmod (: %s (-> Atom Atom)))", p->function), EXPECT_RESIDUAL};
+        steps[ns++] = (Step){"module-declaration-removed", fmtx("!(remove-atom &cpkmod (: %s (-> Atom Atom)))", p->function), EXPECT_SPEC};
+        steps[ns++] = (Step){"module-builtin-shadowed", fmtx("!(add-atom &cpkmod (= (%s%s) cpk-shadow))", shadow_op, sv), EXPECT_RESIDUAL};
+        steps[ns++] = (Step){"module-builtin-unshadowed", fmtx("!(remove-atom &cpkmod (= (%s%s) cpk-shadow))", shadow_op, sv), EXPECT_SPEC};
+    }
     if (nfmut && *nfmut) {
         steps[ns++] = (Step){"row-not-normal", fmtx("%s", nfmut), EXPECT_SOME_RESIDUAL};
     }
+    if (imported(p)) {
+        /* last (an import cannot be undone): a second module defining the function, imported into &self */
+        char path[1024]; module_path(p, path, sizeof path);
+        char second[1200]; snprintf(second, sizeof second, "%.*s_second.metta", (int)(strlen(path) - 6), path);
+        FILE *f = fopen(second, "w");
+        if (!f) die("write %s", second);
+        fprintf(f, "(= %s cpk-second-module)\n", lhs);
+        fclose(f);
+        steps[ns++] = (Step){"second-module-imported", fmtx("!(import! &self \"%s\")", second), EXPECT_RESIDUAL};
+    }
     Env ref = env_open(p, find_mode("fn-generic"), kbtext);
     Env sp = env_open(p, find_mode("fn-spec"), kbtext);
+    static Bag base_bags[4096];
     char rh[256], shd[256];
     mode_head(&ref, rh, sizeof rh); mode_head(&sp, shd, sizeof shd);
     for (int s = 0; s < ns; s++) {
@@ -488,13 +567,22 @@ static void mutation_test(const FsPlan *p, const char *label, const char *kbtext
             bag_free(&a); bag_free(&b);
             cetta_embed_atom_release(x); cetta_embed_atom_release(y);
         }
+        if (s == 0) { for (int i = 0; i < nq && i < 4096; i++) { cetta_atom_t *x = query_atom(&ref, rh, q[i]); base_bags[i] = eval_bag(ref.e, x); cetta_embed_atom_release(x); } }
+        int changed = 0;
+        for (int i = 0; i < nq && i < 4096; i++) {
+            cetta_atom_t *x = query_atom(&ref, rh, q[i]);
+            Bag a = eval_bag(ref.e, x);
+            if (!bag_eq(&a, &base_bags[i])) changed++;
+            bag_free(&a);
+            cetta_embed_atom_release(x);
+        }
         uint64_t spec = sp.rt->st.spec_calls - before.spec_calls, res = sp.rt->st.residual_calls - before.residual_calls;
         bool path = steps[s].expect == EXPECT_SPEC ? (spec == (uint64_t)nq && res == 0)
                   : steps[s].expect == EXPECT_RESIDUAL ? (res == (uint64_t)nq && spec == 0)
                   : (res > 0 && spec + res == (uint64_t)nq);
         bool ok = same == nq && path && !g_eval_error;
-        printf("%s %-20s %-14s mutation %-24s queries=%d same=%d spec=%" PRIu64 " residual=%" PRIu64 " expect=%s path=%s revalidations=%" PRIu64 "%s%s\n",
-               ok ? "PASS" : "FAIL", p->site, label, steps[s].label, nq, same, spec, res,
+        printf("%s %-20s %-14s mutation %-26s queries=%d same=%d ref_changed=%d spec=%" PRIu64 " residual=%" PRIu64 " expect=%s path=%s revalidations=%" PRIu64 "%s%s\n",
+               ok ? "PASS" : "FAIL", p->site, label, steps[s].label, nq, same, changed, spec, res,
                steps[s].expect == EXPECT_SPEC ? "spec" : steps[s].expect == EXPECT_RESIDUAL ? "residual" : "some-residual",
                path ? "ok" : "WRONG", sp.rt->st.revalidations, sp.rt->invalid_reason ? " guard: " : "",
                sp.rt->invalid_reason ? sp.rt->invalid_reason : "");
@@ -502,6 +590,7 @@ static void mutation_test(const FsPlan *p, const char *label, const char *kbtext
         if (!ok) g_fails++;
         free(steps[s].text);
     }
+    for (int i = 0; i < nq && i < 4096; i++) bag_free(&base_bags[i]);
     env_close(&ref); env_close(&sp);
     free(lhs); free(body_c); free(redef);
 }
@@ -556,11 +645,46 @@ static void recursion_test(const FsPlan *p, const char *label, const char *kbtex
     env_close(&ref); env_close(&sp);
 }
 
+/* a plan that uses once, opened in an engine of CeTTa's default he profile (where (once X)
+ * is data, not the first-answer builtin): the runtime's profile probe must refuse it, every
+ * call takes the residual and gives CeTTa's answers of that profile */
+static void profile_test(const FsPlan *p, const char *label, const char *kbtext, char **q, int nq) {
+    g_profile_override = true; g_profile = NULL;
+    Env ref = env_open(p, find_mode("fn-generic"), kbtext);
+    Env sp = env_open(p, find_mode("fn-spec"), kbtext);
+    g_profile_override = false;
+    char rh[256], shd[256];
+    mode_head(&ref, rh, sizeof rh); mode_head(&sp, shd, sizeof shd);
+    int same = 0, shown = 0;
+    g_eval_error = false;
+    for (int i = 0; i < nq; i++) {
+        cetta_atom_t *x = query_atom(&ref, rh, q[i]), *y = query_atom(&sp, shd, q[i]);
+        Bag a = eval_bag(ref.e, x), b = eval_bag(sp.e, y);
+        if (bag_eq(&a, &b)) same++;
+        else if (shown++ < 3) {
+            fprintf(stderr, "  %s profile he: mismatch at %s\n", p->site, q[i]);
+            show_bag("fn-generic", &a); show_bag("fn-spec", &b);
+        }
+        bag_free(&a); bag_free(&b);
+        cetta_embed_atom_release(x); cetta_embed_atom_release(y);
+    }
+    const FsStats *s = &sp.rt->st;
+    bool path = s->residual_calls == (uint64_t)nq && s->spec_calls == 0;
+    bool ok = same == nq && path && !g_eval_error;
+    printf("%s %-20s %-14s profile-he (once is data) queries=%d same=%d spec=%" PRIu64 " residual=%" PRIu64 " expect=residual path=%s guard: %s\n",
+           ok ? "PASS" : "FAIL", p->site, label, nq, same, s->spec_calls, s->residual_calls, path ? "ok" : "WRONG",
+           sp.rt->invalid_reason ? sp.rt->invalid_reason : "-");
+    fflush(stdout);
+    if (!ok) g_fails++;
+    env_close(&ref); env_close(&sp);
+}
+
 static int cmp_str(const void *a, const void *b) { return strcmp(*(char *const *)a, *(char *const *)b); }
 
 static int cmd_difftest(const FsPlan *p, const char *cases, const char *kbfile, const char *qfile) {
-    printf("site %s: %s/%u, shape %s, %u pattern(s); origin: %s\n  equation %s\n", p->site, p->function, p->arity,
-           fs_shape_name(p->shape), p->n_patterns, p->origin, p->equation);
+    printf("site %s: %s/%u, shape %s, %u pattern(s); profile %s; load %s; origin: %s\n  equation %s\n", p->site, p->function, p->arity,
+           fs_shape_name(p->shape), p->n_patterns, fs_profile(p) ? fs_profile(p) : "he (default)",
+           nested(p) ? "import! of a module that an imported module imports" : imported(p) ? "import! of a module" : "&self", p->origin, p->equation);
     char *names[256]; int nn = 0;
     DIR *d = opendir(cases);
     if (!d) die("cases dir %s", cases);
@@ -586,6 +710,7 @@ static int cmd_difftest(const FsPlan *p, const char *cases, const char *kbfile, 
         if (i == 0) {
             mutation_test(p, names[i], kb, lines, nq, nfmut);
             recursion_test(p, names[i], kb, lines, nq);
+            if (p->once) profile_test(p, names[i], kb, lines, nq);
         }
         free(kb); free(qs); free(names[i]);
     }

@@ -12,8 +12,15 @@ on CeTTa's matcher when BODY is one of the shapes chosen by the survey
   collapse-data    (collapse (match S P T))                     T data
   collapse-filter  (collapse (match S P (if C T (empty))))      C comparisons on bound values
   stream-filter    (match S P (if C (empty) T))                 the probe's shape (kept for the probe sites)
+  once-data        (collapse (once (match S P T)))              collapse(once): the first answer, as a tuple
+  once-filter      (collapse (once (match S P (if C T (empty)))))
+  exist-data       (not (== (collapse [(once] (match S P T)[)]) ()))   existence test (fnspec 2); also
+  exist-filter     the same with a filter template                     (== W ()) and (== () W)
 
-(either if-branch may be the (empty) one).  S is an argument of f or a named space
+(either if-branch may be the (empty) one).  collapse(once) and existence tests are the
+survey's ranks 4-7 (docs/FNSPEC_SURVEY.md, Table 2); once is CeTTa's first-answer builtin
+only in profiles that have it (extended, he-prime; in the plain he profile (once X) is data),
+so a plan whose body uses once records that requirement and the runtime checks it.  S is an argument of f or a named space
 token (&name); P is one pattern or a conjunction (, P1 ... Pn); in stream shapes a
 template that is itself (match S P2 T2) on the same S is flattened into the
 conjunction (P, P2) (the same bag; checked by the bag tests).  C is a tree of
@@ -95,11 +102,29 @@ def compile_site(path):
         raise Refuse('LHS arguments must be distinct variables')
     defined = {head(e[1]) for e in eqs}
     shape_wrap = 'stream'
-    inner = body
-    if head(body) == 'collapse' and len(body) == 2:
-        shape_wrap, inner = 'collapse', body[1]
+    once, exist, negated = False, 0, False
+    b = body
+    # existence test: (not (== W ())), (== W ()), either operand order; W a collapse
+    if head(b) == 'not' and len(b) == 2 and head(b[1]) == '==':
+        negated, b = True, b[1]
+    if head(b) == '==' and len(b) == 3:
+        if b[2] == () and head(b[1]) == 'collapse':
+            b = b[1]
+        elif b[1] == () and head(b[2]) == 'collapse':
+            b = b[2]
+        else:
+            raise Refuse('(== X Y) body that is not an existence test (collapse ...) against ()')
+        exist = 1 if negated else 2          # 1: True when some row survives; 2: True when none
+    elif negated:
+        raise Refuse('(not ...) body that is not an existence test')
+    inner = b
+    if head(b) == 'collapse' and len(b) == 2:
+        shape_wrap, inner = 'collapse', b[1]
+        if head(inner) == 'once' and len(inner) == 2:
+            once, inner = True, inner[1]
     if head(inner) != 'match' or len(inner) != 4:
-        raise Refuse('body is not (match S P T) or (collapse (match S P T))')
+        raise Refuse('body is not (match S P T), (collapse (match S P T)), (collapse (once (match S P T))) or an existence test of them')
+    match_node = inner
     space, pat, tmpl = inner[1], inner[2], inner[3]
     pats = list(pat[1:]) if head(pat) == ',' else [pat]
     while head(tmpl) == 'match' and len(tmpl) == 4:
@@ -132,11 +157,18 @@ def compile_site(path):
             raise Refuse('if template without an (empty) branch and a data branch')
     elif not is_data(tmpl, defined):
         raise Refuse('template evaluates something (not data, not a filter)')
-    shape = shape_wrap + '-' + ('filter' if cond is not None else 'data')
+    family = 'exist' if exist else ('once' if once else shape_wrap)
+    shape = family + '-' + ('filter' if cond is not None else 'data')
     pat_vars = vars_of(tuple(pats))
     builtins = [('match', 3)]
     if shape_wrap == 'collapse':
         builtins.append(('collapse', 1))
+    if once:
+        builtins.append(('once', 1))
+    if exist:
+        builtins.append(('==', 2))
+        if negated:
+            builtins.append(('not', 1))
     consts, cvars, leaves = [], [], []
 
     def operand(x):
@@ -194,18 +226,27 @@ def compile_site(path):
     hargs = ' '.join(show(x) for x in args)
     hosted_call = '(cpk-hosted:%s %s%s)' % (fname, (space_token + ' ') if space_token else '', hargs)
     inner_h = '(let %s %s %s)' % (hv, hosted_call, show(tmpl))
-    hosted_body = ('(collapse %s)' % inner_h) if shape_wrap == 'collapse' else inner_h
+    # the body with its match replaced by the hosted call (same wrapper: collapse, once, ==, not)
+    def subst(x):
+        if x is match_node:
+            return inner_h
+        if is_expr(x):
+            return '(' + ' '.join(subst(c) for c in x) + ')'
+        return show(x)
+    hosted_body = subst(body) if (exist or once or shape_wrap == 'collapse') else inner_h
     hosted_def = '(= (%s-h %s) %s)' % (fname, hargs, hosted_body)
     digest = hashlib.sha256(equation.encode()).hexdigest()
     return dict(name=name, fname=fname, arity=len(args), shape=shape, space_arg=space_arg, space_token=space_token,
                 parts=parts, equation=equation, builtins=builtins, cond_c=cond_c, n_cvars=len(cvars),
                 n_consts=len(consts), hosted_def=hosted_def, digest=digest, source=path, text=text, meta=meta,
-                n_patterns=len(pats))
+                n_patterns=len(pats), once=once, exist=exist)
 
 def emit(s):
     cid = re.sub(r'[^A-Za-z0-9_]', '_', s['name'])
     shape_c = {'stream-data': 'FS_STREAM_DATA', 'collapse-data': 'FS_COLLAPSE_DATA',
-               'collapse-filter': 'FS_COLLAPSE_FILTER', 'stream-filter': 'FS_STREAM_FILTER'}[s['shape']]
+               'collapse-filter': 'FS_COLLAPSE_FILTER', 'stream-filter': 'FS_STREAM_FILTER',
+               'once-data': 'FS_ONCE_DATA', 'once-filter': 'FS_ONCE_FILTER',
+               'exist-data': 'FS_EXIST_DATA', 'exist-filter': 'FS_EXIST_FILTER'}[s['shape']]
     defs = '\n'.join(l for l in s['text'].splitlines() if l.strip() and not l.strip().startswith(';'))
     blist = ', '.join('%s/%d' % (b, k) for b, k in s['builtins'])
     out = []
@@ -238,8 +279,9 @@ def emit(s):
     out.append('    .definitions = %s,\n' % cstr(defs))
     out.append('    .builtins = {%s}, .n_builtins = %d,\n' % (b, len(s['builtins'])))
     out.append('    .n_cvars = %d, .n_consts = %d, .n_patterns = %d,\n' % (s['n_cvars'], s['n_consts'], s['n_patterns']))
+    out.append('    .once = %d, .exist = %d,\n' % (1 if s['once'] else 0, s['exist']))
     out.append('    .row = row_%s,\n' % cid)
-    for k in ('kb', 'queries', 'origin', 'setup'):
+    for k in ('kb', 'queries', 'origin', 'setup', 'profile', 'load'):
         out.append('    .%s = %s,\n' % (k, cstr(s['meta'].get(k, ''))))
     out.append('};\n')
     return ''.join(out)
