@@ -29,7 +29,7 @@
      (kb-sha256 "8097f2f4ad2990cdf096cdcf428cf719397f4695536b6f51416fe9e3d5439f5c")
      (kb-generator "bench/gen_kb.py --seed 20261106")
      (manifest-sha256 "f7b970523a8c4e15848dd90e54ceda80a21d991a05651a29c71eed9ea337d67b")
-     (cettapack-commit "104bbbe36c7b670d2eefea689ed85ce20c3f9527")
+     (cettapack-commit "b1fcee8ca0dbb66e3c6a1ecb38b3825c44cac283")
      (cetta-commit "a9b3a81186529fd99649e437809bdb6f58fce2fd"))
   :open-obligations
     ("rule-sound-on-fragment: VALID guard implies kernel bag = generic bag for all spaces of the fragment (unproved)"

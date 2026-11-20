@@ -6,7 +6,7 @@
 #
 #   RUNS=7 REPEAT=5 OUT=evidence/fnspec-2026-11-18/bench bench/run_fnspec.sh [site ...]
 #
-# Default sites: every fnspec site with a benchmark KB (the num_* sites are test-only).
+# Default sites: every fnspec site with a benchmark KB (the num_* and imp_* sites are test-only).
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT"
@@ -15,7 +15,7 @@ REPEAT=${REPEAT:-5}
 OUT=${OUT:-evidence/fnspec}
 MODES=${MODES:-"fn-generic fn-hosted fn-spec fn-fallback"}
 if [ $# -gt 0 ]; then SITES="$*"; else
-  SITES=$(for f in fnspec/sites/*.metta; do s=$(basename "$f" .metta); case $s in num_*) ;; *) echo "$s";; esac; done)
+  SITES=$(for f in fnspec/sites/*.metta; do s=$(basename "$f" .metta); case $s in num_*|imp_*) ;; *) echo "$s";; esac; done)
 fi
 mkdir -p "$OUT" build
 {

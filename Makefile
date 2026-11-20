@@ -137,7 +137,11 @@ clean:
 .PHONY: all test bench clean difftest probes probe-difftest fnspec fnspec-difftest fnspec-recompute
 
 # Recompute the benchmark tables from the raw runs and compare with the committed summary
-FNSPEC_BENCH ?= evidence/fnspec-2026-11-18/bench
+# (fnspec 1 and fnspec 2 evidence; one summariser for both)
+FNSPEC_BENCH ?= evidence/fnspec-2026-11-18/bench evidence/fnspec2-2026-11-19/bench
 fnspec-recompute:
-	python3 bench/summarize_fnspec.py $(FNSPEC_BENCH) > build/fnspec-summary-recomputed.md
-	cmp build/fnspec-summary-recomputed.md $(FNSPEC_BENCH)/summary.md && echo "recomputed tables match $(FNSPEC_BENCH)/summary.md"
+	@mkdir -p build
+	@set -e; for d in $(FNSPEC_BENCH); do \
+	  python3 bench/summarize_fnspec.py $$d > build/fnspec-summary-recomputed.md; \
+	  cmp build/fnspec-summary-recomputed.md $$d/summary.md && echo "recomputed tables match $$d/summary.md"; \
+	done

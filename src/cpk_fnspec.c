@@ -16,8 +16,16 @@ const char *fs_shape_name(FsShape s) {
     case FS_COLLAPSE_DATA: return "collapse-data";
     case FS_COLLAPSE_FILTER: return "collapse-filter";
     case FS_STREAM_FILTER: return "stream-filter";
+    case FS_ONCE_DATA: return "once-data";
+    case FS_ONCE_FILTER: return "once-filter";
+    case FS_EXIST_DATA: return "exist-data";
+    case FS_EXIST_FILTER: return "exist-filter";
     }
     return "?";
+}
+
+const char *fs_profile(const FsPlan *p) {
+    return p->profile && *p->profile ? p->profile : NULL;
 }
 
 const FsPlan *fs_find(const char *site) {
@@ -28,6 +36,19 @@ const FsPlan *fs_find(const char *site) {
 
 static Space *space_of_native(const Atom *x) {
     return x && x->kind == ATOM_GROUNDED && x->ground.gkind == GV_SPACE ? x->ground.ptr : NULL;
+}
+
+/* the named space of a compiled body (the space the token resolved to): the one space
+ * atom below its wrappers (collapse, once, ==, not); the compiler admits no other */
+static const Atom *find_space(const Atom *x) {
+    if (!x) return NULL;
+    if (space_of_native(x)) return x;
+    if (x->kind != ATOM_EXPR) return NULL;
+    for (CettaExprLen i = 0; i < x->expr.len; i++) {
+        const Atom *m = find_space(x->expr.elems[i]);
+        if (m) return m;
+    }
+    return NULL;
 }
 
 /* ---- value kinds -------------------------------------------------------------- */
@@ -268,6 +289,7 @@ static void revalidate(FsRt *rt) {
     rt->valid = false;
     rt->tok = space_program_token(rt->self);
     rt->tok_valid = true;
+    if (rt->once_unavailable) { rt->invalid_reason = "once is not CeTTa's first-answer builtin in this engine's profile"; return; }
     if (space_equations_may_match_unnamed_head(rt->self)) { rt->invalid_reason = "catch-all equation in &self"; return; }
     /* the definition: exactly one equation of f, alpha-equal to the compiled one */
     cetta_result_t *r = NULL;
@@ -386,6 +408,8 @@ static int compute(Cursor *c) {
         if ((int)i != p->space_arg) ok = bindings_add_var(&sb, rt->lhs_args[i], nargs[i]);
     Atom **raw = NULL;
     size_t nraw = 0, rawcap = 0, filtered = 0;
+    /* collapse(once) and existence tests need only the first surviving row (matcher order) */
+    bool cut = !c->hosted && (p->once || p->exist);
     if (ok) {
         BindingSet rows;
         space_query_conjunction(s, &a, rt->pats, (CettaExprLen)p->n_patterns, &sb, &rows);
@@ -407,10 +431,22 @@ static int compute(Cursor *c) {
                 raw = t;
             }
             raw[nraw++] = ans;
+            if (cut) break;
         }
         binding_set_free(&rows);
     }
-    bool collapse = !c->hosted && (p->shape == FS_COLLAPSE_DATA || p->shape == FS_COLLAPSE_FILTER);
+    bool collapse = !c->hosted && (p->shape == FS_COLLAPSE_DATA || p->shape == FS_COLLAPSE_FILTER ||
+                                   p->shape == FS_ONCE_DATA || p->shape == FS_ONCE_FILTER);
+    if (ok && !c->hosted && p->exist) {
+        /* (not (== W ())) is True when a row survives, (== W ()) when none does */
+        bool val = p->exist == 1 ? nraw > 0 : nraw == 0;
+        cetta_atom_t *h = val ? rt->true_h : rt->false_h;
+        cetta_embed_atom_retain(h);
+        ok = push(c, h) == 0;
+        if (!ok) cetta_embed_atom_release(h);
+        collapse = false;
+        nraw = 0;
+    }
     if (ok && !c->hosted && p->shape == FS_STREAM_FILTER && nraw == 0 && filtered > 0) {
         /* CeTTa's result for a stream whose every row takes the (empty) branch:
          * one Empty per row (docs/NEXT_STEP_PROBES.md, bag tests d5/d6) */
@@ -560,10 +596,9 @@ FsRt *fs_open(cetta_engine_t *e, const FsPlan *p, bool force_invalid, const char
     cetta_embed_space_release(selfs);
     if (!rt->self) { *error = "no native &self"; return NULL; }
     if (p->space_token) {
-        /* the token's space atom as the compiled body holds it */
-        const Atom *eq = rt->equation, *body = eq->expr.elems[2];
-        if (p->shape == FS_COLLAPSE_DATA || p->shape == FS_COLLAPSE_FILTER) body = body->expr.elems[1];
-        rt->named_space = body->expr.elems[1];
+        /* the token's space atom as the compiled body's match holds it */
+        rt->named_space = (Atom *)find_space(rt->equation->expr.elems[2]);
+        if (!rt->named_space) { *error = "named space token is not a space"; return NULL; }
         if (!space_of_native(rt->named_space)) { *error = "named space token is not a space"; return NULL; }
     }
     /* guard queries */
@@ -578,9 +613,37 @@ FsRt *fs_open(cetta_engine_t *e, const FsPlan *p, bool force_invalid, const char
     /* baseline: the builtins' equations and declarations in a fresh engine */
     rt->baseline = calloc(2 * p->n_builtins + 1, sizeof(char *));
     cetta_engine_config_t cfg = {.size = sizeof cfg, .abi_version = CETTA_EMBED_ABI_VERSION,
-                                 .language = "he", .resource_root = CPK_CETTA_ROOT};
+                                 .language = "he", .profile = fs_profile(p), .resource_root = CPK_CETTA_ROOT};
     cetta_engine_t *fresh = NULL;
     if (cetta_embed_engine_new(&cfg, &fresh) != CETTA_OK) { *error = "baseline engine"; return NULL; }
+    /* whether once is the first-answer builtin in this engine (a known-answer probe in the
+     * engine itself: its profile decides; a probe that fails for any reason, e.g. a shadowed
+     * superpose at open time, leaves the plan INVALID, never wrongly valid); and the values
+     * == returns, read in a fresh engine */
+    if (p->once) {
+        cetta_atom_t *q = parse_text(e, "(collapse (once (superpose (cpk-once-a cpk-once-b))))");
+        int cnt = 0;
+        char *t = q ? eval_canon(e, q, &cnt) : NULL;
+        rt->once_unavailable = !(t && cnt == 1 && !strcmp(t, "(cpk-once-a)"));
+        free(t);
+        cetta_embed_atom_release(q);
+    }
+    if (p->exist) {
+        static const char *probe[2] = {"(== () ())", "(== () (cpk-exist-x))"};
+        cetta_atom_t **dst[2] = {&rt->true_h, &rt->false_h};
+        for (int i = 0; i < 2; i++) {
+            cetta_atom_t *q = parse_text(fresh, probe[i]), *h = NULL;
+            cetta_result_t *res = NULL;
+            if (q && cetta_embed_eval(fresh, q, NULL, &res) == CETTA_OK && cetta_embed_result_status(res) == CETTA_OK &&
+                cetta_embed_result_count(res) == 1 && cetta_embed_result_get(res, 0, &h) == CETTA_OK) {
+                if (cetta_embed_native_atom_copy(e, cetta_embed_native_atom(h), dst[i]) != CETTA_OK) *dst[i] = NULL;
+                cetta_embed_atom_release(h);
+            }
+            cetta_embed_result_release(res);
+            cetta_embed_atom_release(q);
+        }
+        if (!rt->true_h || !rt->false_h) { cetta_embed_engine_release(fresh); *error = "boolean values of =="; return NULL; }
+    }
     cetta_atom_t **bq = calloc(2 * p->n_builtins + 1, sizeof(cetta_atom_t *));
     builtin_queries(fresh, p, bq);
     for (unsigned i = 0; i < 2 * p->n_builtins; i++) {
@@ -610,6 +673,8 @@ void fs_close(FsRt *rt) {
     cetta_embed_atom_release(rt->hosted);
     cetta_embed_atom_release(rt->parts_h);
     cetta_embed_atom_release(rt->equation_h);
+    if (rt->true_h) cetta_embed_atom_release(rt->true_h);
+    if (rt->false_h) cetta_embed_atom_release(rt->false_h);
     cetta_embed_atom_release(rt->def_query_h);
     cetta_embed_atom_release(rt->decl_query_h);
     for (unsigned i = 0; i < 2 * rt->plan->n_builtins; i++) {

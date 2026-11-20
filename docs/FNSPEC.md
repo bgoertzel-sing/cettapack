@@ -246,7 +246,7 @@ evidence/fnspec-2026-11-18/bench/summary.md.
 - Collapse answers are compared as CeTTa returns them, row order included; that order is the matcher's
   (space_query_conjunction) and matched CeTTa's evaluator on every test. Nested matches under collapse are refused
   (their flattened row order is not established); collapse(once) and existence tests (survey ranks 4-7) are not
-  compiled.
+  compiled here; fnspec 2 compiles them (docs/FNSPEC_2.md).
 - The entry point is an embedding callback (stop-line); match-rows-style entry (0003) would remove the callback
   hand-back measured in the probes but is not used here.
 - Revalidation cost (a few MeTTa queries of &self per program change) is paid once per change and is not in the
