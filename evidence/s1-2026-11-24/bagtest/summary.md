@@ -1,5 +1,5 @@
-| test | off = on | off = invalid | routes (on, then invalid mode) | verdict |
-|---|---|---|---|---|
+| test | off = on | off = invalid | routes (on) | invalid mode | verdict |
+|---|---|---|---|---|---|
 | t0_first_call | yes | yes | recognised 3, specialised 3, residual 0  | forced 3/3 | pass |
 | t1_basic | yes | yes | recognised 11, specialised 11, residual 0  | forced 11/11 | pass |
 | t2_values | yes | yes | recognised 6, specialised 5, residual 1 {"residual.inputs": 1} | forced 6/6 | pass |

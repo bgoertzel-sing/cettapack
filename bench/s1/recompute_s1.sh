@@ -13,6 +13,9 @@ fail=0
 say() { echo "$1: $2"; [ "$2" = identical ] || fail=1; }
 # 1. end-to-end summary
 python3 bench/s1/summarize_e2e.py $E/e2e --check >/dev/null && say e2e/summary identical || say e2e/summary DIFFERS
+python3 bench/s1/sprof_table.py $E/sprof --check >/dev/null && say sprof/summary identical || say sprof/summary DIFFERS
+python3 bench/s1/m5_estimate.py $E/step4/step4.json --out-md $T/m5.md >/dev/null
+cmp -s $T/m5.md $E/step4/m5_estimate.md && say step4/m5_estimate.md identical || say step4/m5_estimate.md DIFFERS
 # 2. finding 1 goal tables
 for s in 100 1000; do
   python3 bench/s1/check_w2_goals.py $E/finding1/s0_w2_wmtm.steps$s.metta $E/finding1/steps$s/w2-wmtm/s0_w2_wmtm.r1.stdout > $T/g$s.md

@@ -21,8 +21,8 @@ git -C "$PETTA_REPO" archive e038e4dbb587e48fdb9d14990966108d38fde0b3 lib | tar 
 cp "$CETTA" "$IMG/cetta"
 { echo "cetta=$CETTA sha256=$(sha256sum "$CETTA" | cut -d' ' -f1)"; echo "head=$(git -C "$ROOT" rev-parse HEAD) date=$(date -u +%FT%TZ)"; } > "$OUT/env.txt"
 fail=0
-echo "| test | off = on | off = invalid | routes (on, then invalid mode) | verdict |" > "$OUT/summary.md"
-echo "|---|---|---|---|---|" >> "$OUT/summary.md"
+echo "| test | off = on | off = invalid | routes (on) | invalid mode | verdict |" > "$OUT/summary.md"
+echo "|---|---|---|---|---|---|" >> "$OUT/summary.md"
 for t in "$ROOT"/bench/s1/bagtest/t*.metta; do
   n=$(basename "$t" .metta)
   cat "$ROOT/bench/s1/bagtest/common.inc" "$t" > "$IMG/examples/s1_bag_$n.metta"
