@@ -44,17 +44,18 @@ EXTENSIONS = [
     ("match space is neither", "space computed by an expression"),
     ("a pattern is not a data expression", "patterns that evaluate (calls inside the pattern)"),
     ("template node", "templates that call other functions or bind with let"),
-    ("condition", "conditions outside the fragment (calls in if/case conditions)"),
+    ("condition", "conditions outside the fragment (a unification (= ...) or a call in an if condition)"),
     ("case", "case forms outside the fragment"),
     ("(== X Y)", "== tests other than existence tests"),
     ("(not ...)", "negations other than existence tests"),
-    ("a compared", "comparisons with evaluated operands"),
+    ("a compared constant has variables", "comparisons against compound terms holding variables (=alpha on quoted tuples)"),
+    ("a compared operand evaluates something", "comparisons with evaluated operands"),
     ("a boolean value", "boolean values over case-bound variables"),
     ("the space is compared", "the space compared as a value"),
     ("compiler error", "forms the compiler's reader does not take"),
 ]
 WHOLE_FORM = ("equations in the site file", "LHS arguments must be distinct variables")
-SITE_RE = re.compile(r"^(?:match@)+(\S+) .*?(\S+) \(([^()]*) \.\.\.\)$")
+SITE_RE = re.compile(r"^(?:match@)+(\S+) (?:.* )?(\S+) \((\(\.\.\.\)|[^()]*) \.\.\.\)$")
 
 
 def ext_name(reason):
@@ -237,22 +238,32 @@ def main():
                 entry.update({"class": "extension", "extension": pentry["extension"], "refusal": pentry["refusal"]})
                 out[h] = entry
                 continue
-            best, refusals = None, []
+            best, refusals, bare = None, [], False
             for f in forms:
                 for chain in site_candidates(f[2], space, phead, any_head, var_space):
                     for node in chain:
                         args = sorted({str(v) for v in S.walk(node) if isinstance(v, S.Var)})
                         lhs = "(%s-site %s)" % (fn, " ".join("$" + v for v in args))
-                        ok, res = try_compile(fn + "-site", "(= %s %s)" % (lhs, show(node)))
+                        text = show(node)
+                        ok, res = try_compile(fn + "-site", "(= %s %s)" % (lhs, text))
+                        if not ok and "match space is neither" in res and not space.startswith("&") \
+                                and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_\-]*", space):
+                            # a PeTTa named space written as a bare symbol: retry as if it were spelled &name,
+                            # so the next refusal (if any) is named too
+                            bare = True
+                            ok, res = try_compile(fn + "-site", "(= %s %s)" % (
+                                lhs, re.sub(r"\(match %s " % re.escape(space), "(match &%s " % space, text)))
                         if ok:
                             best = best or res
                             break
                         refusals.append(res)
+            prefix = "named spaces written as bare symbols" if bare else ""
             if best:
-                entry.update({"class": "extension", "extension": "lift the match subexpression into a site",
-                              "shape": best})
+                entry.update({"class": "extension", "shape": best,
+                              "extension": (prefix + " + " if prefix else "") + "lift the match subexpression into a site"})
             elif refusals:
-                entry.update({"class": "extension", "extension": ext_name(refusals[0]), "refusal": refusals[0]})
+                entry.update({"class": "extension", "refusal": refusals[0],
+                              "extension": (prefix + " + " if prefix else "") + ext_name(refusals[0])})
             else:
                 entry.update({"class": "outside", "reason": "no match occurrence on %s with head %s found in %s" % (space, phead, fn)})
             out[h] = entry

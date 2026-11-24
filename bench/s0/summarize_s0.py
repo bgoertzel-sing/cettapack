@@ -35,8 +35,9 @@ def read(path, mode="r"):
 
 
 def wall(ev, variant, w, stem):
+    """(wall s, user CPU s, peak RSS KiB) from /usr/bin/time -f '%e %U %S %M'."""
     t = read(os.path.join(ev, "runs", variant, w, stem + ".time")).strip().splitlines()[-1].split()
-    return float(t[0]), int(t[3])
+    return float(t[0]), float(t[1]), int(t[3])
 
 
 def effect(flags):
@@ -69,30 +70,64 @@ def main():
     md.append("identity and overhead from the base (a9b3a811+0001-0004), off (+0005, CETTA_FNPROF=0) and on (+0005, CETTA_FNPROF=1) builds.\n")
     # 1. identity and overhead
     md.append("## 1. Answers and overhead\n")
-    md.append("| workload | file | runs | stdout sha256 (base) | identical base/off/on | expectation failures (❌) | exit | wall s base | off/base | on/base | peak RSS MiB base/on |")
-    md.append("|---|---|---|---|---|---|---|---|---|---|---|")
+    md.append("Times are medians over the runs (interleaved base, off, on); the host was shared (load average 4-5 on 8")
+    md.append("cores from other services), so user CPU time is the steadier measure; wall time is shown too.\n")
+    md.append("| workload | file | runs | stdout sha256 (base) | identical base/off/on | failed tests (❌) | exit | user s base | off/base user | on/base user | wall s base | off/base wall | on/base wall | peak RSS MiB base/on |")
+    md.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
     ident_all = True
+    totals = {}
     for w in WORKLOADS:
         files = runs_of(ev, "base", w)
         for name in sorted(files):
-            digests, walls, rss, exits, fails = {}, {}, {}, set(), 0
+            digests, walls, users, rss, exits, fails = {}, {}, {}, {}, set(), 0
             for v in VARIANTS:
                 stems = runs_of(ev, v, w).get(name, [])
                 digests[v] = {hashlib.sha256(read(os.path.join(ev, "runs", v, w, s + ".stdout"), "rb")).hexdigest() for s in stems}
                 walls[v] = [wall(ev, v, w, s)[0] for s in stems]
-                rss[v] = [wall(ev, v, w, s)[1] for s in stems]
+                users[v] = [wall(ev, v, w, s)[1] for s in stems]
+                rss[v] = [wall(ev, v, w, s)[2] for s in stems]
                 for s in stems:
                     exits.add(read(os.path.join(ev, "runs", v, w, s + ".exit")).strip())
                     fails += read(os.path.join(ev, "runs", v, w, s + ".stdout")).count("\u274c")
             same = all(len(digests[v]) == 1 for v in VARIANTS) and len(set().union(*digests.values())) == 1
             ident_all &= same
-            mb = statistics.median(walls["base"]) if walls["base"] else float("nan")
-            mo = statistics.median(walls["off"]) if walls["off"] else float("nan")
-            mn = statistics.median(walls["on"]) if walls["on"] else float("nan")
-            md.append("| %s | %s | %d/%d/%d | %s | %s | %d | %s | %.2f | %.3f | %.3f | %.0f / %.0f |" % (
+            med = lambda xs: statistics.median(xs) if xs else float("nan")
+            ub, uo, un = med(users["base"]), med(users["off"]), med(users["on"])
+            mb, mo, mn = med(walls["base"]), med(walls["off"]), med(walls["on"])
+            totals.setdefault(w, [0.0] * 6)
+            for i, x in enumerate((ub, uo, un, mb, mo, mn)):
+                totals[w][i] += x
+            md.append("| %s | %s | %d/%d/%d | %s | %s | %d | %s | %.2f | %.3f | %.3f | %.2f | %.3f | %.3f | %.0f / %.0f |" % (
                 w, name, len(walls["base"]), len(walls["off"]), len(walls["on"]), sorted(digests["base"])[0][:16] if digests["base"] else "-",
-                "yes" if same else "**no**", fails, ",".join(sorted(exits)), mb, mo / mb, mn / mb,
-                statistics.median(rss["base"]) / 1024, statistics.median(rss["on"]) / 1024))
+                "yes" if same else "**no**", fails, ",".join(sorted(exits)), ub, uo / ub, un / ub, mb, mo / mb, mn / mb,
+                med(rss["base"]) / 1024, med(rss["on"]) / 1024))
+    md.append("\nPer workload (sums of the per-file medians):\n")
+    md.append("| workload | user s base | off/base user | on/base user | wall s base | off/base wall | on/base wall |")
+    md.append("|---|---|---|---|---|---|---|")
+    for w in WORKLOADS:
+        if w in totals:
+            ub, uo, un, mb, mo, mn = totals[w]
+            md.append("| %s | %.2f | %.3f | %.3f | %.2f | %.3f | %.3f |" % (w, ub, uo / ub, un / ub, mb, mo / mb, mn / mb))
+    data["overhead"] = {w: dict(zip(("user_base", "user_off", "user_on", "wall_base", "wall_off", "wall_on"), v)) for w, v in totals.items()}
+    # paired by run: run r of base, off and on ran back to back (bench/s0/run_all.sh), so their ratio sees one load
+    md.append("\nPaired by run (run r of base, off and on ran back to back; workload user time summed over its files):\n")
+    md.append("| workload | runs | off/base user, median (min-max) | on/base user, median (min-max) |")
+    md.append("|---|---|---|---|")
+    for w in WORKLOADS:
+        per = {}
+        for v in VARIANTS:
+            for name, stems in runs_of(ev, v, w).items():
+                for s in stems:
+                    r = s.rsplit(".r", 1)[1]
+                    per.setdefault(r, {}).setdefault(v, 0.0)
+                    per[r][v] += wall(ev, v, w, s)[1]
+        full = sorted(r for r in per if all(v in per[r] for v in VARIANTS))
+        ro = [per[r]["off"] / per[r]["base"] for r in full]
+        rn = [per[r]["on"] / per[r]["base"] for r in full]
+        if full:
+            md.append("| %s | %d | %.3f (%.3f-%.3f) | %.3f (%.3f-%.3f) |" % (
+                w, len(full), statistics.median(ro), min(ro), max(ro), statistics.median(rn), min(rn), max(rn)))
+            data["overhead"].setdefault(w, {}).update({"paired_off": ro, "paired_on": rn})
     md.append("\nAll answers byte-identical across the three builds: **%s**.\n" % ("yes" if ident_all else "no"))
     data["identical"] = ident_all
     # 2. rankings
@@ -114,14 +149,15 @@ def main():
                 for i, f in enumerate(p["functions"]):
                     heads.setdefault(f["head"], []).append((p, i, f))
             for h, entries in heads.items():
-                a = agg.setdefault(h, {"self_ns": 0, "incl_ns": 0, "calls": 0, "candidates": 0, "results": 0,
+                a = agg.setdefault(h, {"self_ns": 0, "incl_ns": 0, "calls": 0, "candidates": 0, "results": 0, "prepared_calls": 0,
                                        "eq_rev_changes": 0, "data_rev_changes": 0, "self_flags": 0, "incl_flags": 0,
-                                       "spaces_read": {}, "spaces_written": {}, "first_equation": ""})
+                                       "spaces_read": {}, "spaces_written": {}, "rev_changes": {}, "first_equation": ""})
                 a["self_ns"] += statistics.median([f["self_ns"] for _, _, f in entries])
                 a["incl_ns"] += statistics.median([f["incl_ns"] for _, _, f in entries])
                 p0, i0, f0 = entries[0]
                 for k in ("calls", "candidates", "results"):
                     a[k] += f0[k]
+                a["prepared_calls"] += f0.get("prepared_calls", 0)
                 a["eq_rev_changes"] += f0["self_eq_rev_changes"]
                 a["data_rev_changes"] += f0["self_data_rev_changes"]
                 a["self_flags"] |= f0["self_flags"]
@@ -133,6 +169,7 @@ def main():
                     sname = p0["spaces"][e["space"]]["name"]
                     if e["accesses"]:
                         a["spaces_read"][sname] = a["spaces_read"].get(sname, 0) + e["accesses"]
+                        a["rev_changes"][sname] = a["rev_changes"].get(sname, 0) + e["rev_changes_between_accesses"]
                     if e["writes"]:
                         a["spaces_written"][sname] = a["spaces_written"].get(sname, 0) + e["writes"]
             p0 = profs[0]
@@ -144,12 +181,12 @@ def main():
                     t[k] += s[k]
         ranked = sorted(agg.items(), key=lambda kv: (-kv[1]["self_ns"], kv[0]))
         md.append("### %s (total %s ms over %d file(s))\n" % (w, fmt_ms(total_ns), len(per_file)))
-        md.append("| # | function | calls | cand. | results | self ms | self % | incl % | effect (incl.) | spaces read / written | &self eqn rev. changes between calls | class | shape / extension |")
-        md.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+        md.append("| # | function or match site | calls | of which prepared | cand. | results | self ms | self % | incl % | effect (incl.) | spaces read / written | &self eqn rev. changes between calls | class | shape / extension / reason |")
+        md.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
         rows = []
         for rank, (h, a) in enumerate(ranked, 1):
             c = cls.get(h, {"class": "unclassified", "shape": "", "extension": "", "reason": "not in classification.json"})
-            row = dict(rank=rank, head=h, **{k: a[k] for k in ("calls", "candidates", "results", "self_ns", "incl_ns",
+            row = dict(rank=rank, head=h, **{k: a[k] for k in ("calls", "prepared_calls", "candidates", "results", "self_ns", "incl_ns",
                                                               "eq_rev_changes", "data_rev_changes", "self_flags", "incl_flags")},
                        spaces_read=a["spaces_read"], spaces_written=a["spaces_written"], cls=c,
                        self_pct=100.0 * a["self_ns"] / total_ns if total_ns else 0.0,
@@ -158,8 +195,8 @@ def main():
             if rank <= TOP:
                 sv = ", ".join("%s:%d" % kv for kv in sorted(a["spaces_read"].items(), key=lambda kv: -kv[1])[:3]) or "-"
                 sw = ", ".join("%s:%d" % kv for kv in sorted(a["spaces_written"].items(), key=lambda kv: -kv[1])[:3]) or "-"
-                md.append("| %d | %s | %d | %d | %d | %s | %.1f | %.1f | %s | %s / %s | %d | %s | %s |" % (
-                    rank, h.replace("|", "\\|"), a["calls"], a["candidates"], a["results"], fmt_ms(a["self_ns"]), row["self_pct"],
+                md.append("| %d | %s | %d | %d | %d | %d | %s | %.1f | %.1f | %s | %s / %s | %d | %s | %s |" % (
+                    rank, h.replace("|", "\\|"), a["calls"], a["prepared_calls"], a["candidates"], a["results"], fmt_ms(a["self_ns"]), row["self_pct"],
                     row["incl_pct"], effect(a["incl_flags"]), sv.replace("|", "\\|"), sw.replace("|", "\\|"), a["eq_rev_changes"], c["class"],
                     cell(c).replace("|", "\\|")))
         # coverage
@@ -172,7 +209,14 @@ def main():
         other = 100.0 - cov_now - sum(ext.values()) - outside
         md.append("\nCoverage of %s self time: compiled now **%.2f%%**; outside the method %.2f%%; not attributable to a function (outside equations, unclassified) %.2f%%." % (
             w, cov_now, outside, other))
-        md.append("\n| candidate extension | functions | self % gained | coverage after (cumulative) |")
+        touch = sum(r["self_pct"] for r in rows if r["self_flags"] & F_ACCESS)
+        acc_all = sum(sum(agg[r["head"]]["spaces_read"].values()) for r in rows)
+        acc_sites = sum(sum(agg[r["head"]]["spaces_read"].values()) for r in rows if r["head"].startswith("match@"))
+        md.append("Bounds: match-site rows make %.1f%% of the run's space accesses (the rest are space operations other than match, and"
+                  " queries inside prepared or inlined calls, whose time is in the enclosing row); rows that touch a space at all"
+                  " hold %.2f%% of the self time, an upper bound on what compiling space queries could reach in this workload." % (
+                      100.0 * acc_sites / acc_all if acc_all else 0.0, touch))
+        md.append("\n| candidate extension | rows | self % gained | coverage after (cumulative) |")
         md.append("|---|---|---|---|")
         cum = cov_now
         for e, g in sorted(ext.items(), key=lambda kv: -kv[1]):
@@ -180,14 +224,32 @@ def main():
             cum += g
             md.append("| %s | %d (%s) | %.2f | %.2f |" % (e, len(fns), ", ".join(fns[:4]) + (" ..." if len(fns) > 4 else ""), g, cum))
         md.append("\nSpaces (S2/S3: what changes during the run):\n")
-        md.append("| space | accesses | mutations | append-only | rewritten | equation mutations | mutations inside functions | mutations after first access |")
+        md.append("| space | accesses | mutations | append-only | rewritten | equation-or-opaque mutations | mutations inside functions | mutations after first access |")
         md.append("|---|---|---|---|---|---|---|---|")
         for sname, t in sorted(spaces.items(), key=lambda kv: (-kv[1]["accesses"] - kv[1]["mutations"], kv[0])):
             if t["accesses"] or t["mutations"]:
                 md.append("| %s | %d | %d | %d | %d | %d | %d | %d |" % (sname.replace("|", "\\|"), t["accesses"], t["mutations"], t["append_only"], t["rewritten"],
                                                                t["equation_mutations"], t["mutations_in_functions"], t["mutations_after_first_access"]))
         md.append("")
+        md.append("Hot rows and the spaces they read (S2/S3: guards on these spaces; top 12 rows by self time, spaces with")
+        md.append("at least 1% of the row's accesses): accesses, how many found a new space revision since the row's previous")
+        md.append("access, and whether that space's mutations over the run were append-only.\n")
+        md.append("| # | function or match site | self % | space | accesses | revision changed since previous access | space mutations (append-only / rewritten / equation-or-opaque) |")
+        md.append("|---|---|---|---|---|---|---|")
+        for r in rows[:12]:
+            acc = agg[r["head"]]["spaces_read"]
+            tot = sum(acc.values())
+            for sname, n in sorted(acc.items(), key=lambda kv: -kv[1]):
+                if tot and n < 0.01 * tot:
+                    continue
+                sp = spaces.get(sname, {})
+                ch = agg[r["head"]]["rev_changes"].get(sname, 0)
+                md.append("| %d | %s | %.1f | %s | %d | %d (%.0f%%) | %d / %d / %d |" % (
+                    r["rank"], r["head"].replace("|", "\\|")[:70], r["self_pct"], sname.replace("|", "\\|"), n, ch, 100.0 * ch / n if n else 0,
+                    sp.get("append_only", 0), sp.get("rewritten", 0), sp.get("equation_mutations", 0)))
+        md.append("")
         data["workloads"][w] = {"total_ns": total_ns, "coverage_now_pct": cov_now, "outside_pct": outside,
+                                "space_touching_self_pct": touch, "match_site_access_share_pct": 100.0 * acc_sites / acc_all if acc_all else 0.0,
                                 "extensions": ext, "rows": rows[:200], "spaces": spaces}
     out_md = "\n".join(md) + "\n"
     out_js = json.dumps(data, indent=1, sort_keys=True) + "\n"

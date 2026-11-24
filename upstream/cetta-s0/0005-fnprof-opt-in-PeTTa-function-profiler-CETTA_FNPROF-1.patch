@@ -1,4 +1,4 @@
-From 12ddf63b16b376eb32ba127014fd3e99113597d9 Mon Sep 17 00:00:00 2001
+From d44eb3bd37026f346682d417078310335fe26832 Mon Sep 17 00:00:00 2001
 From: cettapack <cettapack@localhost>
 Date: Tue, 24 Nov 2026 06:46:02 -0700
 Subject: [PATCH] fnprof: opt-in PeTTa function profiler (CETTA_FNPROF=1), off
@@ -8,9 +8,9 @@ Subject: [PATCH] fnprof: opt-in PeTTa function profiler (CETTA_FNPROF=1), off
  Makefile                   |  12 +-
  src/cetta_fnprof.h         |  26 ++
  src/eval.c                 |  15 +-
- src/petta_search_machine.c | 674 ++++++++++++++++++++++++++++++++++++-
+ src/petta_search_machine.c | 837 ++++++++++++++++++++++++++++++++++++-
  src/space.c                |   9 +
- 5 files changed, 732 insertions(+), 4 deletions(-)
+ 5 files changed, 895 insertions(+), 4 deletions(-)
  create mode 100644 src/cetta_fnprof.h
 
 diff --git a/Makefile b/Makefile
@@ -113,7 +113,7 @@ index b3fdc6ab..02155495 100644
      return NULL;
  }
 diff --git a/src/petta_search_machine.c b/src/petta_search_machine.c
-index d7de67e2..6404ba52 100644
+index d7de67e2..d2a928f1 100644
 --- a/src/petta_search_machine.c
 +++ b/src/petta_search_machine.c
 @@ -62,6 +62,10 @@
@@ -127,7 +127,7 @@ index d7de67e2..6404ba52 100644
  #include <inttypes.h>
  #include <limits.h>
  #include <math.h>
-@@ -107,6 +111,619 @@ typedef enum {
+@@ -107,6 +111,716 @@ typedef enum {
      PETTA_TABLE_ENTRY_COMPLETE,
  } PettaTableEntryState;
  
@@ -165,6 +165,8 @@ index d7de67e2..6404ba52 100644
 +    uint64_t data_rev_last, data_rev_changes;
 +    bool rev_seen;
 +    uint32_t self_flags, incl_flags;
++    /* Calls CeTTa ran through its prepared pure-call path (no equation choice). */
++    uint64_t prepared_calls;
 +    /* The first equation of this head the machine tried (printed). */
 +    char *first_equation;
 +    /* The head as printed (the symbol table name, when the atom is a symbol). */
@@ -209,6 +211,10 @@ index d7de67e2..6404ba52 100644
 +    /* Match sites: (enclosing function, space, pattern head) -> synthetic head key. */
 +    struct { uint32_t parent_fn; char *space; char *pattern_head; } *sites;
 +    size_t sites_len, sites_cap;
++    /* While a synchronous fast path runs in a site frame, goals it schedules
++     * belong to the caller's frame. */
++    bool override_on;
++    uint32_t override_frame;
 +} g_fnprof;
 +
 +static inline uint64_t fnprof_now(void) {
@@ -302,7 +308,7 @@ index d7de67e2..6404ba52 100644
 +    if (!fnprof_ready())
 +        return frame;
 +    if (!frame)
-+        frame = g_fnprof.cur;
++        frame = g_fnprof.override_on ? g_fnprof.override_frame : g_fnprof.cur;
 +    g_fnprof.frames[frame].flags |= FNPROF_F_USED;
 +    return frame;
 +}
@@ -476,6 +482,97 @@ index d7de67e2..6404ba52 100644
 +    g_fnprof.frames[index] = (FnprofFrame){.parent = parent, .fn = fn,
 +                                           .flags = flags};
 +    fnprof_switch(index);
++}
++
++/* A call CeTTa runs through its prepared pure-call path, outside the goal
++ * machine: it gets a frame of its own (the same function row as its
++ * equation calls), entered before and left after the host callback. */
++static uint32_t fnprof_prepared_enter(Atom *head_atom, uint32_t *frame_out) {
++    *frame_out = UINT32_MAX;
++    if (!fnprof_ready())
++        return UINT32_MAX;
++    uint32_t parent = g_fnprof.cur;
++    uint32_t fn = fnprof_fn_index(fnprof_atom_head(head_atom));
++    fnprof_name(fn, fnprof_head_atom(head_atom));
++    if (!fnprof_grow((void **)&g_fnprof.frames, &g_fnprof.frames_cap,
++                     g_fnprof.frames_len + 1u, sizeof(FnprofFrame)))
++        abort();
++    uint32_t index = (uint32_t)g_fnprof.frames_len++;
++    uint32_t flags = FNPROF_F_USED;
++    uint32_t a = parent;
++    for (unsigned steps = 0; a != 0u && steps < 4096u; steps++) {
++        if (g_fnprof.frames[a].fn == fn) {
++            flags |= FNPROF_F_REC;
++            break;
++        }
++        a = g_fnprof.frames[a].parent;
++    }
++    g_fnprof.frames[index] = (FnprofFrame){.parent = parent, .fn = fn,
++                                           .flags = flags};
++    fnprof_switch(index);
++    *frame_out = index;
++    return parent;
++}
++
++static void fnprof_prepared_leave(uint32_t parent, uint32_t frame, bool ok) {
++    if (parent == UINT32_MAX || frame == UINT32_MAX || !fnprof_ready())
++        return;
++    /* A declined call (false) goes on to equation search, which counts it. */
++    if (ok) {
++        FnprofFn *fn = &g_fnprof.fns[g_fnprof.frames[frame].fn];
++        fn->calls++;
++        fn->prepared_calls++;
++        fn->results++;
++    }
++    fnprof_switch(parent);
++}
++
++/* The first (match S P T) inside an expression (existence fusions). */
++static bool fnprof_find_match(Atom *x, unsigned depth, Atom **space, Atom **pattern) {
++    if (!x || x->kind != ATOM_EXPR || depth > 8u)
++        return false;
++    if (x->expr.len == 4u && x->expr.elems[0]->kind == ATOM_SYMBOL &&
++        x->expr.elems[0]->sym_id == g_builtin_syms.match) {
++        *space = x->expr.elems[1];
++        *pattern = x->expr.elems[2];
++        return true;
++    }
++    for (CettaExprLen i = 0; i < x->expr.len; i++)
++        if (fnprof_find_match(x->expr.elems[i], depth + 1u, space, pattern))
++            return true;
++    return false;
++}
++
++/* A synchronous existence fast path over a match: timed in the match site's
++ * frame; goals it schedules stay the caller's. */
++static uint32_t fnprof_sync_site_enter(Atom *expression, bool *saved_on,
++                                       uint32_t *saved_frame) {
++    if (!fnprof_ready())
++        return UINT32_MAX;
++    Atom *space = NULL, *pattern = NULL;
++    if (!fnprof_find_match(expression, 0u, &space, &pattern))
++        return UINT32_MAX;
++    uint32_t parent = g_fnprof.cur;
++    *saved_on = g_fnprof.override_on;
++    *saved_frame = g_fnprof.override_frame;
++    g_fnprof.override_on = true;
++    g_fnprof.override_frame = parent;
++    fnprof_match_site(space, pattern);
++    return parent;
++}
++
++static void fnprof_sync_site_leave(uint32_t parent, bool handled,
++                                   bool saved_on, uint32_t saved_frame) {
++    if (parent == UINT32_MAX || !fnprof_ready())
++        return;
++    FnprofFn *fn = &g_fnprof.fns[g_fnprof.frames[g_fnprof.cur].fn];
++    if (handled)
++        fn->results++;
++    else if (fn->calls)
++        fn->calls--;
++    g_fnprof.override_on = saved_on;
++    g_fnprof.override_frame = saved_frame;
++    fnprof_switch(parent);
 +}
 +
 +static void fnprof_match_row(uint32_t frame) {
@@ -700,12 +797,12 @@ index d7de67e2..6404ba52 100644
 +                ",\"results\":%" PRIu64 ",\"frames\":%" PRIu64
 +                ",\"recursive_frames\":%" PRIu64 ",\"self_ns\":%" PRIu64
 +                ",\"incl_ns\":%" PRIu64 ",\"self_eq_rev_changes\":%" PRIu64
-+                ",\"self_data_rev_changes\":%" PRIu64
++                ",\"self_data_rev_changes\":%" PRIu64 ",\"prepared_calls\":%" PRIu64
 +                ",\"self_flags\":%u,\"incl_flags\":%u,\"first_equation\":",
 +                fn->calls, fn->candidates, fn->results, fn->frames,
 +                fn->recursive_frames, fn->self_ns, fn->incl_ns,
-+                fn->eq_rev_changes, fn->data_rev_changes, fn->self_flags,
-+                fn->incl_flags);
++                fn->eq_rev_changes, fn->data_rev_changes, fn->prepared_calls,
++                fn->self_flags, fn->incl_flags);
 +        fnprof_json_string(out, fn->first_equation ? fn->first_equation : "");
 +        fputc('}', out);
 +    }
@@ -747,7 +844,7 @@ index d7de67e2..6404ba52 100644
  typedef struct {
      CettaProducerReads reads;
      bool checked;
-@@ -462,6 +1079,9 @@ typedef struct {
+@@ -462,6 +1176,9 @@ typedef struct {
      bool ready_branches : 1;
      /* Cold scope receipts share existing resume/commit goal kinds. */
      uint8_t open_scope_kind;
@@ -757,7 +854,7 @@ index d7de67e2..6404ba52 100644
  } PettaGoal;
  
  _Static_assert(sizeof(((PettaGoal *)0)->native_return) <=
-@@ -819,6 +1439,9 @@ typedef struct {
+@@ -819,6 +1536,9 @@ typedef struct {
  
  typedef struct {
      PettaChoiceKind kind;
@@ -767,7 +864,7 @@ index d7de67e2..6404ba52 100644
      /* PeTTa's search context is binding-only: it cannot acquire a scratch
       * arena through search_context_scratch().  The generic product
       * checkpoint would therefore store an inert ArenaMark in every live
-@@ -1607,6 +2230,9 @@ struct PettaMachineImpl {
+@@ -1607,6 +2327,9 @@ struct PettaMachineImpl {
      uint64_t next_goal_instance;
      uint64_t current_source_root;
      uint64_t query_source_root;
@@ -777,7 +874,7 @@ index d7de67e2..6404ba52 100644
      size_t heap_collect_after;
      /* What the last heap collection copied: the next waits for twice as
       * much new allocation. */
-@@ -5276,6 +5902,9 @@ static bool petta_goal_push(PettaMachineImpl *machine, const PettaGoal *goal) {
+@@ -5276,6 +5999,9 @@ static bool petta_goal_push(PettaMachineImpl *machine, const PettaGoal *goal) {
          return false;
      PettaGoal *stored = &machine->goals[machine->goal_len++];
      *stored = *goal;
@@ -787,7 +884,7 @@ index d7de67e2..6404ba52 100644
      if (!stored->source_root)
          stored->source_root = machine->current_source_root;
      stored->manufacture_epoch = manufacture_epoch;
-@@ -5505,6 +6134,9 @@ static bool petta_choice_push_at_goal_trail_mark(
+@@ -5505,6 +6231,9 @@ static bool petta_choice_push_at_goal_trail_mark(
      }
      if (!choice.source_root)
          choice.source_root = machine->current_source_root;
@@ -797,7 +894,7 @@ index d7de67e2..6404ba52 100644
      /*
       * The first equation alternative may be selected before its choice record
       * is installed.  In that case the original continuation remains the
-@@ -19349,6 +19981,22 @@ static bool petta_machine_advance_choice(
+@@ -19349,6 +20078,22 @@ static bool petta_machine_advance_choice(
  
      if (!choice->source_root)
          choice->source_root = machine->current_source_root;
@@ -820,7 +917,7 @@ index d7de67e2..6404ba52 100644
      /* Matching and body scheduling use the declaration root. Returning to
       * the caller, including after a failed candidate, restores its origin. */
      __attribute__((cleanup(petta_source_context_restore)))
-@@ -19419,6 +20067,9 @@ static bool petta_machine_advance_choice(
+@@ -19419,6 +20164,9 @@ static bool petta_machine_advance_choice(
                      choice->as.equation.selection_first, selected_index);
              machine->current_source_root = candidate.source_root
                  ? candidate.source_root : choice->source_root;
@@ -830,7 +927,7 @@ index d7de67e2..6404ba52 100644
              const bool directional = candidate.activation_layout.binding == CETTA_RULE_BIND_HEAD;
              /* An equation whose body binds variables of its own, with no
               * closed template, keeps them in its activation's slot frame
-@@ -28637,6 +29288,9 @@ static bool petta_machine_start_ready_match_mode(
+@@ -28637,6 +29385,9 @@ static bool petta_machine_start_ready_match_mode(
          !expected || !failure) {
          return false;
      }
@@ -840,7 +937,114 @@ index d7de67e2..6404ba52 100644
      /* A match answers its template, and a template that is not a finite
       * tree is no answer (P-GRAPH-3): a space holds finite terms only, so the
       * match cannot make the template finite. */
-@@ -41766,6 +42420,9 @@ static bool petta_machine_init_internal(
+@@ -28847,6 +29598,25 @@ static bool petta_machine_match_existence_observer_shape(
+  * variables, typed pattern elaboration, computed/error/empty templates, and
+  * backend queries requiring a native projection retain the ordinary path.
+  */
++#if CETTA_FNPROF
++static bool petta_machine_try_match_existence_observer_fnprof_impl(
++    PettaMachineImpl *machine, Atom *expression, Atom *expected,
++    const PettaPlanNode *plan, bool *out_handled);
++static bool petta_machine_try_match_existence_observer(
++    PettaMachineImpl *machine, Atom *expression, Atom *expected,
++    const PettaPlanNode *plan, bool *out_handled) {
++    bool saved_on = false;
++    uint32_t saved_frame = 0u;
++    uint32_t parent = fnprof_sync_site_enter(expression, &saved_on, &saved_frame);
++    bool result = petta_machine_try_match_existence_observer_fnprof_impl(
++        machine, expression, expected, plan, out_handled);
++    fnprof_sync_site_leave(parent, out_handled && *out_handled, saved_on,
++                           saved_frame);
++    return result;
++}
++#define petta_machine_try_match_existence_observer \
++    petta_machine_try_match_existence_observer_fnprof_impl
++#endif
+ static bool petta_machine_try_match_existence_observer(
+     PettaMachineImpl *machine, Atom *expression, Atom *expected,
+     const PettaPlanNode *plan, bool *out_handled) {
+@@ -28951,6 +29721,30 @@ static bool petta_machine_dispatch_solve(
+  * meeting P, decides between A, when it has none, and B.  The template
+  * must be one the observation may ignore, the pattern ground, the space
+  * exact.  *HANDLED stays false when it declines, having done nothing. */
++#if CETTA_FNPROF
++#undef petta_machine_try_match_existence_observer
++static bool petta_machine_try_existence_case_fnprof_impl(
++    PettaMachineImpl *machine, const PettaGoal *goal, Atom *expression,
++    Atom *expected, const PettaPlanNode *plan,
++    CettaControlOperationPlan control, const Bindings *environment,
++    bool *handled, PettaMachineStep *failure);
++static bool petta_machine_try_existence_case(
++    PettaMachineImpl *machine, const PettaGoal *goal, Atom *expression,
++    Atom *expected, const PettaPlanNode *plan,
++    CettaControlOperationPlan control, const Bindings *environment,
++    bool *handled, PettaMachineStep *failure) {
++    bool saved_on = false;
++    uint32_t saved_frame = 0u;
++    uint32_t parent = fnprof_sync_site_enter(expression, &saved_on, &saved_frame);
++    bool result = petta_machine_try_existence_case_fnprof_impl(
++        machine, goal, expression, expected, plan, control, environment,
++        handled, failure);
++    fnprof_sync_site_leave(parent, handled && *handled, saved_on, saved_frame);
++    return result;
++}
++#define petta_machine_try_existence_case \
++    petta_machine_try_existence_case_fnprof_impl
++#endif
+ static bool petta_machine_try_existence_case(
+     PettaMachineImpl *machine, const PettaGoal *goal, Atom *expression,
+     Atom *expected, const PettaPlanNode *plan,
+@@ -29074,6 +29868,9 @@ static bool petta_machine_try_existence_case(
+      * Use the ordinary trail before entering the selected branch. */
+     return true;
+ }
++#if CETTA_FNPROF
++#undef petta_machine_try_existence_case
++#endif
+ 
+ static bool petta_machine_prepare_equation_frame(
+         PettaMachineImpl *machine,
+@@ -31403,9 +32200,19 @@ static bool petta_machine_execute_prepared_call(
+         .head = binding_value_from_atom(call->expr.elems[0]),
+         .supplied = {.atoms = call->expr.elems + 1u, .count = call->expr.len - 1u},
+     };
++#if CETTA_FNPROF
++    uint32_t fnprof_frame;
++    uint32_t fnprof_parent = fnprof_prepared_enter(call->expr.elems[0], &fnprof_frame);
++    bool fnprof_ok = machine->host.execute_prepared_pure_call(
++        machine->host.context, machine->space, &machine->heap,
++        &invocation, call, outcome);
++    fnprof_prepared_leave(fnprof_parent, fnprof_frame, fnprof_ok);
++    return fnprof_ok;
++#else
+     return machine->host.execute_prepared_pure_call(
+         machine->host.context, machine->space, &machine->heap,
+         &invocation, call, outcome);
++#endif
+ }
+ 
+ /* Query coordinates are borrowed until the callee returns. Resolve them once
+@@ -31444,9 +32251,19 @@ static bool petta_machine_execute_prepared_query(
+     if (!cetta_invocation_resolve_arguments(&machine->heap,
+             search_context_bindings(&machine->search), &invocation, true, &resolved))
+         return false;
++#if CETTA_FNPROF
++    uint32_t fnprof_frame;
++    uint32_t fnprof_parent = fnprof_prepared_enter(query->head, &fnprof_frame);
++    bool fnprof_ok = machine->host.execute_prepared_pure_call(
++        machine->host.context, machine->space, &machine->heap,
++        &resolved, NULL, outcome);
++    fnprof_prepared_leave(fnprof_parent, fnprof_frame, fnprof_ok);
++    return fnprof_ok;
++#else
+     return machine->host.execute_prepared_pure_call(
+         machine->host.context, machine->space, &machine->heap,
+         &resolved, NULL, outcome);
++#endif
+ }
+ 
+ /* A completed finite producer lends data occurrences to one outcome choice.
+@@ -41766,6 +42583,9 @@ static bool petta_machine_init_internal(
      impl->instance_id = petta_machine_fresh_instance_id();
      impl->query_source_root = source_root;
      impl->current_source_root = source_root;
@@ -850,7 +1054,7 @@ index d7de67e2..6404ba52 100644
      impl->identity_exhaustions = cetta_frame_identity_exhaustions();
      impl->identity_mints_seen = cetta_frame_identity_thread_mints();
      impl->space = space;
-@@ -42224,6 +42881,9 @@ static PettaMachineStep petta_machine_next_local(
+@@ -42224,6 +43044,9 @@ static PettaMachineStep petta_machine_next_local(
              return impl->terminal_step;
          }
          if (impl->goal_len == 0u) {
@@ -860,7 +1064,7 @@ index d7de67e2..6404ba52 100644
              if (!petta_machine_emit(impl, answer, environment)) {
                  impl->terminal = true;
                  impl->terminal_step = PETTA_MACHINE_STEP_CAPACITY;
-@@ -42234,6 +42894,9 @@ static PettaMachineStep petta_machine_next_local(
+@@ -42234,6 +43057,9 @@ static PettaMachineStep petta_machine_next_local(
          }
  
          PettaGoal goal = impl->goals[--impl->goal_len];
@@ -870,7 +1074,7 @@ index d7de67e2..6404ba52 100644
          impl->manufacture_epoch = goal.manufacture_epoch;
          impl->current_source_root = goal.source_root;
          uint32_t body_resume_steps = 0u;
-@@ -42495,6 +43158,11 @@ void petta_machine_destroy(PettaMachine *machine) {
+@@ -42495,6 +43321,11 @@ void petta_machine_destroy(PettaMachine *machine) {
      if (!machine || !machine->impl)
          return;
      PettaMachineImpl *impl = machine->impl;
@@ -882,7 +1086,7 @@ index d7de67e2..6404ba52 100644
      impl->destroy_parent = NULL;
      impl->destroy_handle = machine;
      for (;;) {
-@@ -42521,8 +43189,12 @@ void petta_machine_destroy(PettaMachine *machine) {
+@@ -42521,8 +43352,12 @@ void petta_machine_destroy(PettaMachine *machine) {
          PettaMachine *handle = impl->destroy_handle;
          petta_machine_destroy_local(impl);
          handle->impl = NULL;

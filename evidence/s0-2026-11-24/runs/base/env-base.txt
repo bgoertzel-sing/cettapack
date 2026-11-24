@@ -1,0 +1,9 @@
+variant=base cetta=/home/openclaw/research-agent/projects/cettapack/wt/s0-profile/build/s0/cetta-base/cetta
+cetta_sha256=7446c48383268c1c2299123fae9db1c0774465ecabf7cecf34bac9d6efca086e
+cetta_build_head=9c25ad10e689a71a3bfc65f9cb52394541b5eddc match-rows: row hooks, compiled code inside the matcher's row loop
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=8758b334097a06010f9c43b5b0101a89f4971e64
+host=pop-os nproc=8 date=2026-11-24T15:24:29Z
+generated s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+generated s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef

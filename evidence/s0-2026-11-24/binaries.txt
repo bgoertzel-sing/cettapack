@@ -1,0 +1,56 @@
+# S0 builds (bench/s0/build_s0_cetta.sh); 2026-11-24T15:09:58Z
+patch upstream/cetta-s0/0005 sha256 f2019a5cfbedde455109e32378f87f0b670a8bce7f419e56eaa367db7af24317
+patch series upstream/cetta/0001-0004 (concatenated) sha256 bad358e8ff0720ca23638deb9588a0b768eca7912d1ffcf190cc9616f2a124f0
+== base
+head 9c25ad10e689a71a3bfc65f9cb52394541b5eddc match-rows: row hooks, compiled code inside the matcher's row loop
+  9c25ad10 match-rows: row hooks, compiled code inside the matcher's row loop
+  692a2586 eval: match-rows, a direct entry to the conjunction matcher
+  92708123 mork bridge: bulk prefix lookup (mork_space_prefix_vals)
+  e36c252c embedding: in-process native borrowing for compiled kernels
+  a9b3a811 Improve native PeTTa matching, iteration and memory use
+  11be5c37 Merge opt into pre-main: typed fast paths and checked constructor builds
+args BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+cetta sha256 7446c48383268c1c2299123fae9db1c0774465ecabf7cecf34bac9d6efca086e bytes 31423144
+size (text data bss): 20160416 846272 3106200
+fnprof symbols (nm | grep -c fnprof): 0
+libswipl: libswipl.so.10 => /home/openclaw/research-agent/projects/cettapack/scratch/deps/swipl10/root/lib/swipl/lib/x86_64-linux/libswipl.so.10
+== off
+head 95a8b2d737350ee80d96c3cc6c880ed486a0bca4 fnprof: opt-in PeTTa function profiler (CETTA_FNPROF=1), off by default
+  95a8b2d7 fnprof: opt-in PeTTa function profiler (CETTA_FNPROF=1), off by default
+  71628802 match-rows: row hooks, compiled code inside the matcher's row loop
+  b022c88f eval: match-rows, a direct entry to the conjunction matcher
+  550afd71 mork bridge: bulk prefix lookup (mork_space_prefix_vals)
+  040435be embedding: in-process native borrowing for compiled kernels
+  a9b3a811 Improve native PeTTa matching, iteration and memory use
+0005 as applied (git diff HEAD~1 HEAD | sha256sum): d3d2611e48d145fd757ded1da6f9ecbaa8c65d306d354b64ae42914d56e9bfd6
+args BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=0 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+cetta sha256 2afee13a95e5d2dbaa7bd23d1298a2b631b61b03edae3b07444ee627ad49e7a9 bytes 31423136
+size (text data bss): 20160416 846272 3106200
+fnprof symbols (nm | grep -c fnprof): 0
+libswipl: libswipl.so.10 => /home/openclaw/research-agent/projects/cettapack/scratch/deps/swipl10/root/lib/swipl/lib/x86_64-linux/libswipl.so.10
+== on
+head 95a8b2d737350ee80d96c3cc6c880ed486a0bca4 fnprof: opt-in PeTTa function profiler (CETTA_FNPROF=1), off by default
+  95a8b2d7 fnprof: opt-in PeTTa function profiler (CETTA_FNPROF=1), off by default
+  71628802 match-rows: row hooks, compiled code inside the matcher's row loop
+  b022c88f eval: match-rows, a direct entry to the conjunction matcher
+  550afd71 mork bridge: bulk prefix lookup (mork_space_prefix_vals)
+  040435be embedding: in-process native borrowing for compiled kernels
+  a9b3a811 Improve native PeTTa matching, iteration and memory use
+0005 as applied (git diff HEAD~1 HEAD | sha256sum): d3d2611e48d145fd757ded1da6f9ecbaa8c65d306d354b64ae42914d56e9bfd6
+args BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+cetta sha256 4bc6fc28954d3725d90a25c801708bfb1f97fe83c5a913c9e7933d74b8d9b147 bytes 31436120
+size (text data bss): 20172915 846272 3106456
+fnprof symbols (nm | grep -c fnprof): 18
+libswipl: libswipl.so.10 => /home/openclaw/research-agent/projects/cettapack/scratch/deps/swipl10/root/lib/swipl/lib/x86_64-linux/libswipl.so.10
+== .text comparison base vs off (objcopy -O binary --only-section=.text)
+base .text sha256 bc7384ea35fbfe9efb0407959e76c95a3a0131dc531a94583f8d6f9ed0ae4613 bytes 12414944
+off  .text sha256 1020ec12ffa1d20514c604f3bdc9f3729a509973e61c079e4b0b622c2033c0c0 bytes 12414944
+differing bytes (cmp -l | wc -l): 74
+differing runs: 67 ; every run is inside the 32-bit immediate of a 'mov edx, imm32' (opcode 0xba) in both builds: True
+  0xd20a9 base ba0f18 off ba1018
+  0xd2ac8 base ba8a18 off ba8b18
+  0x19a9c9 base ba9b2300 off ba742600
+  0x1c4a7b base ba042a00 off badd2c00
+  0x1c9f8f base ba9b2300 off ba742600
+== SWI-Prolog
+swipl-10.0.2.tar.gz sha256 e42cc098f7b8a6051c4f79a99b55162d467098aba60f69649bdc7583f0734b57 (https://www.swi-prolog.org/download/stable/src/), built with: cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DUSE_GMP=OFF -DSWIPL_PACKAGES_X=OFF -DSWIPL_PACKAGES_JAVA=OFF -DSWIPL_PACKAGES_ODBC=OFF -DSWIPL_PACKAGES_PYTHON=OFF -DSWIPL_PACKAGES_TERM=OFF -DINSTALL_DOCUMENTATION=OFF -DBUILD_TESTING=OFF

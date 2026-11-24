@@ -1,0 +1,28 @@
+{
+  "chainer_revision": "b0e24f9b9d7106ccabf51917f1703abf3ab8c570",
+  "chainer_source": "commit",
+  "petta_revision": "e038e4dbb587e48fdb9d14990966108d38fde0b3",
+  "profile": "extended",
+  "results": [
+    {
+      "cetta": "MATCH",
+      "cetta_seconds": 4.571922,
+      "name": "deductionrevision",
+      "normalized_sha256": "7c4b04f131b0f92686e9b5c52d36aee6a4fc12fb7b725c255e27fd1ef3a21d5e"
+    },
+    {
+      "cetta": "MATCH",
+      "cetta_seconds": 13.091609,
+      "name": "flyingraven",
+      "normalized_sha256": "b9c478b159130d90c88d2c17df094a3cb4fcfbcb9337c73f7e1ad49f8eca7090"
+    },
+    {
+      "cetta": "MATCH",
+      "cetta_seconds": 4.748216,
+      "name": "raveninduction",
+      "normalized_sha256": "9180773ff7d1759ae8beb458c7d070b243f31780723ea3e7470c2223631fef4d"
+    }
+  ],
+  "schema": "cetta.petta-chainer-compat.v1",
+  "space_engine": "native"
+}
