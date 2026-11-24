@@ -47,10 +47,11 @@ static void die(const char *f, ...) {
 /* the profile engines are opened with: the plan's, unless a test overrides it */
 static bool g_profile_override;
 static const char *g_profile;
+static const char *g_language = "he";   /* fnspec 3: the forced-mismatch test opens PeTTa-language engines */
 static cetta_engine_t *engine_new(const char *profile) {
     if (g_profile_override) profile = g_profile;
     cetta_engine_config_t cfg = {.size = sizeof cfg, .abi_version = CETTA_EMBED_ABI_VERSION,
-                                 .language = "he", .profile = profile, .resource_root = CPK_CETTA_ROOT};
+                                 .language = g_language, .profile = profile, .resource_root = CPK_CETTA_ROOT};
     cetta_engine_t *e = NULL;
     cetta_status_t st = cetta_embed_engine_new(&cfg, &e);
     if (st != CETTA_OK) die("engine: %s", cetta_embed_status_name(st));
@@ -679,6 +680,62 @@ static void profile_test(const FsPlan *p, const char *label, const char *kbtext,
     env_close(&ref); env_close(&sp);
 }
 
+/* fnspec 3, item 1: an existence-test plan opened in an engine whose == / not answer other
+ * atoms than he's True/False (a PeTTa-language engine: true/false).  The live == probe must
+ * set the mismatch, every call takes the residual, and the answers are that engine's own
+ * (fn-generic in an engine of the same language) */
+static void language_test(const FsPlan *p, const char *label, const char *kbtext, char **q, int nq) {
+    if (p->space_token) {
+        /* a named-space plan binds its token with bind! and reads it back with quote; a PeTTa-language
+         * engine does not resolve the token that way, so the test runs on the space-argument plans */
+        printf("SKIP %-20s %-14s language-petta: named space token %s (run on the space-argument exist sites)\n", p->site, label, p->space_token);
+        return;
+    }
+    g_language = "petta"; g_profile_override = true; g_profile = NULL;
+    Env ref = env_open(p, find_mode("fn-generic"), kbtext);
+    Env sp = env_open(p, find_mode("fn-spec"), kbtext);
+    g_language = "he"; g_profile_override = false;
+    char rh[256], shd[256];
+    mode_head(&ref, rh, sizeof rh); mode_head(&sp, shd, sizeof shd);
+    int same = 0, shown = 0;
+    size_t answers = 0;
+    char sample[128] = "-";
+    g_eval_error = false;
+    for (int i = 0; i < nq; i++) {
+        cetta_atom_t *x = query_atom(&ref, rh, q[i]), *y = query_atom(&sp, shd, q[i]);
+        Bag a = eval_bag(ref.e, x), b = eval_bag(sp.e, y);
+        if (bag_eq(&a, &b)) same++;
+        else if (shown++ < 3) {
+            fprintf(stderr, "  %s language petta: mismatch at %s\n", p->site, q[i]);
+            show_bag("fn-generic", &a); show_bag("fn-spec", &b);
+        }
+        if (b.n && !strcmp(sample, "-")) snprintf(sample, sizeof sample, "%s", b.items[0]);
+        answers += b.n;
+        bag_free(&a); bag_free(&b);
+        cetta_embed_atom_release(x); cetta_embed_atom_release(y);
+    }
+    const FsStats *s = &sp.rt->st;
+    bool path = s->residual_calls == (uint64_t)nq && s->spec_calls == 0 && sp.rt->eq_mismatch;
+    bool ok = same == nq && path && !g_eval_error;
+    printf("%s %-20s %-14s language-petta (== answers differ) queries=%d same=%d answers=%zu first-answer=%s spec=%" PRIu64 " residual=%" PRIu64
+           " eq_mismatch=%s expect=residual path=%s guard: %s\n",
+           ok ? "PASS" : "FAIL", p->site, label, nq, same, answers, sample, s->spec_calls, s->residual_calls,
+           sp.rt->eq_mismatch ? "yes" : "no", path ? "ok" : "WRONG", sp.rt->invalid_reason ? sp.rt->invalid_reason : "-");
+    fflush(stdout);
+    if (!ok) g_fails++;
+    env_close(&ref); env_close(&sp);
+}
+
+/* the matching engine (the site's own language and profile): the probe passes, every call specialised */
+static void eq_probe_check(const FsPlan *p, const char *label, const char *kbtext) {
+    Env sp = env_open(p, find_mode("fn-spec"), kbtext);
+    bool ok = !sp.rt->eq_mismatch;
+    printf("%s %-20s %-14s eq-probe in the site's engine (%s): eq_mismatch=%s\n", ok ? "PASS" : "FAIL", p->site, label,
+           fs_profile(p) ? fs_profile(p) : "he", sp.rt->eq_mismatch ? "yes" : "no");
+    if (!ok) g_fails++;
+    env_close(&sp);
+}
+
 static int cmp_str(const void *a, const void *b) { return strcmp(*(char *const *)a, *(char *const *)b); }
 
 static int cmd_difftest(const FsPlan *p, const char *cases, const char *kbfile, const char *qfile) {
@@ -711,6 +768,7 @@ static int cmd_difftest(const FsPlan *p, const char *cases, const char *kbfile, 
             mutation_test(p, names[i], kb, lines, nq, nfmut);
             recursion_test(p, names[i], kb, lines, nq);
             if (p->once) profile_test(p, names[i], kb, lines, nq);
+            if (p->exist) { eq_probe_check(p, names[i], kb); language_test(p, names[i], kb, lines, nq); }
         }
         free(kb); free(qs); free(names[i]);
     }
