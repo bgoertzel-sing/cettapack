@@ -47,6 +47,7 @@ typedef struct {
     const char *parts;           /* (_ LHS (P1..Pn) TMPL (CVARS) (CONSTS) (HVARS) (SEEDS)) */
     const char *equation;        /* the compiled equation */
     const char *hosted_def;      /* (= (f-h ...) ...): the function with its match hosted */
+    const char *rows_def;        /* fnspec 3: (= (cpk-rows:f ...) (match-rows S P (HV) (CPK_ROWS_HOOK ...) (f ...))) */
     const char *digest;
     const char *definitions;     /* the site file's definitions, loaded into &self */
     FsBuiltin builtins[16];
@@ -91,17 +92,23 @@ struct FsRt {
     const char *invalid_reason;
     FsStats st;
     cetta_atom_t *callable, *hosted;
+    char *rows_hook;                     /* fnspec 3: the match-rows hook's registered name */
 };
 
 struct FsCall {
     FsRt *rt;
     Atom *const *args;                   /* native atoms of the call's arguments */
+    Atom *const *rowvals;                /* fnspec 3, match-rows hook: the compared variables and template atoms
+                                            as the call instantiated them, read under the row's bindings
+                                            (NULL: the plan's own, the callback path) */
 };
 
 #define FS_ARG(i) ((Atom *)c->args[(i)])
-#define FS_ROWVAR(j) bindings_apply(row, a, c->rt->cvars[(j)])
+#define FS_ROWVAR(j) bindings_apply(row, a, c->rowvals ? c->rowvals[(j)] : c->rt->cvars[(j)])
+#define FS_TEMPLATE() bindings_apply(row, a, c->rowvals ? c->rowvals[c->rt->plan->n_cvars] : c->rt->tmpl)
 #define FS_CONST(k) (c->rt->consts[(k)])
 #define FS_TMPL(i) (c->rt->tmpls[(i)])
+#define FS_TMPLV(i) bindings_apply(row, a, c->rowvals ? c->rowvals[c->rt->plan->n_cvars + (i)] : c->rt->tmpls[(i)])
 #define FS_TRUE (c->rt->true_a)
 #define FS_FALSE (c->rt->false_a)
 

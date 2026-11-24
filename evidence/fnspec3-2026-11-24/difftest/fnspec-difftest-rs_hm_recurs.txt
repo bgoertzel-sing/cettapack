@@ -1,0 +1,46 @@
+site rs_hm_recurs: hm-recurs-seen/5, shape once-cond, 1 pattern(s); profile extended; load &self; origin: PeTTaChainer 33cca343 pettachainer/metta/runtime/hypothesis_mining.metta:83 (once-cond: the (collapse (once ...)) the function at that line takes as its case scrutinee; the case adds a row when it is (); a boolean template leaf; profile extended)
+  equation (= (hm-recurs-seen $kb $hash $rule $instance $context) (collapse (once (match &hm_seen ($hash $kb $stored $first $seen) (if (=alpha $stored $rule) (not (or (== $first $instance) (== $seen $context))) (empty))))))
+PASS rs_hm_recurs         c1_rows        fn-hosted   queries=10 same=10 ref_answers=10 path=ok {"fn_calls":0,"fn_spec_calls":0,"fn_residual_calls":0,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":0,"hosted_calls":10,"guard_valid":false}
+PASS rs_hm_recurs         c1_rows        fn-spec     queries=10 same=10 ref_answers=10 path=ok {"fn_calls":10,"fn_spec_calls":10,"fn_residual_calls":0,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":1,"hosted_calls":0,"guard_valid":true}
+PASS rs_hm_recurs         c1_rows        fn-fallback queries=10 same=10 ref_answers=10 path=ok {"fn_calls":10,"fn_spec_calls":0,"fn_residual_calls":10,"fn_forced":10,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":0,"hosted_calls":0,"guard_valid":false}
+PASS rs_hm_recurs         c1_rows        fn-rows     queries=10 same=10 ref_answers=10 path=ok {"fn_calls":10,"fn_spec_calls":10,"fn_residual_calls":0,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":1,"hosted_calls":0,"guard_valid":true}
+PASS rs_hm_recurs         c1_rows        fn-spec mutation baseline                   queries=10 same=10 ref_changed=0 spec=10 residual=0 expect=spec path=ok revalidations=1
+PASS rs_hm_recurs         c1_rows        fn-spec mutation second-equation-added      queries=10 same=10 ref_changed=10 spec=0 residual=10 expect=residual path=ok revalidations=2 guard: more than one equation of the function
+PASS rs_hm_recurs         c1_rows        fn-spec mutation second-equation-removed    queries=10 same=10 ref_changed=0 spec=10 residual=0 expect=spec path=ok revalidations=3
+PASS rs_hm_recurs         c1_rows        fn-spec mutation redefined                  queries=10 same=10 ref_changed=10 spec=0 residual=10 expect=residual path=ok revalidations=4 guard: the function's equation differs from the compiled one
+PASS rs_hm_recurs         c1_rows        fn-spec mutation restored                   queries=10 same=10 ref_changed=0 spec=10 residual=0 expect=spec path=ok revalidations=5
+PASS rs_hm_recurs         c1_rows        fn-spec mutation builtin-shadowed           queries=10 same=10 ref_changed=2 spec=0 residual=10 expect=residual path=ok revalidations=6 guard: a builtin the body uses has an equation or declaration a fresh engine does not
+PASS rs_hm_recurs         c1_rows        fn-spec mutation builtin-unshadowed         queries=10 same=10 ref_changed=0 spec=10 residual=0 expect=spec path=ok revalidations=7
+PASS rs_hm_recurs         c1_rows        fn-spec mutation declaration-added          queries=10 same=10 ref_changed=10 spec=0 residual=10 expect=residual path=ok revalidations=8 guard: a type declaration of the function
+PASS rs_hm_recurs         c1_rows        fn-spec mutation declaration-removed        queries=10 same=10 ref_changed=0 spec=10 residual=0 expect=spec path=ok revalidations=9
+PASS rs_hm_recurs         c1_rows        fn-spec mutation row-not-normal             queries=10 same=10 ref_changed=1 spec=1 residual=9 expect=some-residual path=ok revalidations=10
+PASS rs_hm_recurs         c1_rows        fn-spec recursion depth 1     queries=6 same=6 spec=6
+PASS rs_hm_recurs         c1_rows        fn-spec recursion depth 10    queries=6 same=6 spec=6
+PASS rs_hm_recurs         c1_rows        fn-spec recursion depth 100   queries=6 same=6 spec=6
+PASS rs_hm_recurs         c1_rows        fn-spec recursion depth 1000  queries=6 same=6 spec=6
+PASS rs_hm_recurs         c1_rows        fn-spec profile-he (once is data) queries=10 same=10 spec=0 residual=10 expect=residual path=ok guard: once is not CeTTa's first-answer builtin in this engine's profile
+PASS rs_hm_recurs         c1_rows        fn-rows mutation baseline                   queries=10 same=10 ref_changed=0 spec=10 residual=0 expect=spec path=ok revalidations=1
+PASS rs_hm_recurs         c1_rows        fn-rows mutation second-equation-added      queries=10 same=10 ref_changed=10 spec=0 residual=10 expect=residual path=ok revalidations=2 guard: more than one equation of the function
+PASS rs_hm_recurs         c1_rows        fn-rows mutation second-equation-removed    queries=10 same=10 ref_changed=0 spec=10 residual=0 expect=spec path=ok revalidations=3
+PASS rs_hm_recurs         c1_rows        fn-rows mutation redefined                  queries=10 same=10 ref_changed=10 spec=0 residual=10 expect=residual path=ok revalidations=4 guard: the function's equation differs from the compiled one
+PASS rs_hm_recurs         c1_rows        fn-rows mutation restored                   queries=10 same=10 ref_changed=0 spec=10 residual=0 expect=spec path=ok revalidations=5
+PASS rs_hm_recurs         c1_rows        fn-rows mutation builtin-shadowed           queries=10 same=10 ref_changed=2 spec=0 residual=10 expect=residual path=ok revalidations=6 guard: a builtin the body uses has an equation or declaration a fresh engine does not
+PASS rs_hm_recurs         c1_rows        fn-rows mutation builtin-unshadowed         queries=10 same=10 ref_changed=0 spec=10 residual=0 expect=spec path=ok revalidations=7
+PASS rs_hm_recurs         c1_rows        fn-rows mutation declaration-added          queries=10 same=10 ref_changed=10 spec=0 residual=10 expect=residual path=ok revalidations=8 guard: a type declaration of the function
+PASS rs_hm_recurs         c1_rows        fn-rows mutation declaration-removed        queries=10 same=10 ref_changed=0 spec=10 residual=0 expect=spec path=ok revalidations=9
+PASS rs_hm_recurs         c1_rows        fn-rows mutation row-not-normal             queries=10 same=10 ref_changed=1 spec=1 residual=9 expect=some-residual path=ok revalidations=10
+PASS rs_hm_recurs         c1_rows        fn-rows recursion depth 1     queries=6 same=6 spec=6
+PASS rs_hm_recurs         c1_rows        fn-rows recursion depth 10    queries=6 same=6 spec=6
+PASS rs_hm_recurs         c1_rows        fn-rows recursion depth 100   queries=6 same=6 spec=6
+PASS rs_hm_recurs         c1_rows        fn-rows recursion depth 1000  queries=6 same=6 spec=6
+PASS rs_hm_recurs         c1_rows        fn-rows profile-he (once is data) queries=10 same=10 spec=0 residual=10 expect=residual path=ok guard: once is not CeTTa's first-answer builtin in this engine's profile
+PASS rs_hm_recurs         c1_rows        eq-probe in the site's engine (extended): eq_mismatch=no
+PASS rs_hm_recurs         c2_mixed       fn-hosted   queries=7 same=7 ref_answers=7 path=ok (mixed: residual allowed) {"fn_calls":0,"fn_spec_calls":0,"fn_residual_calls":0,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":0,"hosted_calls":7,"guard_valid":false}
+PASS rs_hm_recurs         c2_mixed       fn-spec     queries=7 same=7 ref_answers=7 path=ok (mixed: residual allowed) {"fn_calls":7,"fn_spec_calls":3,"fn_residual_calls":4,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":1,"fn_row_aborts":3,"fn_revalidations":1,"hosted_calls":0,"guard_valid":true}
+PASS rs_hm_recurs         c2_mixed       fn-fallback queries=7 same=7 ref_answers=7 path=ok (mixed: residual allowed) {"fn_calls":7,"fn_spec_calls":0,"fn_residual_calls":7,"fn_forced":7,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":0,"hosted_calls":0,"guard_valid":false}
+PASS rs_hm_recurs         c2_mixed       fn-rows     queries=7 same=7 ref_answers=7 path=ok (mixed: residual allowed) {"fn_calls":7,"fn_spec_calls":3,"fn_residual_calls":4,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":1,"fn_row_aborts":3,"fn_revalidations":1,"hosted_calls":0,"guard_valid":true}
+PASS rs_hm_recurs         kb             fn-hosted   queries=200 same=200 ref_answers=200 path=ok {"fn_calls":0,"fn_spec_calls":0,"fn_residual_calls":0,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":0,"hosted_calls":200,"guard_valid":false}
+PASS rs_hm_recurs         kb             fn-spec     queries=200 same=200 ref_answers=200 path=ok {"fn_calls":200,"fn_spec_calls":200,"fn_residual_calls":0,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":1,"hosted_calls":0,"guard_valid":true}
+PASS rs_hm_recurs         kb             fn-fallback queries=200 same=200 ref_answers=200 path=ok {"fn_calls":200,"fn_spec_calls":0,"fn_residual_calls":200,"fn_forced":200,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":0,"hosted_calls":0,"guard_valid":false}
+PASS rs_hm_recurs         kb             fn-rows     queries=200 same=200 ref_answers=200 path=ok {"fn_calls":200,"fn_spec_calls":200,"fn_residual_calls":0,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":1,"hosted_calls":0,"guard_valid":true}
+summary rs_hm_recurs: 0 failed

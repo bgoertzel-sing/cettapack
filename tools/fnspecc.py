@@ -187,7 +187,7 @@ def compile_tree(tmpl, args, pat_vars, defined, builtins, operand):
                 tmpls.append(p)
                 k = len(tmpls) - 1
                 out.append('      { Bindings cb; bindings_init(&cb);\n'
-                           '        Atom *pt = bindings_apply(row, a, FS_TMPL(%d));   /* the pattern under the row */\n'
+                           '        Atom *pt = FS_TMPLV(%d);   /* the pattern under the row */\n'
                            '        if (!pt) { bindings_free(&cb); return -1; }\n'
                            '        if (simple_match(pt, sv, &cb, a)) { int r = %s(c, row, a, answer, &cb); bindings_free(&cb); return r; }\n'
                            '        bindings_free(&cb); }\n' % (k, bn))
@@ -203,7 +203,7 @@ def compile_tree(tmpl, args, pat_vars, defined, builtins, operand):
         if is_data(t, defined):
             tmpls.append(t)
             k = len(tmpls) - 1
-            app = '    *answer = bindings_apply(row, a, FS_TMPL(%d));\n' % k
+            app = '    *answer = FS_TMPLV(%d);\n' % k
             if case_vars:
                 app += '    if (*answer && cb) *answer = bindings_apply(cb, a, *answer);\n'
             return app + '    if (!*answer || !fs_normal_form(c, *answer)) return -1;\n    return 1;\n'
@@ -364,11 +364,19 @@ def compile_site(path):
         return show(x)
     hosted_body = subst(body) if (exist or once or shape_wrap == 'collapse') else inner_h
     hosted_def = '(= (%s-h %s) %s)' % (fname, hargs, hosted_body)
+    # fnspec 3, item 3 (upstream/cetta 0004): the function through match-rows' row hook; the runtime
+    # registers the hook under a unique name in place of CPK_ROWS_HOOK.  The row is the tuple of the
+    # compared variables and the template atoms (data leaves, case patterns) as the call instantiates
+    # them; the generated row function reads them by position under each row's bindings.
+    rows_row = '(' + ' '.join(['$' + v for v in cvars] + [show(t) for t in (out_tmpl if tree else (out_tmpl,))]) + ')'
+    rows_pat = show(pat) if head(pat) == ',' or len(pats) == 1 else '(, ' + ' '.join(show(p) for p in pats) + ')'
+    rows_def = '(= (cpk-rows:%s %s) (match-rows %s %s %s (CPK_ROWS_HOOK %s) (%s %s)))' % (
+        fname, hargs, space_token if space_token else show(space), rows_pat, rows_row, hargs, fname, hargs)
     digest = hashlib.sha256(equation.encode()).hexdigest()
     return dict(name=name, fname=fname, arity=len(args), shape=shape, space_arg=space_arg, space_token=space_token,
                 parts=parts, equation=equation, builtins=builtins, cond_c=cond_c, n_cvars=len(cvars),
                 n_consts=len(consts), hosted_def=hosted_def, digest=digest, source=path, text=text, meta=meta,
-                n_patterns=len(pats), once=once, exist=exist, tree_c=tree_c, needs_bool=needs_bool)
+                n_patterns=len(pats), once=once, exist=exist, tree_c=tree_c, needs_bool=needs_bool, rows_def=rows_def)
 
 def emit(s):
     cid = re.sub(r'[^A-Za-z0-9_]', '_', s['name'])
@@ -405,7 +413,7 @@ def emit(s):
     else:
         out.append('    /* data template: nothing to evaluate */\n')
     if not s['tree_c']:
-        out.append('    *answer = bindings_apply(row, a, c->rt->tmpl);\n'
+        out.append('    *answer = FS_TEMPLATE();\n'
                    '    if (!*answer || !fs_normal_form(c, *answer)) return -1;\n'
                    '    return 1;\n}\n\n')
     b = ', '.join('{%s, %d}' % (cstr(n), k) for n, k in s['builtins'])
@@ -413,7 +421,7 @@ def emit(s):
     out.append('    .site = %s, .function = %s, .arity = %d,\n' % (cstr(s['name']), cstr(s['fname']), s['arity']))
     out.append('    .shape = %s, .space_arg = %d, .space_token = %s,\n'
                % (shape_c, s['space_arg'], cstr(s['space_token']) if s['space_token'] else 'NULL'))
-    for k in ('parts', 'equation', 'hosted_def', 'digest'):
+    for k in ('parts', 'equation', 'hosted_def', 'rows_def', 'digest'):
         out.append('    .%s = %s,\n' % (k, cstr(s[k])))
     out.append('    .definitions = %s,\n' % cstr(defs))
     out.append('    .builtins = {%s}, .n_builtins = %d,\n' % (b, len(s['builtins'])))

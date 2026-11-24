@@ -27,6 +27,9 @@ for m, rs in rows.items():
 for r in rows.get('fn-spec', []):
     if r['fn_spec_calls'] != r['fn_calls'] or r['fn_residual_calls']:
         errs.append('fn-spec run %d: %d/%d specialised' % (r['run'], r['fn_spec_calls'], r['fn_calls']))
+for r in rows.get('fn-rows', []):        # fnspec 3: the compiled function through match-rows' hook
+    if r['fn_spec_calls'] != r['fn_calls'] or r['fn_residual_calls']:
+        errs.append('fn-rows run %d: %d/%d specialised' % (r['run'], r['fn_spec_calls'], r['fn_calls']))
 for r in rows.get('fn-fallback', []):
     if r['fn_residual_calls'] != r['fn_calls'] or r['fn_spec_calls']:
         errs.append('fn-fallback run %d: residual %d/%d' % (r['run'], r['fn_residual_calls'], r['fn_calls']))

@@ -1,0 +1,43 @@
+site num_stream_filter: num-eq/3, shape stream-filter, 1 pattern(s); profile he (default); load &self; origin: test-only site: == on numbers and other kinds in a stream-filter (edge values; not benchmarked)
+  equation (= (num-eq $space $k $t) (match $space (val $k $x $y) (if (== $x $t) (empty) ($x $y))))
+PASS num_stream_filter    c1_ints        fn-hosted   queries=18 same=18 ref_answers=43 path=ok {"fn_calls":0,"fn_spec_calls":0,"fn_residual_calls":0,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":0,"hosted_calls":18,"guard_valid":false}
+PASS num_stream_filter    c1_ints        fn-spec     queries=18 same=18 ref_answers=43 path=ok {"fn_calls":18,"fn_spec_calls":18,"fn_residual_calls":0,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":1,"hosted_calls":0,"guard_valid":true}
+PASS num_stream_filter    c1_ints        fn-fallback queries=18 same=18 ref_answers=43 path=ok {"fn_calls":18,"fn_spec_calls":0,"fn_residual_calls":18,"fn_forced":18,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":0,"hosted_calls":0,"guard_valid":false}
+PASS num_stream_filter    c1_ints        fn-rows     queries=18 same=18 ref_answers=43 path=ok {"fn_calls":18,"fn_spec_calls":18,"fn_residual_calls":0,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":1,"hosted_calls":0,"guard_valid":true}
+PASS num_stream_filter    c1_ints        fn-spec mutation baseline                   queries=18 same=18 ref_changed=0 spec=18 residual=0 expect=spec path=ok revalidations=1
+PASS num_stream_filter    c1_ints        fn-spec mutation second-equation-added      queries=18 same=18 ref_changed=18 spec=0 residual=18 expect=residual path=ok revalidations=2 guard: more than one equation of the function
+PASS num_stream_filter    c1_ints        fn-spec mutation second-equation-removed    queries=18 same=18 ref_changed=0 spec=18 residual=0 expect=spec path=ok revalidations=3
+PASS num_stream_filter    c1_ints        fn-spec mutation redefined                  queries=18 same=18 ref_changed=11 spec=0 residual=18 expect=residual path=ok revalidations=4 guard: the function's equation differs from the compiled one
+PASS num_stream_filter    c1_ints        fn-spec mutation restored                   queries=18 same=18 ref_changed=0 spec=18 residual=0 expect=spec path=ok revalidations=5
+PASS num_stream_filter    c1_ints        fn-spec mutation builtin-shadowed           queries=18 same=18 ref_changed=0 spec=0 residual=18 expect=residual path=ok revalidations=6 guard: a builtin the body uses has an equation or declaration a fresh engine does not
+PASS num_stream_filter    c1_ints        fn-spec mutation builtin-unshadowed         queries=18 same=18 ref_changed=0 spec=18 residual=0 expect=spec path=ok revalidations=7
+PASS num_stream_filter    c1_ints        fn-spec mutation declaration-added          queries=18 same=18 ref_changed=18 spec=0 residual=18 expect=residual path=ok revalidations=8 guard: a type declaration of the function
+PASS num_stream_filter    c1_ints        fn-spec mutation declaration-removed        queries=18 same=18 ref_changed=0 spec=18 residual=0 expect=spec path=ok revalidations=9
+PASS num_stream_filter    c1_ints        fn-spec mutation row-not-normal             queries=18 same=18 ref_changed=0 spec=6 residual=12 expect=some-residual path=ok revalidations=10
+PASS num_stream_filter    c1_ints        fn-spec recursion depth 1     queries=6 same=6 spec=6
+PASS num_stream_filter    c1_ints        fn-spec recursion depth 10    queries=6 same=6 spec=6
+PASS num_stream_filter    c1_ints        fn-spec recursion depth 100   queries=6 same=6 spec=6
+PASS num_stream_filter    c1_ints        fn-spec recursion depth 1000  queries=6 same=6 spec=6
+PASS num_stream_filter    c1_ints        fn-rows mutation baseline                   queries=18 same=18 ref_changed=0 spec=18 residual=0 expect=spec path=ok revalidations=1
+PASS num_stream_filter    c1_ints        fn-rows mutation second-equation-added      queries=18 same=18 ref_changed=18 spec=0 residual=18 expect=residual path=ok revalidations=2 guard: more than one equation of the function
+PASS num_stream_filter    c1_ints        fn-rows mutation second-equation-removed    queries=18 same=18 ref_changed=0 spec=18 residual=0 expect=spec path=ok revalidations=3
+PASS num_stream_filter    c1_ints        fn-rows mutation redefined                  queries=18 same=18 ref_changed=11 spec=0 residual=18 expect=residual path=ok revalidations=4 guard: the function's equation differs from the compiled one
+PASS num_stream_filter    c1_ints        fn-rows mutation restored                   queries=18 same=18 ref_changed=0 spec=18 residual=0 expect=spec path=ok revalidations=5
+PASS num_stream_filter    c1_ints        fn-rows mutation builtin-shadowed           queries=18 same=18 ref_changed=0 spec=0 residual=18 expect=residual path=ok revalidations=6 guard: a builtin the body uses has an equation or declaration a fresh engine does not
+PASS num_stream_filter    c1_ints        fn-rows mutation builtin-unshadowed         queries=18 same=18 ref_changed=0 spec=18 residual=0 expect=spec path=ok revalidations=7
+PASS num_stream_filter    c1_ints        fn-rows mutation declaration-added          queries=18 same=18 ref_changed=18 spec=0 residual=18 expect=residual path=ok revalidations=8 guard: a type declaration of the function
+PASS num_stream_filter    c1_ints        fn-rows mutation declaration-removed        queries=18 same=18 ref_changed=0 spec=18 residual=0 expect=spec path=ok revalidations=9
+PASS num_stream_filter    c1_ints        fn-rows mutation row-not-normal             queries=18 same=18 ref_changed=0 spec=6 residual=12 expect=some-residual path=ok revalidations=10
+PASS num_stream_filter    c1_ints        fn-rows recursion depth 1     queries=6 same=6 spec=6
+PASS num_stream_filter    c1_ints        fn-rows recursion depth 10    queries=6 same=6 spec=6
+PASS num_stream_filter    c1_ints        fn-rows recursion depth 100   queries=6 same=6 spec=6
+PASS num_stream_filter    c1_ints        fn-rows recursion depth 1000  queries=6 same=6 spec=6
+PASS num_stream_filter    c2_floats      fn-hosted   queries=6 same=6 ref_answers=28 path=ok {"fn_calls":0,"fn_spec_calls":0,"fn_residual_calls":0,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":0,"hosted_calls":6,"guard_valid":false}
+PASS num_stream_filter    c2_floats      fn-spec     queries=6 same=6 ref_answers=28 path=ok {"fn_calls":6,"fn_spec_calls":6,"fn_residual_calls":0,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":1,"hosted_calls":0,"guard_valid":true}
+PASS num_stream_filter    c2_floats      fn-fallback queries=6 same=6 ref_answers=28 path=ok {"fn_calls":6,"fn_spec_calls":0,"fn_residual_calls":6,"fn_forced":6,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":0,"hosted_calls":0,"guard_valid":false}
+PASS num_stream_filter    c2_floats      fn-rows     queries=6 same=6 ref_answers=28 path=ok {"fn_calls":6,"fn_spec_calls":6,"fn_residual_calls":0,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":1,"hosted_calls":0,"guard_valid":true}
+PASS num_stream_filter    c3_mixed       fn-hosted   queries=8 same=8 ref_answers=42 path=ok (mixed: residual allowed) {"fn_calls":0,"fn_spec_calls":0,"fn_residual_calls":0,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":0,"hosted_calls":8,"guard_valid":false}
+PASS num_stream_filter    c3_mixed       fn-spec     queries=8 same=8 ref_answers=42 path=ok (mixed: residual allowed) {"fn_calls":8,"fn_spec_calls":0,"fn_residual_calls":8,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":1,"fn_row_aborts":7,"fn_revalidations":1,"hosted_calls":0,"guard_valid":true}
+PASS num_stream_filter    c3_mixed       fn-fallback queries=8 same=8 ref_answers=42 path=ok (mixed: residual allowed) {"fn_calls":8,"fn_spec_calls":0,"fn_residual_calls":8,"fn_forced":8,"fn_invalid":0,"fn_arg_rejects":0,"fn_row_aborts":0,"fn_revalidations":0,"hosted_calls":0,"guard_valid":false}
+PASS num_stream_filter    c3_mixed       fn-rows     queries=8 same=8 ref_answers=42 path=ok (mixed: residual allowed) {"fn_calls":8,"fn_spec_calls":0,"fn_residual_calls":8,"fn_forced":0,"fn_invalid":0,"fn_arg_rejects":1,"fn_row_aborts":7,"fn_revalidations":1,"hosted_calls":0,"guard_valid":true}
+summary num_stream_filter: 0 failed
