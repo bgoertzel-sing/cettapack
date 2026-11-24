@@ -24,8 +24,8 @@ summary rs_hm_recurs: 0 failed
 summary rs_live_hypotheses: 0 failed
 summary rs_mil_run: 0 failed
 summary rs_sk_left_out: 0 failed
-summary rs_sk_needed: 0 failed
 summary rs_sk_needed_depth: 0 failed
+summary rs_sk_needed: 0 failed
 summary rs_sk_row_present: 0 failed
 summary rs_sk_summary_memo: 0 failed
 summary rs_stored_proof_tvs: 0 failed

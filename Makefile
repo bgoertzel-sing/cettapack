@@ -147,9 +147,8 @@ fnspec-recompute:
 	done
 	@$(MAKE) -s fnspec3-recompute
 
-# fnspec 3, item 3: match-rows' row hook (0004) vs the embedding callback on every site
-# (the fnspec 1/2 sites in hook-bench, the fnspec 3 sites in bench)
-FNSPEC3_HOOK ?= evidence/fnspec3-2026-11-24/hook-bench evidence/fnspec3-2026-11-24/bench
+# fnspec 3, item 3: match-rows' row hook (0004) vs the embedding callback on every fnspec site
+FNSPEC3_HOOK ?= evidence/fnspec3-2026-11-24/hook-bench
 fnspec3-recompute:
 	@mkdir -p build
 	@python3 bench/summarize_rows_hook.py $(FNSPEC3_HOOK) > build/rows-hook-recomputed.md
