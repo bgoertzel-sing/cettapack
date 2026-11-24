@@ -135,8 +135,34 @@ generators are committed (bench/s0), the generated programs' sha256 are in runs/
 | workload | what | files | queries | checks |
 |---|---|---|---|---|
 | w1-examples | PeTTaChainer's own examples: the three of CeTTa's compatibility manifest (deductionrevision, flyingraven, raveninduction) and the other eight of b0e24f9's examples/supported.txt that run on CeTTa (base_rate_acceptance_game_libpln needs lib_pln and stops at load) | 11 | their !(test ...) queries | every test passes (0 "❌" in every run, every build) |
-| w2-wmtm | wmtm-style reasoning run (gen_workloads.py w2-wmtm, seed 20261124): 24 classes from wmtm's synthetic fixture vocabulary in an Inheritance taxonomy, 40 instances, 10 per-note Implication rules (CTV), goals: 10 instances against a class 2-3 hops up and 4 negative controls, query budget 100 steps | 1 | 14 | 7 of 10 positive goals derived, the 4 negative controls empty |
+| w2-wmtm | wmtm-style reasoning run (gen_workloads.py w2-wmtm, seed 20261124): 24 classes from wmtm's synthetic fixture vocabulary in an Inheritance taxonomy, 40 instances, 10 per-note Implication rules (CTV), goals: 10 instances against a taxonomy ancestor 3-4 inheritance steps away, and 4 goals labelled "neg" (an instance against a class that is neither a taxonomy ancestor nor reachable through the note rules; not a must-fail control, see 3.1), query budget 100 steps | 1 | 14 | the answers are S0's recorded stdout, byte-identical in every run (the check that holds); at 100 steps **5 of 10** positive goals derive an answer (confidence 0.002-0.02) and **1 of the 4** "neg" goals derives a weak answer by inversion (STV 0.68, confidence 0.03); corrected in S1, see 3.1 |
 | w3-benchgen | larger KB: PeTTaChainer's benchgen statements (benchmarks/benchgen_metta.metta) ported with seeded truth values (gen_workloads.py w3-benchgen, seed 20261124, depth 3, width 3, 3 paths, noise factor 10, backward ratio 50%): 3,957 compileadd statements (120 true ones: 81 base facts and 39 main rules; 1,200 noise rules, 600 backward and 600 forward; benchgen's meta and tracking statements for all of them), 3 BenchTarget queries at 1,000 steps | 1 | 3 | all 3 targets proved |
+
+### 3.1 Correction (S1, review finding 1): what w2's goal check shows
+
+This section replaced, in S1 (t-2026-11-24-cettapack-s1-hot-sites), the w2 check S0 stated: "7 of 10 positive
+goals derived, the 4 negative controls empty". Neither half holds, and the "negative controls" are not controls.
+Recomputed from S0's own nine w2 runs (base/off/on x 3, all byte-identical) by bench/s1/check_w2_goals.py
+(evidence/s1-2026-11-24/finding1/s0-runs-goals.md), and rerun on S1's base build at the S0 setting and at a
+1,000-step budget (finding1/steps100, finding1/steps1000; programs and their sha256 in finding1/):
+
+| goals | at 100 steps (S0's setting) | at 1,000 steps |
+|---|---|---|
+| 10 positive (instance against a taxonomy ancestor 3-4 inheritance steps away) | **5 derive an answer** (strength 1.0, confidence 0.002-0.02); 5 answer () | 10 derive (confidence 0.014-0.90) |
+| 4 "neg" (a class that is neither a taxonomy ancestor of the instance nor reachable through the note rules) | **1 derives** (e_savings c_panel, by inversion: STV 0.68, confidence 0.03); 3 answer () | 4 derive (strength 0.63-0.69, confidence 0.03-0.13) |
+
+- The 5 positives empty at 100 steps are budget-limited, not underivable: with 1,000 steps all 10 derive
+  (718 s and 966 MB for the file, against 27 s and 112 MB at 100 steps).
+- The "neg" goals share the KB's vocabulary (the same instances and classes as the positives), so they are not
+  trivially empty, but under PeTTaChainer's PLN rules they are not must-fail either: inversion (abduction from the
+  class side) gives weak evidence for any instance-class pair the KB connects, and given budget all four get an
+  answer. The generator (gen_workloads.py) chooses them only against the taxonomy, so the label "negative control"
+  claimed more than the construction shows. What separates them from the positives at 1,000 steps is strength
+  (0.63-0.69 against 0.68-1.0) and confidence, not derivability, and the ranges overlap.
+- The workload itself is unchanged (S1 measures on the same program, so S0's profile and estimates stay its
+  baseline). What w2 checks per run is what S0's acceptance actually rested on: the answers are byte-identical to
+  S0's recorded stdout (sha256 bbda4ea3...) in every run of every build. The goal counts above are a description of
+  that fixed answer set, not a pass/fail control.
 
 ## 4. Results
 
@@ -261,6 +287,8 @@ Section "Spaces" and "Hot rows and the spaces they read" of summary.md, per work
   to a third; three interleaved runs per build. Self times come from the on build, which is itself slower.
 - **w2** reproduces the shape of wmtm's KB and goals on wmtm's synthetic fixture vocabulary; it is not wmtm's
   own code path (wmtm drives PeTTa through Python).
+  Its goals are not a derivability check: at 100 steps 5 of 10 positives and 1 of 4 "neg" goals answer, and the
+  "neg" goals are not must-fail under PLN (section 3.1, corrected in S1).
 ## 8. Reproduce
 
 ```
