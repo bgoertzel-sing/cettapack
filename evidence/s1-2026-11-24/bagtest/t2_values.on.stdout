@@ -1,0 +1,9 @@
+true
+()
+()
+()
+()
+()
+()
+()
+(((fwd_trigger kb1 Inheritance) 0 kb1 (Inheritance (Done 1) c1) extract-tv (BaseRateEvidence 0.0 0.0) BaseRateAcc base-rate result-tv) ((fwd_trigger kb1 Inheritance) 1 kb1 (Inheritance "s" c1) extract-tv (BaseRateEvidence 0.0 0.0) BaseRateAcc base-rate result-tv) ((fwd_trigger kb1 Inheritance) 2 kb1 (Inheritance 1.5 c1) extract-tv (BaseRateEvidence 0.0 0.0) BaseRateAcc base-rate result-tv) ((fwd_trigger kb1 Inheritance) 3 kb1 (Inheritance 2 c1) extract-tv (BaseRateEvidence 0.0 0.0) BaseRateAcc base-rate result-tv) ((fwd_trigger $V0 Inheritance) 4 $V0 (Inheritance $V1 c3) extract-tv (BaseRateEvidence 0.0 0.0) BaseRateAcc base-rate result-tv))

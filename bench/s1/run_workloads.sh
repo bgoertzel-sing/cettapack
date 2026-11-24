@@ -85,7 +85,8 @@ for w in "${WORKLOADS[@]}"; do
       case "$VARIANT" in
         prof) extra=(CETTA_FNPROF_OUT="$OUT/$w/$tag.fnprof.json" CETTA_FNPROF_SAMPLE_US="${SAMPLE_US:-1000}"
                      CETTA_FNPROF_SAMPLES_OUT="$OUT/$w/$tag.samples.txt") ;;
-        sprof) extra=(CETTA_FNPROF_OUT="$OUT/$w/$tag.fnprof.json") ;;
+        sprof) extra=(CETTA_FNPROF_OUT="$OUT/$w/$tag.fnprof.json" CETTA_S1_SITES_STATS="$OUT/$w/$tag.sites.json") ;;
+        on) extra=(CETTA_S1_SITES_STATS="$OUT/$w/$tag.sites.json") ;;
       esac
       set +e
       ( cd "$IMG" && env CETTA_PETTA_SEARCH_MACHINE=1 "${VENV[@]}" "${extra[@]}" \

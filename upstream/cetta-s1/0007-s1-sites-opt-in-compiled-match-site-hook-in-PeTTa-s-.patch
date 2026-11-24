@@ -1,0 +1,238 @@
+From 3932b05b2b6a4765c7bf7c103f17eb1484de48f9 Mon Sep 17 00:00:00 2001
+From: cettapack <cettapack@localhost>
+Date: Tue, 24 Nov 2026 10:59:14 -0700
+Subject: [PATCH] s1 sites: opt-in compiled match-site hook in PeTTa's search
+ machine (CETTA_S1_SITES=1)
+
+When PeTTa's machine starts a match on a space, after typed elaboration and
+only if it left pattern and template as written, a compiled site
+(src/cetta_s1_sites.c; the default has none) may answer the match's
+template values as an outcome choice, or decline, and the match runs as
+before.  Run-time switch $CETTA_S1_SITES (0 off, 1 on, invalid: guards
+forced invalid).  Nothing is compiled or called with CETTA_S1_SITES=0.
+---
+ Makefile                   | 15 +++++++-
+ src/cetta_s1_sites.c       | 14 ++++++++
+ src/cetta_s1_sites.h       | 52 ++++++++++++++++++++++++++++
+ src/petta_search_machine.c | 71 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 151 insertions(+), 1 deletion(-)
+ create mode 100644 src/cetta_s1_sites.c
+ create mode 100644 src/cetta_s1_sites.h
+
+diff --git a/Makefile b/Makefile
+index 64f02848..977e4d10 100644
+--- a/Makefile
++++ b/Makefile
+@@ -616,6 +616,16 @@ ifeq ($(CETTA_FNPROF),1)
+ BUILD_OBJ_TAG := $(BUILD_OBJ_TAG).fnprof
+ FNPROF_CPPFLAGS = -DCETTA_FNPROF=1
+ endif
++# Opt-in compiled match sites (src/cetta_s1_sites.h, cettapack S1); off by default.
++CETTA_S1_SITES ?= 0
++ifneq ($(filter $(CETTA_S1_SITES),0 1),$(CETTA_S1_SITES))
++$(error CETTA_S1_SITES must be 0 or 1)
++endif
++S1_SITES_CPPFLAGS =
++ifeq ($(CETTA_S1_SITES),1)
++BUILD_OBJ_TAG := $(BUILD_OBJ_TAG).s1sites
++S1_SITES_CPPFLAGS = -DCETTA_S1_SITES=1
++endif
+ ifeq ($(ENABLE_PETTA_TYPECHECK_V2),0)
+ BUILD_OBJ_TAG := $(BUILD_OBJ_TAG).no-petta-typecheck-v2
+ endif
+@@ -699,7 +709,7 @@ PROC_FORK_SPAWN_CPPFLAGS =
+ ifeq ($(CETTA_PROC_FORK_SPAWN),1)
+ PROC_FORK_SPAWN_CPPFLAGS = -DCETTA_PROC_FORK_SPAWN=1
+ endif
+-CPPFLAGS = -Isrc -I. -Iexperiments/gslt2parse_foundation/native $(BRIDGE_CFLAGS) $(PY_CFLAGS) $(GMP_CFLAGS) $(LIB_PROLOG_CFLAGS) $(HTTP_CFLAGS) $(DURABLE_CFLAGS) $(PROVENANCE_CPPFLAGS) $(PRIME_RECEIPT_INDEX_CPPFLAGS) $(PRIME_NEED_HEAP_INDEX_CPPFLAGS) $(PRIME_NEED_CLOSURE_CAPTURE_CPPFLAGS) $(PRIME_EVAL_STACK_CPPFLAGS) $(PROC_FORK_SPAWN_CPPFLAGS) $(FNPROF_CPPFLAGS) -include $(BUILD_CONFIG_HEADER)
++CPPFLAGS = -Isrc -I. -Iexperiments/gslt2parse_foundation/native $(BRIDGE_CFLAGS) $(PY_CFLAGS) $(GMP_CFLAGS) $(LIB_PROLOG_CFLAGS) $(HTTP_CFLAGS) $(DURABLE_CFLAGS) $(PROVENANCE_CPPFLAGS) $(PRIME_RECEIPT_INDEX_CPPFLAGS) $(PRIME_NEED_HEAP_INDEX_CPPFLAGS) $(PRIME_NEED_CLOSURE_CAPTURE_CPPFLAGS) $(PRIME_EVAL_STACK_CPPFLAGS) $(PROC_FORK_SPAWN_CPPFLAGS) $(FNPROF_CPPFLAGS) $(S1_SITES_CPPFLAGS) -include $(BUILD_CONFIG_HEADER)
+ CFLAGS = -O3 -Wall -Werror -std=c11 -pthread
+ DEPFLAGS = -MMD -MP
+ # Libraries a binary does not use are not recorded as its dependencies, with
+@@ -802,6 +812,9 @@ SRC += src/str_stream.c
+ SRC += src/relational_plan.c src/relational_cursor.c src/native_query.c src/dense_relation.c
+ SRC += src/proof_language_region.c src/proof_producer.c src/proof_row.c src/proof_batches.c
+ SRC += src/space_dense.c
++ifeq ($(CETTA_S1_SITES),1)
++SRC += src/cetta_s1_sites.c
++endif
+ SRC += src/space_tuples.c
+ SRC += src/space_skeleton.c
+ SRC += src/term_molecule.c src/native_open_query.c
+diff --git a/src/cetta_s1_sites.c b/src/cetta_s1_sites.c
+new file mode 100644
+index 00000000..f2b17ddc
+--- /dev/null
++++ b/src/cetta_s1_sites.c
+@@ -0,0 +1,14 @@
++/* Compiled match sites (cettapack S1): the default has none.  A build that
++ * compiles sites replaces this file (cettapack bench/s1/build_s1_cetta.sh copies
++ * cettapack's src/cpk_s1_sites.c here). */
++#include "cetta_s1_sites.h"
++#if CETTA_S1_SITES
++bool cetta_s1_sites_active(void) { return false; }
++int cetta_s1_sites_try(const CettaS1SiteCall *call, Atom *reference,
++                       Atom *pattern, Atom *template_atom, Atom ***answers,
++                       size_t *count) {
++    (void)call; (void)reference; (void)pattern; (void)template_atom;
++    (void)answers; (void)count;
++    return CETTA_S1_SITE_DECLINED;
++}
++#endif
+diff --git a/src/cetta_s1_sites.h b/src/cetta_s1_sites.h
+new file mode 100644
+index 00000000..e4926d62
+--- /dev/null
++++ b/src/cetta_s1_sites.h
+@@ -0,0 +1,52 @@
++#ifndef CETTA_S1_SITES_H
++#define CETTA_S1_SITES_H
++
++/* Compiled match sites (cettapack S1).  Built only with `make CETTA_S1_SITES=1`;
++ * with the default CETTA_S1_SITES=0 nothing here is compiled or called.
++ *
++ * When PeTTa's search machine starts a match on a space (after the typed
++ * pattern elaboration, which must have left pattern and template as written),
++ * it offers the match to cetta_s1_sites_try.  A compiled site that
++ * recognises the match, and whose guards hold, computes the match's answers
++ * (the template's values, one per row, in a bag the site guarantees does not
++ * depend on row order) and the machine answers them as an outcome choice;
++ * otherwise the site declines, having changed nothing, and the machine runs
++ * the match as it always does (the residual).  The sites themselves live in
++ * src/cetta_s1_sites.c; this file only fixes the interface.  The run-time
++ * switch is $CETTA_S1_SITES: unset or 0 -> no site is offered anything (packs
++ * off); 1 -> sites active; invalid -> every site's guard is forced invalid
++ * (every call takes the residual; for tests). */
++#ifndef CETTA_S1_SITES
++#define CETTA_S1_SITES 0
++#endif
++
++#if CETTA_S1_SITES
++#include <stdbool.h>
++#include <stddef.h>
++#include "atom.h"
++#include "space.h"
++
++typedef struct {
++    /* &self of the running program (definition and builtin guards) */
++    Space *self;
++    /* the arena answers are built in (the machine's heap) */
++    Arena *arena;
++    void *ctx;
++    /* the atom with the machine's current bindings applied */
++    Atom *(*apply)(void *ctx, Atom *atom);
++    /* the space a match reference names, or NULL */
++    Space *(*resolve)(void *ctx, Atom *reference);
++} CettaS1SiteCall;
++
++enum { CETTA_S1_SITE_DECLINED = 0, CETTA_S1_SITE_ANSWERS = 1 };
++
++/* Is any site active ($CETTA_S1_SITES, read once)? */
++bool cetta_s1_sites_active(void);
++/* *answers: malloc'd array of *count atoms in call->arena (caller frees the
++ * array).  DECLINED leaves both untouched. */
++int cetta_s1_sites_try(const CettaS1SiteCall *call, Atom *reference,
++                       Atom *pattern, Atom *template_atom, Atom ***answers,
++                       size_t *count);
++#endif
++
++#endif
+diff --git a/src/petta_search_machine.c b/src/petta_search_machine.c
+index a0f918fe..3c8135b3 100644
+--- a/src/petta_search_machine.c
++++ b/src/petta_search_machine.c
+@@ -63,6 +63,7 @@
+ 
+ #include <assert.h>
+ #include "cetta_fnprof.h"
++#include "cetta_s1_sites.h"
+ #if CETTA_FNPROF
+ #include <pthread.h>
+ #endif
+@@ -29522,6 +29523,61 @@ static __attribute__((cold, noinline)) bool petta_machine_try_filtered_match(
+                                               barrier);
+ }
+ 
++#if CETTA_S1_SITES
++static Atom *petta_s1_site_apply(void *context, Atom *atom) {
++    PettaMachineImpl *machine = context;
++    return petta_machine_apply_bindings(
++        machine, search_context_bindings(&machine->search), &machine->heap,
++        atom);
++}
++
++static Space *petta_s1_site_resolve(void *context, Atom *reference) {
++    PettaMachineImpl *machine = context;
++    Space *target = machine->host.resolve_space
++        ? machine->host.resolve_space(machine->host.context, machine->space,
++                                      &machine->heap, reference)
++        : NULL;
++    if (!target && reference->kind == ATOM_SYMBOL &&
++        reference->sym_id == g_builtin_syms.self)
++        target = machine->space;
++    return target;
++}
++
++static bool petta_machine_try_s1_site(
++    PettaMachineImpl *machine, Atom *reference, Atom *pattern,
++    Atom *template, Atom *expected, uint32_t barrier, bool *handled,
++    PettaMachineStep *failure) {
++    CettaS1SiteCall call = {
++        .self = machine->space,
++        .arena = &machine->heap,
++        .ctx = machine,
++        .apply = petta_s1_site_apply,
++        .resolve = petta_s1_site_resolve,
++    };
++    Atom **answers = NULL;
++    size_t count = 0u;
++    if (cetta_s1_sites_try(&call, reference, pattern, template, &answers,
++                           &count) != CETTA_S1_SITE_ANSWERS)
++        return false;
++    *handled = true;
++    OutcomeSet *outcomes = cetta_malloc(sizeof(*outcomes));
++    if (!outcomes) {
++        free(answers);
++        *failure = PETTA_MACHINE_STEP_CAPACITY;
++        return false;
++    }
++    outcome_set_init_with_owner(outcomes, &machine->heap);
++    Bindings empty;
++    bindings_init(&empty);
++    for (size_t i = 0u; i < count; i++)
++        outcome_set_add(outcomes, answers[i], &empty);
++    bindings_free(&empty);
++    free(answers);
++    return petta_machine_start_outcome_choice(machine, outcomes, expected,
++                                              barrier);
++}
++#endif
++
+ static bool petta_machine_start_ready_match_mode(
+     PettaMachineImpl *machine, Atom *reference, Atom *pattern,
+     Atom *template, Atom *expected, uint32_t barrier,
+@@ -29684,6 +29740,21 @@ static bool petta_machine_start_ready_match_mode(
+      * original plan no longer describes that expression. */
+     if (match_template != template)
+         template_plan = NULL;
++#if CETTA_S1_SITES
++    /* A compiled match site (cettapack S1, src/cetta_s1_sites.h): offered
++     * the match as written (no typed elaboration changed it); it answers
++     * the template's values as an outcome choice, or declines and the match
++     * runs as below. */
++    if (!row_only && match_pattern == pattern && match_template == template &&
++        cetta_s1_sites_active()) {
++        bool handled = false;
++        bool started = petta_machine_try_s1_site(
++            machine, reference, pattern, template, expected, barrier,
++            &handled, failure);
++        if (handled)
++            return started;
++    }
++#endif
+     /* A template branching on comparisons of the solutions' values runs its
+      * taken branch for the solutions they pass
+      * (petta_machine_try_filtered_match). */
+-- 
+2.34.1
+

@@ -1,0 +1,57 @@
+{
+ "_doc": "Expected site routes per bag test (site fwd_register_base_rate_interest), from each test's construction: 'on' counters must equal 'exact' and be >= 'min'; every recognised call is specialised or residual; in 'invalid' mode every recognised call is residual (forced), none specialised, as many recognised as in 'on'. Rule found in the pilot (evidence/s1-2026-11-24/bagtest-pilot, first version of this file expected one more call in t1-t5) and checked by t0: the first call of a run, made before anything was added to &forward_base_rate_interest, is not offered to the site (the space token is unbound and CeTTa runs that match as a plain-symbol Prolog-predicate query, a branch before the hook), so t1-t5 recognise their calls minus one; t0 adds and removes a row first and recognises all of its 3 calls.",
+ "t0_first_call": {
+  "exact": {
+   "recognised": 3,
+   "specialised": 3
+  }
+ },
+ "t1_basic": {
+  "exact": {
+   "recognised": 11,
+   "specialised": 11
+  }
+ },
+ "t2_values": {
+  "exact": {
+   "recognised": 6
+  },
+  "min": {
+   "residual.inputs": 1
+  }
+ },
+ "t3_order": {
+  "exact": {
+   "recognised": 2,
+   "specialised": 1,
+   "residual.order": 1
+  }
+ },
+ "t4_redefine": {
+  "exact": {
+   "recognised": 9,
+   "specialised": 5,
+   "residual.invalid": 4
+  }
+ },
+ "t5_replace": {
+  "exact": {
+   "recognised": 3,
+   "specialised": 1,
+   "residual.invalid": 2
+  }
+ },
+ "t6_value": {
+  "exact": {
+   "recognised": 3,
+   "specialised": 2,
+   "residual.value": 1
+  }
+ },
+ "t7_carriers": {
+  "exact": {
+   "recognised": 5,
+   "specialised": 5
+  }
+ }
+}

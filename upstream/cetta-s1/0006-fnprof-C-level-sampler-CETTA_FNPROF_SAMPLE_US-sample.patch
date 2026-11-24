@@ -1,0 +1,202 @@
+From 23a9735f50e5a7e9c16aee79a2b77b51b608ff8c Mon Sep 17 00:00:00 2001
+From: cettapack <cettapack@localhost>
+Date: Tue, 24 Nov 2026 10:27:51 -0700
+Subject: [PATCH] fnprof: C-level sampler (CETTA_FNPROF_SAMPLE_US), samples
+ attributed to profiler frames
+
+With CETTA_FNPROF=1 and $CETTA_FNPROF_SAMPLE_US and $CETTA_FNPROF_SAMPLES_OUT
+set, a SIGPROF timer on process CPU time records the current profiler frame
+and a native backtrace per sample; written at exit with the frame's function
+chain and a copy of /proc/self/maps.  Nothing changes when CETTA_FNPROF=0.
+---
+ src/petta_search_machine.c | 146 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 146 insertions(+)
+
+diff --git a/src/petta_search_machine.c b/src/petta_search_machine.c
+index d2a928f1..a0f918fe 100644
+--- a/src/petta_search_machine.c
++++ b/src/petta_search_machine.c
+@@ -66,6 +66,11 @@
+ #if CETTA_FNPROF
+ #include <pthread.h>
+ #endif
++#if CETTA_FNPROF
++#include <execinfo.h>
++#include <signal.h>
++#include <time.h>
++#endif
+ #include <inttypes.h>
+ #include <limits.h>
+ #include <math.h>
+@@ -221,6 +226,140 @@ static bool fnprof_grow(void **items, size_t *cap, size_t need, size_t size) {
+ 
+ static uint32_t fnprof_fn_index(SymbolId head);
+ 
++/* ---- cettapack S1: C-level sampler (CETTA_FNPROF=1 only) -------------
++ * With $CETTA_FNPROF_SAMPLE_US set (a period in microseconds of process CPU
++ * time), a SIGPROF timer records, per sample, the profiler frame that was
++ * current and the native call stack (backtrace, up to FNPROF_SAMPLE_DEPTH
++ * return addresses).  At exit the samples are written to
++ * $CETTA_FNPROF_SAMPLES_OUT, each with its frame's function and that frame's
++ * ancestors' functions (indexes into the report's "functions" list), after a
++ * copy of /proc/self/maps for symbolisation.  The handler only stores into
++ * memory reserved at start; samples beyond the reservation are counted and
++ * dropped. */
++#define FNPROF_SAMPLE_DEPTH 48
++typedef struct {
++    uint32_t frame;
++    uint32_t depth;
++    void *pcs[FNPROF_SAMPLE_DEPTH];
++} FnprofSample;
++
++static struct {
++    FnprofSample *items;
++    size_t cap;
++    volatile size_t len;
++    volatile uint64_t dropped;
++    volatile sig_atomic_t busy;
++    timer_t timer;
++    bool on;
++    uint64_t period_us;
++} g_fnprof_samples;
++
++static void fnprof_sample_handler(int sig, siginfo_t *info, void *uctx) {
++    (void)sig; (void)info; (void)uctx;
++    int saved = errno;
++    if (!pthread_equal(pthread_self(), g_fnprof.owner) ||
++        g_fnprof_samples.busy) {
++        errno = saved;
++        return;
++    }
++    size_t i = g_fnprof_samples.len;
++    if (i >= g_fnprof_samples.cap) {
++        g_fnprof_samples.dropped++;
++        errno = saved;
++        return;
++    }
++    g_fnprof_samples.busy = 1;
++    FnprofSample *s = &g_fnprof_samples.items[i];
++    s->frame = g_fnprof.override_on ? g_fnprof.override_frame : g_fnprof.cur;
++    int n = backtrace(s->pcs, FNPROF_SAMPLE_DEPTH);
++    s->depth = n > 0 ? (uint32_t)n : 0u;
++    g_fnprof_samples.len = i + 1u;
++    g_fnprof_samples.busy = 0;
++    errno = saved;
++}
++
++static void fnprof_sample_start(void) {
++    const char *period = getenv("CETTA_FNPROF_SAMPLE_US");
++    const char *path = getenv("CETTA_FNPROF_SAMPLES_OUT");
++    if (!period || !*period || !path || !*path)
++        return;
++    uint64_t us = strtoull(period, NULL, 10);
++    if (us < 100u)
++        us = 100u;
++    const char *capenv = getenv("CETTA_FNPROF_SAMPLE_CAP");
++    size_t cap = capenv && *capenv ? (size_t)strtoull(capenv, NULL, 10)
++                                   : (size_t)400000u;
++    g_fnprof_samples.items = calloc(cap, sizeof(FnprofSample));
++    if (!g_fnprof_samples.items)
++        return;
++    g_fnprof_samples.cap = cap;
++    g_fnprof_samples.period_us = us;
++    void *warm[4];
++    (void)backtrace(warm, 4); /* loads the unwinder outside the handler */
++    struct sigaction sa;
++    memset(&sa, 0, sizeof(sa));
++    sa.sa_sigaction = fnprof_sample_handler;
++    sa.sa_flags = SA_SIGINFO | SA_RESTART;
++    sigemptyset(&sa.sa_mask);
++    if (sigaction(SIGPROF, &sa, NULL) != 0)
++        return;
++    struct sigevent sev;
++    memset(&sev, 0, sizeof(sev));
++    sev.sigev_notify = SIGEV_SIGNAL;
++    sev.sigev_signo = SIGPROF;
++    if (timer_create(CLOCK_PROCESS_CPUTIME_ID, &sev, &g_fnprof_samples.timer) != 0)
++        return;
++    struct itimerspec its;
++    memset(&its, 0, sizeof(its));
++    its.it_interval.tv_sec = (time_t)(us / 1000000u);
++    its.it_interval.tv_nsec = (long)((us % 1000000u) * 1000u);
++    its.it_value = its.it_interval;
++    if (timer_settime(g_fnprof_samples.timer, 0, &its, NULL) != 0)
++        return;
++    g_fnprof_samples.on = true;
++}
++
++static void fnprof_sample_write(void) {
++    if (!g_fnprof_samples.on)
++        return;
++    struct itimerspec off;
++    memset(&off, 0, sizeof(off));
++    (void)timer_settime(g_fnprof_samples.timer, 0, &off, NULL);
++    g_fnprof_samples.on = false;
++    const char *path = getenv("CETTA_FNPROF_SAMPLES_OUT");
++    FILE *out = path ? fopen(path, "w") : NULL;
++    if (!out)
++        return;
++    fprintf(out, "# cetta-fnprof-samples-v1 period_us=%" PRIu64
++            " samples=%zu dropped=%" PRIu64 " depth=%d\n",
++            g_fnprof_samples.period_us, (size_t)g_fnprof_samples.len,
++            (uint64_t)g_fnprof_samples.dropped, FNPROF_SAMPLE_DEPTH);
++    FILE *maps = fopen("/proc/self/maps", "r");
++    if (maps) {
++        char line[4096];
++        while (fgets(line, sizeof(line), maps))
++            fprintf(out, "M %s", line);
++        fclose(maps);
++    }
++    for (size_t i = 0; i < g_fnprof_samples.len; i++) {
++        FnprofSample *s = &g_fnprof_samples.items[i];
++        uint32_t f = s->frame < g_fnprof.frames_len ? s->frame : 0u;
++        fputs("S", out);
++        /* the frame's function, then its ancestors' (at most 256) */
++        for (unsigned k = 0; k < 256u; k++) {
++            fprintf(out, "%s%" PRIu32, k ? "," : " ", g_fnprof.frames[f].fn);
++            if (f == 0u)
++                break;
++            f = g_fnprof.frames[f].parent;
++        }
++        fputs(" ", out);
++        for (uint32_t d = 0; d < s->depth; d++)
++            fprintf(out, "%s%" PRIxPTR, d ? "," : "", (uintptr_t)s->pcs[d]);
++        fputs("\n", out);
++    }
++    fclose(out);
++}
++
+ static bool fnprof_ready(void) {
+     if (!g_fnprof.init) {
+         g_fnprof.init = true;
+@@ -233,6 +372,7 @@ static bool fnprof_ready(void) {
+         g_fnprof.frames_len = 1u;
+         (void)fnprof_fn_index(SYMBOL_ID_NONE); /* fn 0: outside any equation */
+         atexit(fnprof_report);
++        fnprof_sample_start();
+     }
+     if (!pthread_equal(pthread_self(), g_fnprof.owner)) {
+         g_fnprof.other_thread_events++;
+@@ -723,6 +863,11 @@ static void fnprof_json_string(FILE *out, const char *text) {
+ static void fnprof_report(void) {
+     if (!g_fnprof.init || !pthread_equal(pthread_self(), g_fnprof.owner))
+         return;
++    if (g_fnprof_samples.on) {
++        struct itimerspec off;
++        memset(&off, 0, sizeof(off));
++        (void)timer_settime(g_fnprof_samples.timer, 0, &off, NULL);
++    }
+     fnprof_switch(0u);
+     uint64_t now = fnprof_now();
+     g_fnprof.frames[0].self_ns += now - g_fnprof.last_ns;
+@@ -816,6 +961,7 @@ static void fnprof_report(void) {
+     }
+     fputs("]}\n", out);
+     fclose(out);
++    fnprof_sample_write();
+     free(incl);
+     free(iflags);
+ }
+-- 
+2.34.1
+

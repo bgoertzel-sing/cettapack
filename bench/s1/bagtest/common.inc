@@ -1,0 +1,5 @@
+!(import! &self ../petta_chainer)
+(= (cpk-rows) (collapse (match &forward_base_rate_interest (forward-base-rate-interest-row $t $id $k $p $e $i $f $fi $m) (quote ($t $id $k $p $e $i $f $fi $m)))))
+(= (cpk-reg $kb $p) (forward-register-base-rate! (brand KB $kb) (brand Statement $p) extract-tv (BaseRateEvidence 0.0 0.0) BaseRateAcc base-rate result-tv))
+(= (cpk-reg-init $kb $p $w) (forward-register-base-rate! (brand KB $kb) (brand Statement $p) extract-tv (BaseRateEvidence $w 0.0) BaseRateAcc base-rate result-tv))
+(= (cpk-reg-inh $kb $p) (forward-register-base-rate! (brand KB $kb) (brand Statement $p) (extract-inheritance-tv (brand KB $kb) (brand Statement $p)) (BaseRateEvidence 0.0 0.0) WeightedBaseRateAcc (weighted-base-rate-in-universe (brand KB $kb)) result-tv))
