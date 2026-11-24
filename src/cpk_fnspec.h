@@ -98,17 +98,14 @@ struct FsRt {
 struct FsCall {
     FsRt *rt;
     Atom *const *args;                   /* native atoms of the call's arguments */
-    Atom *const *rowvals;                /* fnspec 3, match-rows hook: the compared variables and template atoms
-                                            as the call instantiated them, read under the row's bindings
-                                            (NULL: the plan's own, the callback path) */
 };
 
 #define FS_ARG(i) ((Atom *)c->args[(i)])
-#define FS_ROWVAR(j) bindings_apply(row, a, c->rowvals ? c->rowvals[(j)] : c->rt->cvars[(j)])
-#define FS_TEMPLATE() bindings_apply(row, a, c->rowvals ? c->rowvals[c->rt->plan->n_cvars] : c->rt->tmpl)
+#define FS_ROWVAR(j) bindings_apply(row, a, c->rt->cvars[(j)])
+#define FS_TEMPLATE() bindings_apply(row, a, c->rt->tmpl)
 #define FS_CONST(k) (c->rt->consts[(k)])
 #define FS_TMPL(i) (c->rt->tmpls[(i)])
-#define FS_TMPLV(i) bindings_apply(row, a, c->rowvals ? c->rowvals[c->rt->plan->n_cvars + (i)] : c->rt->tmpls[(i)])
+#define FS_TMPLV(i) bindings_apply(row, a, c->rt->tmpls[(i)])
 #define FS_TRUE (c->rt->true_a)
 #define FS_FALSE (c->rt->false_a)
 

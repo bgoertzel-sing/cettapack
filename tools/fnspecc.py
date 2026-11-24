@@ -365,9 +365,9 @@ def compile_site(path):
     hosted_body = subst(body) if (exist or once or shape_wrap == 'collapse') else inner_h
     hosted_def = '(= (%s-h %s) %s)' % (fname, hargs, hosted_body)
     # fnspec 3, item 3 (upstream/cetta 0004): the function through match-rows' row hook; the runtime
-    # registers the hook under a unique name in place of CPK_ROWS_HOOK.  The row is the tuple of the
-    # compared variables and the template atoms (data leaves, case patterns) as the call instantiates
-    # them; the generated row function reads them by position under each row's bindings.
+    # registers the hook under a unique name in place of CPK_ROWS_HOOK.  The hook supplies the plan's own
+    # query (patterns and seeds over the plan's variables), so P and the row tuple (the compared variables
+    # and template atoms) are what match-rows would run for a hook without a query; they document it.
     rows_row = '(' + ' '.join(['$' + v for v in cvars] + [show(t) for t in (out_tmpl if tree else (out_tmpl,))]) + ')'
     rows_pat = show(pat) if head(pat) == ',' or len(pats) == 1 else '(, ' + ' '.join(show(p) for p in pats) + ')'
     rows_def = '(= (cpk-rows:%s %s) (match-rows %s %s %s (CPK_ROWS_HOOK %s) (%s %s)))' % (

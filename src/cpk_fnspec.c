@@ -511,7 +511,7 @@ static void run_call(Cursor *c) {
  * compute's row loop body, leave is compute's wrapper.  A refused or aborted call takes
  * the residual (f args...) that match-rows evaluates in its place. */
 
-typedef struct { FsRt *rt; Atom *args[16]; } RowsCall;
+typedef struct { FsRt *rt; Atom *args[16]; Bindings seeds; } RowsCall;
 
 static int rows_enter(void *ctx, void *arena, struct Atom *const *args, size_t nargs, int *first_only, void **call) {
     (void)arena;
@@ -532,23 +532,36 @@ static int rows_enter(void *ctx, void *arena, struct Atom *const *args, size_t n
     if (!c) { rt->st.row_aborts++; rt->st.residual_calls++; return 0; }
     c->rt = rt;
     for (unsigned i = 0; i < p->arity; i++) c->args[i] = (Atom *)args[i];
+    /* the plan's own query: its patterns, the arguments bound to its variables (as compute()) */
+    bindings_init(&c->seeds);
+    for (unsigned i = 0; i < p->arity; i++)
+        if ((int)i != p->space_arg && !bindings_add_var(&c->seeds, rt->lhs_args[i], c->args[i])) {
+            bindings_free(&c->seeds); free(c);
+            rt->st.row_aborts++; rt->st.residual_calls++;
+            return 0;
+        }
     *first_only = (p->once || p->exist) ? 1 : 0;     /* collapse(once) and existence tests: the first row */
     *call = c;
     return 1;
 }
 
-static int rows_row(void *ctx, void *call, void *arena, void *bindings, struct Atom *row, struct Atom **answer) {
+/* the query match-rows runs: the plan's patterns and the seeds, over the plan's own variables,
+ * so the generated row function reads each row exactly as compute() does (not the call's
+ * instantiated <pattern>, whose fresh variables cost the matcher more: docs/FNSPEC_3.md 4.3) */
+static int rows_query(void *ctx, void *call, struct Atom *const **patterns, size_t *npatterns, const void **seed) {
     (void)ctx;
     RowsCall *c = call;
-    FsRt *rt = c->rt;
-    const FsPlan *p = rt->plan;
-    /* <row>: the compared variables, then the template atoms, as the call instantiated them (the
-     * same variables as the instantiated pattern); the generated row function reads them under the
-     * row's bindings, as the callback path reads the plan's own under its rows */
-    size_t want = p->n_cvars + (p->tree ? (size_t)rt->tmpl->expr.len : 1u);
-    if (!row || row->kind != ATOM_EXPR || row->expr.len != want) return -1;
-    FsCall fc = {rt, c->args, row->expr.elems};
-    return p->row(&fc, bindings, arena, answer);
+    *patterns = c->rt->pats;
+    *npatterns = c->rt->plan->n_patterns;
+    *seed = &c->seeds;
+    return 1;
+}
+
+static int rows_row(void *ctx, void *call, void *arena, void *bindings, struct Atom *row, struct Atom **answer) {
+    (void)ctx; (void)row;
+    RowsCall *c = call;
+    FsCall fc = {c->rt, c->args};
+    return c->rt->plan->row(&fc, bindings, arena, answer);
 }
 
 static int rows_leave(void *ctx, void *call, void *arena, struct Atom *const *kept, size_t nkept, size_t dropped,
@@ -558,6 +571,7 @@ static int rows_leave(void *ctx, void *call, void *arena, struct Atom *const *ke
     FsRt *rt = c->rt;
     const FsPlan *p = rt->plan;
     Arena *a = arena;
+    bindings_free(&c->seeds);
     free(c);
     *out = NULL; *nout = 0;
     if (aborted) { rt->st.row_aborts++; rt->st.residual_calls++; return 0; }
@@ -804,7 +818,8 @@ FsRt *fs_open(cetta_engine_t *e, const FsPlan *p, bool force_invalid, const char
     if (cetta_embed_register_callback(e, name, &d, &rt->hosted) != CETTA_OK) { *error = "register cpk-hosted"; return NULL; }
     /* fnspec 3: the same function through match-rows' row hook (cpk-rows:f) */
     snprintf(name, sizeof name, "cpk-rows-hook:%s:%p", p->function, (void *)rt);
-    cetta_rows_hook_t h = {.size = sizeof h, .context = rt, .enter = rows_enter, .row = rows_row, .leave = rows_leave};
+    cetta_rows_hook_t h = {.size = sizeof h, .context = rt, .enter = rows_enter, .query = rows_query, .row = rows_row,
+                           .leave = rows_leave};
     if (cetta_embed_native_rows_hook_register(e, name, &h) != CETTA_OK) { *error = "register the match-rows hook"; return NULL; }
     rt->rows_hook = strdup(name);
     {

@@ -1,23 +1,23 @@
-From bb0b0f2b389a0c1ab3e80207d3addd9494b8d01e Mon Sep 17 00:00:00 2001
+From 0cbcac595382e58025a296edf554bd49cc2d44bd Mon Sep 17 00:00:00 2001
 From: cettapack <cettapack@localhost>
 Date: Mon, 23 Nov 2026 22:19:50 -0700
 Subject: [PATCH] match-rows: row hooks, compiled code inside the matcher's row
  loop
 
-(match-rows <space> <pattern> <row> (<hook> <arg> ...) <residual>) runs the conjunction matcher and hands each row to a host hook registered under <hook> (cetta_embed_native_rows_hook_register): enter (the host's guards; 1 run, 0 residual; first-row cut), row (1 keep, 0 drop, 2 none, -1 abort), leave (the call's answers, or 0 for the residual). The residual is evaluated in place of the call.
+(match-rows <space> <pattern> <row> (<hook> <arg> ...) <residual>) runs the conjunction matcher and hands each row to a host hook registered under <hook> (cetta_embed_native_rows_hook_register): enter (the host's guards; 1 run, 0 residual; first-row cut), query (optional: the host's own compiled patterns and seed bindings in place of <pattern>), row (1 keep, 0 drop, 2 none, -1 abort), leave (the call's answers, or 0 for the residual). Rows and per-row work live in a scratch arena; the answers are copied out. The residual is evaluated in place of the call.
 ---
- include/cetta_embed_native.h |  30 +++++++++++
- src/embedding.c              |  88 ++++++++++++++++++++++++++++++
- src/eval.c                   | 100 +++++++++++++++++++++++++++++++++++
- src/match_rows_hook.h        |  45 ++++++++++++++++
- 4 files changed, 263 insertions(+)
+ include/cetta_embed_native.h |  36 +++++++++++
+ src/embedding.c              |  94 ++++++++++++++++++++++++++++
+ src/eval.c                   | 115 +++++++++++++++++++++++++++++++++++
+ src/match_rows_hook.h        |  51 ++++++++++++++++
+ 4 files changed, 296 insertions(+)
  create mode 100644 src/match_rows_hook.h
 
 diff --git a/include/cetta_embed_native.h b/include/cetta_embed_native.h
-index 916552ef..d67de4bf 100644
+index 916552ef..c117d041 100644
 --- a/include/cetta_embed_native.h
 +++ b/include/cetta_embed_native.h
-@@ -31,6 +31,36 @@ cetta_status_t cetta_embed_native_atom_copy(cetta_engine_t *engine,
+@@ -31,6 +31,42 @@ cetta_status_t cetta_embed_native_atom_copy(cetta_engine_t *engine,
                                              const struct Atom *value,
                                              cetta_atom_t **output);
  
@@ -33,7 +33,10 @@ index 916552ef..d67de4bf 100644
 + * first kept row; row returns 1 (keep *answer), 0 (drop: an (empty) branch),
 + * 2 (no answer), -1 (abort: residual); leave (always called after enter returned
 + * 1) returns 1 with the call's answers in *out and *nout, or 0 for the residual.
-+ * arena is the evaluation's Arena: answers must live there (or outlive the call).
++ * query (optional) supplies the host's own compiled query (patterns and seed
++ * Bindings over its own variables) in place of <pattern>.  arena is a scratch
++ * Arena for the call: the rows, the per-row work and leave's answers live there;
++ * match-rows copies the answers into the evaluation and frees it.
 + * enter runs as a callback does (the engine may be called); row and leave must
 + * not call into the engine.  <residual> is evaluated in place of the call when
 + * enter or leave answers 0.  Registration is process-wide and not thread-safe;
@@ -42,6 +45,9 @@ index 916552ef..d67de4bf 100644
 +    size_t size;
 +    void *context;
 +    int (*enter)(void *context, void *arena, struct Atom *const *args, size_t nargs, int *first_only, void **call);
++    /* optional: the query the host compiled (patterns and seed Bindings over its own variables);
++     * NULL runs <pattern> as the call instantiated it.  1 ok, else the call aborts (residual). */
++    int (*query)(void *context, void *call, struct Atom *const **patterns, size_t *npatterns, const void **seed);
 +    int (*row)(void *context, void *call, void *arena, void *bindings, struct Atom *row, struct Atom **answer);
 +    int (*leave)(void *context, void *call, void *arena, struct Atom *const *kept, size_t nkept, size_t dropped,
 +                 int aborted, struct Atom ***out, size_t *nout);
@@ -55,7 +61,7 @@ index 916552ef..d67de4bf 100644
  }
  #endif
 diff --git a/src/embedding.c b/src/embedding.c
-index f87de651..b6d9d463 100644
+index f87de651..31db4d07 100644
 --- a/src/embedding.c
 +++ b/src/embedding.c
 @@ -9,6 +9,7 @@
@@ -66,7 +72,7 @@ index f87de651..b6d9d463 100644
  #include "embedding_python.h"
  #include "foreign.h"
  #include "runtime_names.h"
-@@ -1628,6 +1629,93 @@ const char *cetta_embed_status_name(cetta_status_t status) {
+@@ -1628,6 +1629,99 @@ const char *cetta_embed_status_name(cetta_status_t status) {
      return (unsigned)status < sizeof(names) / sizeof(*names) ? names[status] : "unknown-status";
  }
  
@@ -89,6 +95,11 @@ index f87de651..b6d9d463 100644
 +                              Atom **answer) {
 +    EmbeddingRowsHook *hook = context;
 +    return hook->user.row(hook->user.context, call, arena, bindings, row, answer);
++}
++static int embedding_rows_query(void *context, void *call, Atom *const **patterns, size_t *npatterns,
++                                const Bindings **seed) {
++    EmbeddingRowsHook *hook = context;
++    return hook->user.query(hook->user.context, call, patterns, npatterns, (const void **)seed);
 +}
 +static int embedding_rows_leave(void *context, void *call, Arena *arena, Atom *const *kept, size_t nkept,
 +                                size_t dropped, int aborted, Atom ***out, size_t *nout) {
@@ -140,6 +151,7 @@ index f87de651..b6d9d463 100644
 +    wrapper->engine = engine;
 +    wrapper->user = *hook;
 +    CettaRowsHook internal = {.context = wrapper, .enter = embedding_rows_enter,
++                              .query = hook->query ? embedding_rows_query : NULL,
 +                              .row = embedding_rows_row, .leave = embedding_rows_leave};
 +    for (size_t i = 0; i < g_embedding_rows_hooks_len; i++)
 +        if (g_embedding_rows_hooks[i].name == id) {          /* one name, one hook: replace */
@@ -161,7 +173,7 @@ index f87de651..b6d9d463 100644
  
  const Atom *cetta_embed_native_atom(const cetta_atom_t *atom) {
 diff --git a/src/eval.c b/src/eval.c
-index f1cfb745..f4556d62 100644
+index f1cfb745..b3fdc6ab 100644
 --- a/src/eval.c
 +++ b/src/eval.c
 @@ -49,6 +49,42 @@
@@ -207,7 +219,7 @@ index f1cfb745..f4556d62 100644
  #include "prime_typed_flow_boundary.h"
  #include "prime_typing_publication.h"
  #include "name_key.h"
-@@ -60804,6 +60840,70 @@ petta_lowered_to_shared_form:
+@@ -60804,6 +60840,85 @@ petta_lowered_to_shared_form:
       * row the <row> atom with that row's bindings applied, as data: no
       * template is evaluated.  Multiplicity is the matcher's: one row per
       * binding set it returns.  Narrow primitive for compiled hosts. */
@@ -239,18 +251,31 @@ index f1cfb745..f4556d62 100644
 +        Atom **kept = NULL;
 +        size_t nkept = 0, kept_cap = 0, dropped = 0;
 +        int aborted = ms ? 0 : 1;
-+        if (ms) {
++        /* the matcher's rows and the hook's per-row work live in a scratch arena,
++         * freed after the call; only the call's answers are copied out */
++        Arena scratch;
++        arena_init_detached(&scratch);
++        Atom *const *hook_pats = NULL;
++        size_t hook_npats = 0;
++        const Bindings *hook_seed = NULL;
++        if (ms && hook->query &&
++            hook->query(hook->context, hook_state, &hook_pats, &hook_npats, &hook_seed) != 1)
++            aborted = 1;
++        if (ms && !aborted) {
 +            BindingSet rows;
-+            if (pattern->kind == ATOM_EXPR && pattern->expr.len >= 2u &&
++            if (hook_pats) {
++                space_query_conjunction(ms, &scratch, (Atom **)hook_pats,
++                                        (CettaExprLen)hook_npats, hook_seed, &rows);
++            } else if (pattern->kind == ATOM_EXPR && pattern->expr.len >= 2u &&
 +                atom_is_symbol_id(pattern->expr.elems[0], g_builtin_syms.comma)) {
-+                space_query_conjunction(ms, a, pattern->expr.elems + 1u,
++                space_query_conjunction(ms, &scratch, pattern->expr.elems + 1u,
 +                                        pattern->expr.len - 1u, NULL, &rows);
 +            } else {
-+                space_query_conjunction(ms, a, &pattern, 1u, NULL, &rows);
++                space_query_conjunction(ms, &scratch, &pattern, 1u, NULL, &rows);
 +            }
 +            for (CettaIndex ri = 0; ri < rows.len; ri++) {
 +                Atom *answer = NULL;
-+                int k = hook->row(hook->context, hook_state, a, &rows.items[ri], row, &answer);
++                int k = hook->row(hook->context, hook_state, &scratch, &rows.items[ri], row, &answer);
 +                if (k < 0) { aborted = 1; break; }
 +                if (k == 0) { dropped++; continue; }
 +                if (k != 1) continue;
@@ -268,10 +293,12 @@ index f1cfb745..f4556d62 100644
 +        }
 +        Atom **out = NULL;
 +        size_t nout = 0;
-+        int done = hook->leave(hook->context, hook_state, a, kept, nkept, dropped, aborted, &out, &nout);
++        int done = hook->leave(hook->context, hook_state, &scratch, kept, nkept, dropped, aborted, &out, &nout);
 +        free(kept);
++        if (done == 1)
++            for (size_t oi = 0; oi < nout; oi++) outcome_set_add(os, atom_deep_copy(a, out[oi]), &_empty);
++        arena_free(&scratch);
 +        if (done != 1) TAIL_REENTER(residual);
-+        for (size_t oi = 0; oi < nout; oi++) outcome_set_add(os, out[oi], &_empty);
 +        return;
 +    }
 +
@@ -280,10 +307,10 @@ index f1cfb745..f4556d62 100644
          Atom *pattern = expr_arg(atom, 1);
 diff --git a/src/match_rows_hook.h b/src/match_rows_hook.h
 new file mode 100644
-index 00000000..c9109567
+index 00000000..43720833
 --- /dev/null
 +++ b/src/match_rows_hook.h
-@@ -0,0 +1,45 @@
+@@ -0,0 +1,51 @@
 +#ifndef CETTA_MATCH_ROWS_HOOK_H
 +#define CETTA_MATCH_ROWS_HOOK_H
 +
@@ -298,6 +325,9 @@ index 00000000..c9109567
 + *   enter  once per call, with the hook call's arguments: 1 run the matcher, 0 take
 + *          the residual (the host's guards); *first_only asks match-rows to stop at the
 + *          first row the host keeps;
++ *   query  optional (NULL: <pattern>): the query the host compiled, as patterns and seed
++ *          bindings whose variables are the host's own (so its row code reads them directly);
++ *          match-rows runs the same conjunction matcher on it;
 + *   row    per binding row, in the matcher's order, with the row's bindings and <row> as the
 + *          call instantiated it (the host applies the bindings to what it reads, as a
 + *          template would): 1 keep *answer, 0 drop the row (an (empty) branch), 2 no answer
@@ -306,6 +336,8 @@ index 00000000..c9109567
 + *          kept ones (*out, *nout; 1), or 0 for the residual.  aborted is set when a row
 + *          aborted or the space argument was not a space.
 + *
++ * The matcher's rows, the hook's per-row work and leave's answers live in a scratch
++ * arena for the call; match-rows copies the answers into the evaluation and frees it.
 + * The residual is evaluated in place of the call (a tail re-entry), so a host that
 + * refuses a call answers exactly what <residual> answers.  Hooks are registered
 + * process-wide under a symbol (one name, one hook); registration is not thread-safe. */
@@ -319,6 +351,7 @@ index 00000000..c9109567
 +typedef struct CettaRowsHook {
 +    void *context;
 +    int (*enter)(void *context, Arena *arena, Atom *const *args, size_t nargs, int *first_only, void **call);
++    int (*query)(void *context, void *call, Atom *const **patterns, size_t *npatterns, const Bindings **seed);
 +    int (*row)(void *context, void *call, Arena *arena, Bindings *bindings, Atom *row, Atom **answer);
 +    int (*leave)(void *context, void *call, Arena *arena, Atom *const *kept, size_t nkept, size_t dropped,
 +                 int aborted, Atom ***out, size_t *nout);

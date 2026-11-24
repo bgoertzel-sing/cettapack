@@ -3,7 +3,8 @@
 Patch: `0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch`
 Applies to: zariuq/CeTTa a9b3a81186529fd99649e437809bdb6f58fce2fd after 0001, 0002 and 0003 (git am, in order; it
 extends 0003's match-rows and 0001's include/cetta_embed_native.h).
-Size: 4 files (a new header src/match_rows_hook.h; src/eval.c, src/embedding.c, include/cetta_embed_native.h).
+Size: 4 files, +296 lines (a new header src/match_rows_hook.h; src/eval.c, src/embedding.c,
+include/cetta_embed_native.h).
 Status: a file in this repository only; not pushed to CeTTa and not offered upstream (task
 t-2026-11-24-cettapack-fnspec-3; stop-line: nothing goes to Zar's CeTTa).
 
@@ -17,13 +18,16 @@ hook registered under the symbol <hook>:
 
 - enter(args): once per call, with the hook call's arguments (the host's guards). 1 runs the matcher, 0 takes the
   residual. The hook may ask for the first-row cut (*first_only): match-rows stops at the first kept row.
+- query() (optional): the host's own compiled query, patterns and seed Bindings over its own variables, run in
+  place of <pattern> (so the host's row code reads each row exactly as it would after its own matcher call).
 - row(bindings, row): per binding row, in the matcher's order: 1 keep the answer, 0 drop the row (an (empty)
   branch), 2 no answer, -1 abort the call.
 - leave(kept, dropped, aborted): the call's answers from the kept ones (a stream, a collapse tuple, a boolean), or
   0 for the residual.
 
 When enter or leave answers 0, match-rows evaluates <residual> in place of the call (a tail re-entry), so a call the
-host refuses answers exactly what <residual> answers. Hooks are registered from the embedding with
+host refuses answers exactly what <residual> answers. The rows, the hook's per-row work and leave's answers live in a
+scratch arena for the call; match-rows copies the answers into the evaluation and frees it. Hooks are registered from the embedding with
 cetta_embed_native_rows_hook_register(engine, name, hook) (process-wide, one name one hook, not thread-safe;
 cetta_embed_native_rows_hook_unregister before the engine is released). enter runs like a callback (it may call
 the engine); row and leave must not.
