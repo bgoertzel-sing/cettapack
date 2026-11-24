@@ -123,6 +123,69 @@ KP = {
 }
 KP_NF = "!(add-atom &self (= (stv 0.9 $c) bumped))\n"
 
+# fnspec 3 (t-2026-11-24-cettapack-fnspec-3): the real sites of the template-tree shapes.
+# Several rows per key in an order where the first row is not the only one (collapse(once)),
+# rows on every branch of the tree, and in the mixed cases values outside the compiled kinds.
+HS = {
+    'c1_rows': ("(1 kb1 (Inh a b) i1 ctx1)\n(1 kb1 (Inh a b) i2 ctx2)\n(1 kb1 (Inh a c) i1 ctx1)\n(2 kb1 (Inh a b) i1 ctx1)\n"
+                "(1 kb2 (Inh a b) i3 ctx3)\n(1 kb1 (Inh a c) i4 ctx4)\n(2 kb1 (Inh a b) i1 ctx1)\n(3 kb1 (Sim a b) i5 ctx5)\n",
+                ['(kb1 1 (Inh a b) i1 ctx1)', '(kb1 1 (Inh a b) i1 ctx9)', '(kb1 1 (Inh a b) i9 ctx1)', '(kb1 1 (Inh a b) i9 ctx9)',
+                 '(kb1 1 (Inh a c) i4 ctx1)', '(kb1 2 (Inh a b) i1 ctx1)', '(kb2 1 (Inh a b) i3 ctx0)', '(kb9 1 (Inh a b) i1 ctx1)',
+                 '(kb1 3 (Sim a b) i0 ctx0)', '(kb1 1 (Sim a b) i1 ctx1)']),
+    'c2_mixed': (";; expect: mixed\n(4 kb1 (Inh $x b) i1 ctx1)\n(5 kb1 (Inh a b) 7 ctx1)\n(5 kb1 (Inh a b) i2 ctx2)\n(6 kb1 (Inh a b) 1.5 2)\n(7 kb1 (Inh a b) i1 ctx1)\n",
+                 ['(kb1 4 (Inh a b) i1 ctx1)', '(kb1 5 (Inh a b) i1 ctx1)', '(kb1 5 (Inh a b) 7 ctx1)', '(kb1 6 (Inh a b) 1.5 2)',
+                  '(kb1 6 (Inh a b) 1 2)', '(kb1 7 (Inh $q b) i1 ctx1)', '(kb1 7 (Inh a b) i1 ctx1)']),
+}
+HS_NF = "!(add-atom &self (= (Inh a c) inh-ac))\n"
+
+SM = {
+    'c1_rows': ("(1 (k a) 7 (pins p1) (cuts) (flt f1) v1)\n(1 (k a) 7 (pins p1) (cuts c1) (flt f1) v2)\n(1 (k a) 7 (pins p2) (cuts) (flt f1) v3)\n"
+                "(1 (k b) 7 (pins p1) (cuts) (flt f1) v4)\n(1 (k a) 8 (pins p1) (cuts) (flt f2) (val v5))\n(1 (k a) 7 (pins p1) (cuts) (flt f1) v6)\n"
+                "(2 (k a) 7 (pins p1) (cuts c1 c2) (flt f1) (val 3))\n(2 (k a) 7 (pins p1) (cuts) (flt f9) v7)\n(2 (k a) 7 (pins p1) (cuts) (flt f1) v8)\n",
+                ['(1 (k a) 7 (pins p1) (cuts) (flt f1))', '(1 (k a) 7 (pins p1) (cuts c1) (flt f1))', '(1 (k a) 7 (pins p2) (cuts) (flt f1))',
+                 '(1 (k b) 7 (pins p1) (cuts) (flt f1))', '(1 (k a) 8 (pins p1) (cuts) (flt f2))', '(1 (k a) 9 (pins p1) (cuts) (flt f1))',
+                 '(2 (k a) 7 (pins p1) (cuts c1 c2) (flt f1))', '(2 (k a) 7 (pins p1) (cuts) (flt f1))', '(2 (k a) 7 (pins p1) (cuts) (flt f9))',
+                 '(1 (k a) 7 (pins p3) (cuts) (flt f1))']),
+    'c2_mixed': (";; expect: mixed\n(3 (k $v) 7 (pins p1) (cuts) (flt f1) v1)\n(3 (k a) 7 (pins p1) 3 (flt f1) v2)\n(3 (k a) 7 (pins p1) 3.0 (flt f1) v3)\n"
+                 "(4 (k a) 7 (pins p1) (cuts) (flt f1) $free)\n(5 (k a) 7 (pins p1) (cuts) (flt f1) (v 1.5))\n",
+                 ['(3 (k a) 7 (pins p1) 3 (flt f1))', '(3 (k a) 7 (pins p1) 3.0 (flt f1))', '(4 (k a) 7 (pins p1) (cuts) (flt f1))',
+                  '(5 (k a) 7 (pins p1) (cuts) (flt f1))', '(3 (k $q) 7 (pins p1) (cuts) (flt f1))']),
+}
+SM_NF = "!(add-atom &self (= (val $x) (bumped $x)))\n"
+
+SR = {
+    'c1_rows': ("(1 (key a) 5 (sk-row id1 c p 0))\n(1 (key a) 5 (sk-row id2 c p 1))\n(1 (key b) 5 (sk-row id1 c p 2))\n"
+                "(2 (key a) 5 (sk-row id1 c p 3))\n(1 (key a) 6 (sk-row id3 c p 4))\n(1 (key a) 5 (sk-row id1 c p 5))\n(1 (key a) 5 (sk-row (sid four) c p 6))\n",
+                ['(1 (key a) 5 id1)', '(1 (key a) 5 id2)', '(1 (key a) 5 id3)', '(1 (key b) 5 id1)', '(1 (key a) 6 id3)', '(3 (key a) 5 id1)',
+                 '(1 (key c) 5 id1)', '(1 (key a) 5 (sid four))', '(2 (key a) 5 id2)']),
+    'c2_mixed': (";; expect: mixed\n(3 (key $x) 5 (sk-row id1 c p 0))\n(4 (key a) 5 (sk-row 7 c p 0))\n(4 (key a) 5 (sk-row id1 c p 1))\n(5 (key a) 5 (sk-row 1.5 c p 0))\n",
+                 ['(3 (key a) 5 id1)', '(4 (key a) 5 id1)', '(4 (key a) 5 7)', '(5 (key a) 5 1.5)', '(5 (key a) 5 1)', '(3 (key $q) 5 id1)', '(6 (key a) 5 (sid 4))']),
+}
+SR_NF = "!(add-atom &self (= true yes))\n"
+
+SB = {
+    'c1_rows': ("(1 10 st (seg p1) (seg n1) (InstanceEvidence (BaseRateEvidence 0.5 0.0) (BaseRateEvidence 0.2 0.0)))\n"
+                "(1 10 st (seg p2) (seg n2) (InstanceEvidence (BaseRateEvidence 0.5 0.3) (BaseRateEvidence 0.2 0.0)))\n"
+                "(1 10 st (seg p3) (seg n3) (InstanceEvidence (BaseRateEvidence 0.5 0.0) (BaseRateEvidence 0.2 0.25)))\n"
+                "(1 10 st (seg p2) (seg n2) (InstanceEvidence (BaseRateEvidence 0.5 0.3) (BaseRateEvidence 0.2 0.0)))\n"
+                "(2 10 st (seg p5) (seg n5) (InstanceEvidence (BaseRateEvidence 1.0 0.0) (BaseRateEvidence 1.0 0.0)))\n"
+                "(2 10 st (seg p6) (seg n6) (InstanceEvidence (BaseRateEvidence 2.0 0.0) (BaseRateEvidence 1.0 0.0)))\n"
+                "(3 10 st (seg p7) (seg n7) other-contribution)\n(3 10 st (seg p8) (seg n8) (InstanceEvidence x y))\n"
+                "(1 11 st (seg p9) (seg n9) (InstanceEvidence (BaseRateEvidence 0.1 0.0) (BaseRateEvidence 0.1 0.5)))\n",
+                ['(1 10)', '(2 10)', '(3 10)', '(1 11)', '(9 9)', '(10 1)']),
+    'c2_edges': ("(1 10 st (seg p3) (seg n3) (InstanceEvidence (BaseRateEvidence 0.5 -0.0) (BaseRateEvidence 0.2 0.0)))\n"
+                 "(1 10 st (seg p4) (seg n4) (InstanceEvidence (BaseRateEvidence 0.5 0) (BaseRateEvidence 0.2 0)))\n"
+                 "(2 10 st (seg p5) (seg n5) (InstanceEvidence (BaseRateEvidence 1 0.0) (BaseRateEvidence \"w\" 0.0)))\n"
+                 "(3 10 st (seg p6) (seg n6) (InstanceEvidence (BaseRateEvidence 0.5 0.00) (BaseRateEvidence 0.2 0e0)))\n",
+                 ['(1 10)', '(2 10)', '(3 10)']),
+    'c3_mixed': (";; expect: mixed\n(1 10 st (seg p1) (seg n1) (InstanceEvidence (BaseRateEvidence 0.5 $w) (BaseRateEvidence 0.2 0.0)))\n"
+                 "(1 10 st (seg p2) (seg n2) (InstanceEvidence (BaseRateEvidence 0.5 0.3) (BaseRateEvidence 0.2 0.0)))\n"
+                 "(2 10 st (seg $s) (seg n5) (InstanceEvidence (BaseRateEvidence 0.5 0.3) (BaseRateEvidence 0.2 0.0)))\n"
+                 "(3 10 st (seg p6) (seg n6) (InstanceEvidence (BaseRateEvidence 0.5 9223372036854775808) (BaseRateEvidence 0.2 0.0)))\n",
+                 ['(1 10)', '(2 10)', '(3 10)', '($m 10)']),
+}
+SB_NF = "!(add-atom &self (= (seg p2) seg-p2))\n"
+
 def write_kind(out, kind, cases, nf):
     d = os.path.join(out, kind)
     os.makedirs(d, exist_ok=True)
@@ -149,6 +212,10 @@ def main():
     write_kind(a.out, 'logic_config', LC, LC_NF)
     write_kind(a.out, 'sk_needed', SK, SK_NF)
     write_kind(a.out, 'kb_proofs', KP, KP_NF)
+    write_kind(a.out, 'hm_seen', HS, HS_NF)
+    write_kind(a.out, 'sk_summary', SM, SM_NF)
+    write_kind(a.out, 'sk_row', SR, SR_NF)
+    write_kind(a.out, 'sk_member', SB, SB_NF)
 
 if __name__ == '__main__':
     main()

@@ -88,6 +88,134 @@ def parse_site(path):
     eqs = [f for f, line, bang in read_forms(text) if not bang and head(f) == '=' and len(f) == 3 and head(f[1])]
     return text, meta, eqs
 
+def compile_tree(tmpl, args, pat_vars, defined, builtins, operand):
+    """fnspec 3: C for a template tree (the survey's if/case/let family).
+
+        T ::= (empty) | D | B | (if C T T) | (case X ((P1 T1) ... (Pn Tn)))
+        C ::= (op X Y) | (and C C) | (or C C) | (not C) | True | False | (if C C C)
+        B ::= a C used as the answer (he's True/False atoms)
+
+    D is data (nothing evaluated); op is one of == =alpha < > <= >=, X and Y variables or
+    ground constants; case's scrutinee is a variable (bound by the row or an argument), its
+    patterns are data, and the variables a pattern binds may appear only in that branch's
+    data leaves.  Returns (C code, template atoms: data leaves and case patterns, FS_TMPL(i),
+    needs_bool).  A node computes only what CeTTa computes on its path (if: its condition,
+    then one branch; case: the patterns in order until one matches); a value outside the
+    compiled kinds aborts the call to the residual."""
+    tmpls, helpers, protos, counter, needs_bool = [], [], [], [0], [False]
+
+    def fresh(p):
+        counter[0] += 1
+        return '%s_%d' % (p, counter[0])
+
+    def need(b):
+        if b not in builtins:
+            builtins.append(b)
+
+    def cond_fn(c):
+        leaves = []
+
+        def comp(c):
+            h = head(c)
+            if isinstance(c, Sym) and not isinstance(c, Str) and str(c) in ('True', 'False'):
+                return '1' if str(c) == 'True' else '0'
+            if h in CMP_OPS and len(c) == 3:
+                need((h, 2))
+                i = len(leaves)
+                x, y = operand(c[1]), operand(c[2])
+                leaves.append('    int l%d = fs_compare(c, %s, %s, %s);\n'
+                              '    if (l%d < 0) return -1;   /* (%s ...) outside the compiled value kinds */\n'
+                              % (i, CMP_OPS[h], x, y, i, h))
+                return 'l%d' % i
+            if h in BOOL_OPS and len(c) == BOOL_OPS[h] + 1:
+                need((h, BOOL_OPS[h]))
+                parts = [comp(x) for x in c[1:]]
+                if h == 'not':
+                    return '!' + parts[0]
+                return '(' + (' && ' if h == 'and' else ' || ').join(parts) + ')'
+            if h == 'if' and len(c) == 4:
+                need(('if', 3))
+                return '(%s ? %s : %s)' % (comp(c[1]), comp(c[2]), comp(c[3]))
+            if isinstance(c, Sym) and not isinstance(c, Str):
+                raise Refuse('condition leaf %s is not a Bool (if is (-> Bool Atom Atom $t) in he)' % show(c))
+            raise Refuse('condition form ' + show(c)[:60] + ' is outside the fragment')
+
+        expr = comp(c)
+        name = fresh('cond')
+        # every leaf of this condition is computed (and may abort) before the combination
+        helpers.append('static int %s(FsCall *c, Bindings *row, Arena *a) {\n    (void)row; (void)a;\n%s    return (%s) ? 1 : 0;\n}\n'
+                       % (name, ''.join(leaves), expr))
+        return name
+
+    def is_bool_expr(t):
+        h = head(t)
+        return (h in CMP_OPS and len(t) == 3) or (h in BOOL_OPS and len(t) == BOOL_OPS[h] + 1)
+
+    def node(t, case_vars):
+        """C statements that return 1 (an answer), 0 (no answer: (empty)), 2 (no answer: no case
+        branch matches), -1 (abort)"""
+        if is_empty_call(t):
+            need(('empty', 0))
+            return '    return 0;\n'
+        h = head(t)
+        if h == 'if' and len(t) == 4:
+            need(('if', 3))
+            if any(v in case_vars for v in vars_of(t[1])):
+                raise Refuse('a condition uses a variable bound by a case pattern')
+            cn = cond_fn(t[1])
+            return ('    { int k = %s(c, row, a); if (k < 0) return -1;\n      if (k) {\n%s      } else {\n%s      } }\n'
+                    % (cn, node(t[2], case_vars), node(t[3], case_vars)))
+        if h == 'case' and len(t) == 3:
+            if case_vars:
+                raise Refuse('case inside a case branch')
+            x, branches = t[1], t[2]
+            if not isinstance(x, Var):
+                raise Refuse('case scrutinee is not a variable')
+            if not is_expr(branches) or not branches or not all(is_expr(b) and len(b) == 2 for b in branches):
+                raise Refuse('case branches are not (pattern body) pairs')
+            need(('case', 2))
+            sv = operand(x)
+            out = ['    { Atom *sv = %s;\n      if (!sv || !fs_normal_form(c, sv)) return -1;   /* the scrutinee is a value */\n' % sv]
+            for p, body in branches:
+                if not is_data(p, defined):
+                    raise Refuse('a case pattern evaluates something')
+                bound = [v for v in vars_of(p) if v not in pat_vars and v not in args]
+                bn = fresh('branch')
+                protos.append('static int %s(FsCall *c, Bindings *row, Arena *a, Atom **answer, Bindings *cb);\n' % bn)
+                helpers.append('static int %s(FsCall *c, Bindings *row, Arena *a, Atom **answer, Bindings *cb) {\n'
+                               '    (void)cb;\n%s}\n' % (bn, node(body, set(bound) | {'.case'})))
+                tmpls.append(p)
+                k = len(tmpls) - 1
+                out.append('      { Bindings cb; bindings_init(&cb);\n'
+                           '        Atom *pt = FS_TMPLV(%d);   /* the pattern under the row */\n'
+                           '        if (!pt) { bindings_free(&cb); return -1; }\n'
+                           '        if (simple_match(pt, sv, &cb, a)) { int r = %s(c, row, a, answer, &cb); bindings_free(&cb); return r; }\n'
+                           '        bindings_free(&cb); }\n' % (k, bn))
+            out.append('      return 2; }\n')
+            return ''.join(out)
+        if is_bool_expr(t):
+            if any(v in case_vars for v in vars_of(t)):
+                raise Refuse('a boolean value uses a variable bound by a case pattern')
+            needs_bool[0] = True
+            cn = cond_fn(t)
+            return ('    { int k = %s(c, row, a); if (k < 0) return -1;\n'
+                    '      *answer = k ? FS_TRUE : FS_FALSE; return *answer ? 1 : -1; }\n' % cn)
+        if is_data(t, defined):
+            tmpls.append(t)
+            k = len(tmpls) - 1
+            app = '    *answer = FS_TMPLV(%d);\n' % k
+            if case_vars:
+                app += '    if (*answer && cb) *answer = bindings_apply(cb, a, *answer);\n'
+            return app + '    if (!*answer || !fs_normal_form(c, *answer)) return -1;\n    return 1;\n'
+        raise Refuse('template node ' + show(t)[:60] + ' is outside the fragment (if, case, empty, data, boolean)')
+
+    top = node(tmpl, set())
+    code = ''.join(protos) + '\n' + '\n'.join(helpers)
+    code += '\n/* the template tree: 1 an answer, 0 (empty), 2 no case branch, -1 abort */\n'
+    code += 'static int tree_top(FsCall *c, Bindings *row, Arena *a, Atom **answer) {\n    Bindings *cb = NULL; (void)cb;\n%s}\n' % top
+    return code, tmpls, needs_bool[0]
+
+
 def compile_site(path):
     text, meta, eqs = parse_site(path)
     name = meta.get('fnspec-site') or os.path.splitext(os.path.basename(path))[0]
@@ -146,19 +274,17 @@ def compile_site(path):
     for p in pats:
         if not is_data(p, defined) or not is_expr(p):
             raise Refuse('a pattern is not a data expression')
-    cond, keep_when, out_tmpl = None, None, tmpl
-    if head(tmpl) == 'if' and len(tmpl) == 4:
-        c, a, b = tmpl[1], tmpl[2], tmpl[3]
-        if is_empty_call(a) and is_data(b, defined):
-            cond, keep_when, out_tmpl = c, 0, b
-        elif is_empty_call(b) and is_data(a, defined):
-            cond, keep_when, out_tmpl = c, 1, a
-        else:
-            raise Refuse('if template without an (empty) branch and a data branch')
+    cond, keep_when, out_tmpl, tree = None, None, tmpl, False
+    if head(tmpl) == 'if' and len(tmpl) == 4 and is_empty_call(tmpl[2]) and is_data(tmpl[3], defined):
+        cond, keep_when, out_tmpl = tmpl[1], 0, tmpl[3]
+    elif head(tmpl) == 'if' and len(tmpl) == 4 and is_empty_call(tmpl[3]) and is_data(tmpl[2], defined):
+        cond, keep_when, out_tmpl = tmpl[1], 1, tmpl[2]
     elif not is_data(tmpl, defined):
-        raise Refuse('template evaluates something (not data, not a filter)')
+        # fnspec 3: the survey's if/case/let family (ranks 9, 11, 12): a template tree of
+        # if (both branches templates), case on a bound value, (empty), data and boolean values
+        tree = True
     family = 'exist' if exist else ('once' if once else shape_wrap)
-    shape = family + '-' + ('filter' if cond is not None else 'data')
+    shape = family + '-' + ('cond' if tree else 'filter' if cond is not None else 'data')
     pat_vars = vars_of(tuple(pats))
     builtins = [('match', 3)]
     if shape_wrap == 'collapse':
@@ -209,7 +335,10 @@ def compile_site(path):
             return '(' + (' && ' if h == 'and' else ' || ').join(parts) + ')'
         raise Refuse('condition form ' + show(c)[:60] + ' is outside the fragment')
 
-    cond_c = None
+    cond_c, tree_c, needs_bool = None, None, False
+    if tree:
+        tree_c, tmpls, needs_bool = compile_tree(tmpl, args, pat_vars, defined, builtins, operand)
+        out_tmpl = tuple(tmpls)
     if cond is not None:
         builtins += [('if', 3), ('empty', 0)]
         expr = comp(cond)
@@ -235,18 +364,28 @@ def compile_site(path):
         return show(x)
     hosted_body = subst(body) if (exist or once or shape_wrap == 'collapse') else inner_h
     hosted_def = '(= (%s-h %s) %s)' % (fname, hargs, hosted_body)
+    # fnspec 3, item 3 (upstream/cetta 0004): the function through match-rows' row hook; the runtime
+    # registers the hook under a unique name in place of CPK_ROWS_HOOK.  The hook supplies the plan's own
+    # query (patterns and seeds over the plan's variables), so P and the row tuple (the compared variables
+    # and template atoms) are what match-rows would run for a hook without a query; they document it.
+    rows_row = '(' + ' '.join(['$' + v for v in cvars] + [show(t) for t in (out_tmpl if tree else (out_tmpl,))]) + ')'
+    rows_pat = show(pat) if head(pat) == ',' or len(pats) == 1 else '(, ' + ' '.join(show(p) for p in pats) + ')'
+    rows_def = '(= (cpk-rows:%s %s) (match-rows %s %s %s (CPK_ROWS_HOOK %s) (%s %s)))' % (
+        fname, hargs, space_token if space_token else show(space), rows_pat, rows_row, hargs, fname, hargs)
     digest = hashlib.sha256(equation.encode()).hexdigest()
     return dict(name=name, fname=fname, arity=len(args), shape=shape, space_arg=space_arg, space_token=space_token,
                 parts=parts, equation=equation, builtins=builtins, cond_c=cond_c, n_cvars=len(cvars),
                 n_consts=len(consts), hosted_def=hosted_def, digest=digest, source=path, text=text, meta=meta,
-                n_patterns=len(pats), once=once, exist=exist)
+                n_patterns=len(pats), once=once, exist=exist, tree_c=tree_c, needs_bool=needs_bool, rows_def=rows_def)
 
 def emit(s):
     cid = re.sub(r'[^A-Za-z0-9_]', '_', s['name'])
     shape_c = {'stream-data': 'FS_STREAM_DATA', 'collapse-data': 'FS_COLLAPSE_DATA',
                'collapse-filter': 'FS_COLLAPSE_FILTER', 'stream-filter': 'FS_STREAM_FILTER',
                'once-data': 'FS_ONCE_DATA', 'once-filter': 'FS_ONCE_FILTER',
-               'exist-data': 'FS_EXIST_DATA', 'exist-filter': 'FS_EXIST_FILTER'}[s['shape']]
+               'exist-data': 'FS_EXIST_DATA', 'exist-filter': 'FS_EXIST_FILTER',
+               'stream-cond': 'FS_STREAM_COND', 'collapse-cond': 'FS_COLLAPSE_COND',
+               'once-cond': 'FS_ONCE_COND', 'exist-cond': 'FS_EXIST_COND'}[s['shape']]
     defs = '\n'.join(l for l in s['text'].splitlines() if l.strip() and not l.strip().startswith(';'))
     blist = ', '.join('%s/%d' % (b, k) for b, k in s['builtins'])
     out = []
@@ -261,25 +400,34 @@ def emit(s):
     if s['cond_c']:
         out.append('/* the condition, compiled: 1 keep the row, 0 drop it (the (empty) branch), -1 abort */\n'
                    'static int cond_%s(FsCall *c, Bindings *row, Arena *a) {\n%s}\n\n' % (cid, s['cond_c']))
-    out.append('static int row_%s(FsCall *c, Bindings *row, Arena *a, Atom **answer) {\n' % cid)
-    if s['cond_c']:
+    if s['tree_c']:
+        out.append('/* fnspec 3: the template tree, compiled */\n' + s['tree_c'] + '\n')
+        out.append('static int row_%s(FsCall *c, Bindings *row, Arena *a, Atom **answer) {\n'
+                   '    return tree_top(c, row, a, answer);\n}\n\n' % cid)
+    else:
+        out.append('static int row_%s(FsCall *c, Bindings *row, Arena *a, Atom **answer) {\n' % cid)
+    if s['tree_c']:
+        pass
+    elif s['cond_c']:
         out.append('    int k = cond_%s(c, row, a);\n    if (k <= 0) return k;\n' % cid)
     else:
         out.append('    /* data template: nothing to evaluate */\n')
-    out.append('    *answer = bindings_apply(row, a, c->rt->tmpl);\n'
-               '    if (!*answer || !fs_normal_form(c, *answer)) return -1;\n'
-               '    return 1;\n}\n\n')
+    if not s['tree_c']:
+        out.append('    *answer = FS_TEMPLATE();\n'
+                   '    if (!*answer || !fs_normal_form(c, *answer)) return -1;\n'
+                   '    return 1;\n}\n\n')
     b = ', '.join('{%s, %d}' % (cstr(n), k) for n, k in s['builtins'])
     out.append('const FsPlan fs_plan_%s = {\n' % cid)
     out.append('    .site = %s, .function = %s, .arity = %d,\n' % (cstr(s['name']), cstr(s['fname']), s['arity']))
     out.append('    .shape = %s, .space_arg = %d, .space_token = %s,\n'
                % (shape_c, s['space_arg'], cstr(s['space_token']) if s['space_token'] else 'NULL'))
-    for k in ('parts', 'equation', 'hosted_def', 'digest'):
+    for k in ('parts', 'equation', 'hosted_def', 'rows_def', 'digest'):
         out.append('    .%s = %s,\n' % (k, cstr(s[k])))
     out.append('    .definitions = %s,\n' % cstr(defs))
     out.append('    .builtins = {%s}, .n_builtins = %d,\n' % (b, len(s['builtins'])))
     out.append('    .n_cvars = %d, .n_consts = %d, .n_patterns = %d,\n' % (s['n_cvars'], s['n_consts'], s['n_patterns']))
     out.append('    .once = %d, .exist = %d,\n' % (1 if s['once'] else 0, s['exist']))
+    out.append('    .tree = %d, .needs_bool = %d,\n' % (1 if s['tree_c'] else 0, 1 if s['needs_bool'] else 0))
     out.append('    .row = row_%s,\n' % cid)
     for k in ('kb', 'queries', 'origin', 'setup', 'profile', 'load'):
         out.append('    .%s = %s,\n' % (k, cstr(s['meta'].get(k, ''))))

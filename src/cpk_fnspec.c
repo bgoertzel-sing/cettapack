@@ -20,6 +20,10 @@ const char *fs_shape_name(FsShape s) {
     case FS_ONCE_FILTER: return "once-filter";
     case FS_EXIST_DATA: return "exist-data";
     case FS_EXIST_FILTER: return "exist-filter";
+    case FS_STREAM_COND: return "stream-cond";
+    case FS_COLLAPSE_COND: return "collapse-cond";
+    case FS_ONCE_COND: return "once-cond";
+    case FS_EXIST_COND: return "exist-cond";
     }
     return "?";
 }
@@ -290,6 +294,7 @@ static void revalidate(FsRt *rt) {
     rt->tok = space_program_token(rt->self);
     rt->tok_valid = true;
     if (rt->once_unavailable) { rt->invalid_reason = "once is not CeTTa's first-answer builtin in this engine's profile"; return; }
+    if (rt->eq_mismatch) { rt->invalid_reason = "the engine's existence-test answers (== / not probe) differ from he's True/False"; return; }
     if (space_equations_may_match_unnamed_head(rt->self)) { rt->invalid_reason = "catch-all equation in &self"; return; }
     /* the definition: exactly one equation of f, alpha-equal to the compiled one */
     cetta_result_t *r = NULL;
@@ -424,6 +429,7 @@ static int compute(Cursor *c) {
             }
             if (k < 0) { ok = false; break; }
             if (k == 0) { filtered++; continue; }
+            if (k == 2) continue;                       /* a tree's case with no matching branch */
             if (nraw == rawcap) {
                 rawcap = rawcap ? rawcap * 2 : 16;
                 Atom **t = realloc(raw, rawcap * sizeof(*t));
@@ -436,7 +442,8 @@ static int compute(Cursor *c) {
         binding_set_free(&rows);
     }
     bool collapse = !c->hosted && (p->shape == FS_COLLAPSE_DATA || p->shape == FS_COLLAPSE_FILTER ||
-                                   p->shape == FS_ONCE_DATA || p->shape == FS_ONCE_FILTER);
+                                   p->shape == FS_ONCE_DATA || p->shape == FS_ONCE_FILTER ||
+                                   p->shape == FS_COLLAPSE_COND || p->shape == FS_ONCE_COND);
     if (ok && !c->hosted && p->exist) {
         /* (not (== W ())) is True when a row survives, (== W ()) when none does */
         bool val = p->exist == 1 ? nraw > 0 : nraw == 0;
@@ -447,7 +454,7 @@ static int compute(Cursor *c) {
         collapse = false;
         nraw = 0;
     }
-    if (ok && !c->hosted && p->shape == FS_STREAM_FILTER && nraw == 0 && filtered > 0) {
+    if (ok && !c->hosted && (p->shape == FS_STREAM_FILTER || p->shape == FS_STREAM_COND) && nraw == 0 && filtered > 0) {
         /* CeTTa's result for a stream whose every row takes the (empty) branch:
          * one Empty per row (docs/NEXT_STEP_PROBES.md, bag tests d5/d6) */
         Atom *empty = atom_symbol(&a, "Empty");
@@ -496,6 +503,108 @@ static void run_call(Cursor *c) {
     }
     if (spec) { rt->st.spec_calls++; return; }
     if (!residual(c)) { drop_answers(c); c->failed = true; }
+}
+
+/* ---- match-rows row hook (upstream/cetta 0004; docs/FNSPEC_3.md, item 3) ------------
+ * The same guards, row function and conventions as run_call/compute, called by
+ * match-rows from inside the evaluation: enter is run_call's guard sequence, row is
+ * compute's row loop body, leave is compute's wrapper.  A refused or aborted call takes
+ * the residual (f args...) that match-rows evaluates in its place. */
+
+typedef struct { FsRt *rt; Atom *args[16]; Bindings seeds; } RowsCall;
+
+static int rows_enter(void *ctx, void *arena, struct Atom *const *args, size_t nargs, int *first_only, void **call) {
+    (void)arena;
+    FsRt *rt = ctx;
+    const FsPlan *p = rt->plan;
+    rt->st.calls++;
+    if (nargs != p->arity || nargs > 16) { rt->st.row_aborts++; rt->st.residual_calls++; return 0; }
+    if (rt->force_invalid) { rt->st.forced++; rt->st.residual_calls++; return 0; }
+    if (!rt->tok_valid || !space_program_token_is_current(rt->tok)) revalidate(rt);
+    if (!rt->valid) { rt->st.invalid++; rt->st.residual_calls++; return 0; }
+    FsCall fc = {rt, (Atom *const *)args};
+    for (unsigned i = 0; i < p->arity; i++)
+        if ((int)i != p->space_arg && (!fs_normal_form(&fc, (Atom *)args[i]) || !plain_ground(args[i], true))) {
+            rt->st.arg_rejects++; rt->st.residual_calls++;
+            return 0;
+        }
+    RowsCall *c = malloc(sizeof *c);
+    if (!c) { rt->st.row_aborts++; rt->st.residual_calls++; return 0; }
+    c->rt = rt;
+    for (unsigned i = 0; i < p->arity; i++) c->args[i] = (Atom *)args[i];
+    /* the plan's own query: its patterns, the arguments bound to its variables (as compute()) */
+    bindings_init(&c->seeds);
+    for (unsigned i = 0; i < p->arity; i++)
+        if ((int)i != p->space_arg && !bindings_add_var(&c->seeds, rt->lhs_args[i], c->args[i])) {
+            bindings_free(&c->seeds); free(c);
+            rt->st.row_aborts++; rt->st.residual_calls++;
+            return 0;
+        }
+    *first_only = (p->once || p->exist) ? 1 : 0;     /* collapse(once) and existence tests: the first row */
+    *call = c;
+    return 1;
+}
+
+/* the query match-rows runs: the plan's patterns and the seeds, over the plan's own variables,
+ * so the generated row function reads each row exactly as compute() does (not the call's
+ * instantiated <pattern>, whose fresh variables cost the matcher more: docs/FNSPEC_3.md 4.3) */
+static int rows_query(void *ctx, void *call, struct Atom *const **patterns, size_t *npatterns, const void **seed) {
+    (void)ctx;
+    RowsCall *c = call;
+    *patterns = c->rt->pats;
+    *npatterns = c->rt->plan->n_patterns;
+    *seed = &c->seeds;
+    return 1;
+}
+
+static int rows_row(void *ctx, void *call, void *arena, void *bindings, struct Atom *row, struct Atom **answer) {
+    (void)ctx; (void)row;
+    RowsCall *c = call;
+    FsCall fc = {c->rt, c->args};
+    return c->rt->plan->row(&fc, bindings, arena, answer);
+}
+
+static int rows_leave(void *ctx, void *call, void *arena, struct Atom *const *kept, size_t nkept, size_t dropped,
+                      int aborted, struct Atom ***out, size_t *nout) {
+    (void)ctx;
+    RowsCall *c = call;
+    FsRt *rt = c->rt;
+    const FsPlan *p = rt->plan;
+    Arena *a = arena;
+    bindings_free(&c->seeds);
+    free(c);
+    *out = NULL; *nout = 0;
+    if (aborted) { rt->st.row_aborts++; rt->st.residual_calls++; return 0; }
+    bool collapse = p->shape == FS_COLLAPSE_DATA || p->shape == FS_COLLAPSE_FILTER || p->shape == FS_ONCE_DATA ||
+                    p->shape == FS_ONCE_FILTER || p->shape == FS_COLLAPSE_COND || p->shape == FS_ONCE_COND;
+    Atom **o = NULL;
+    size_t n = 0;
+    if (p->exist) {
+        bool val = p->exist == 1 ? nkept > 0 : nkept == 0;
+        o = arena_alloc(a, sizeof(Atom *));
+        o[0] = atom_deep_copy(a, val ? rt->true_a : rt->false_a);
+        n = 1;
+    } else if (collapse) {
+        Atom **items = arena_alloc(a, (nkept ? nkept : 1) * sizeof(Atom *));
+        if (nkept) memcpy(items, kept, nkept * sizeof(Atom *));
+        o = arena_alloc(a, sizeof(Atom *));
+        o[0] = atom_expr(a, items, (CettaExprLen)nkept);
+        n = 1;
+    } else if ((p->shape == FS_STREAM_FILTER || p->shape == FS_STREAM_COND) && nkept == 0 && dropped > 0) {
+        /* CeTTa's result for a stream whose every row takes the (empty) branch, as compute() */
+        o = arena_alloc(a, dropped * sizeof(Atom *));
+        Atom *empty = atom_symbol(a, "Empty");
+        for (size_t i = 0; i < dropped; i++) o[n++] = empty;
+    } else if (nkept) {
+        o = arena_alloc(a, nkept * sizeof(Atom *));
+        memcpy(o, kept, nkept * sizeof(Atom *));
+        n = nkept;
+    }
+    for (size_t i = 0; i < n; i++)
+        if (!o[i]) { rt->st.row_aborts++; rt->st.residual_calls++; return 0; }
+    *out = o; *nout = n;
+    rt->st.spec_calls++;
+    return 1;
 }
 
 static cetta_status_t cb_open(FsRt *rt, bool hosted, cetta_atom_t *const *args, size_t arity, void **out) {
@@ -587,6 +696,11 @@ FsRt *fs_open(cetta_engine_t *e, const FsPlan *p, bool force_invalid, const char
     for (CettaExprLen i = 0; i < cv->expr.len; i++) rt->cvars[i] = cv->expr.elems[i];
     rt->consts = calloc(ks->expr.len + 1, sizeof(Atom *));
     for (CettaExprLen i = 0; i < ks->expr.len; i++) rt->consts[i] = ks->expr.elems[i];
+    if (p->tree) {
+        if (rt->tmpl->kind != ATOM_EXPR) { *error = "tree templates"; return NULL; }
+        rt->tmpls = calloc(rt->tmpl->expr.len + 1, sizeof(Atom *));
+        for (CettaExprLen i = 0; i < rt->tmpl->expr.len; i++) rt->tmpls[i] = rt->tmpl->expr.elems[i];
+    }
     cetta_space_t *selfs = NULL;
     if (cetta_embed_engine_space(e, &selfs) != CETTA_OK) { *error = "engine space"; return NULL; }
     cetta_atom_t *self_atom = NULL;
@@ -628,7 +742,7 @@ FsRt *fs_open(cetta_engine_t *e, const FsPlan *p, bool force_invalid, const char
         free(t);
         cetta_embed_atom_release(q);
     }
-    if (p->exist) {
+    if (p->exist || p->needs_bool) {
         static const char *probe[2] = {"(== () ())", "(== () (cpk-exist-x))"};
         cetta_atom_t **dst[2] = {&rt->true_h, &rt->false_h};
         for (int i = 0; i < 2; i++) {
@@ -643,6 +757,44 @@ FsRt *fs_open(cetta_engine_t *e, const FsPlan *p, bool force_invalid, const char
             cetta_embed_atom_release(q);
         }
         if (!rt->true_h || !rt->false_h) { cetta_embed_engine_release(fresh); *error = "boolean values of =="; return NULL; }
+        /* fnspec 3 (live == probe, like once's): the compiled code answers he's True/False above;
+         * the live engine must give exactly those atoms for the test the body makes, with an
+         * empty and a non-empty W, in both operand orders, under not when the body negates.
+         * Any other answer (e.g. a PeTTa-language engine's true/false), a count other than one,
+         * or a failed probe leaves the plan INVALID for good: every call takes the residual. */
+        static const char *wv[2] = {"()", "(cpk-exist-x)"};
+        char *tt = canon_text(rt->true_h), *ft = canon_text(rt->false_h);
+        for (int w = 0; p->exist && w < 2 && !rt->eq_mismatch; w++)
+            for (int ord = 0; ord < 2 && !rt->eq_mismatch; ord++) {
+                char q[128];
+                const char *x = ord ? "()" : wv[w], *y = ord ? wv[w] : "()";
+                if (p->exist == 1) snprintf(q, sizeof q, "(not (== %s %s))", x, y);
+                else snprintf(q, sizeof q, "(== %s %s)", x, y);
+                /* W empty: exist 1 answers False, exist 2 True; W non-empty the other one */
+                bool want_true = (w == 1) == (p->exist == 1);
+                cetta_atom_t *qa = parse_text(e, q);
+                int cnt = 0;
+                char *t = qa ? eval_canon(e, qa, &cnt) : NULL;
+                const char *want = want_true ? tt : ft;
+                if (!t || cnt != 1 || !want || strcmp(t, want)) rt->eq_mismatch = true;
+                free(t);
+                cetta_embed_atom_release(qa);
+            }
+        /* a tree that answers booleans: the live engine's comparison and connective values */
+        static const char *bq[5][2] = {{"(== cpk-a cpk-a)", "T"}, {"(== cpk-a cpk-b)", "F"}, {"(not (== cpk-a cpk-b))", "T"},
+                                       {"(and True False)", "F"}, {"(or False True)", "T"}};
+        for (int i = 0; p->needs_bool && i < 5 && !rt->eq_mismatch; i++) {
+            cetta_atom_t *qa = parse_text(e, bq[i][0]);
+            int cnt = 0;
+            char *t = qa ? eval_canon(e, qa, &cnt) : NULL;
+            const char *want = bq[i][1][0] == 'T' ? tt : ft;
+            if (!t || cnt != 1 || !want || strcmp(t, want)) rt->eq_mismatch = true;
+            free(t);
+            cetta_embed_atom_release(qa);
+        }
+        free(tt); free(ft);
+        rt->true_a = (Atom *)cetta_embed_native_atom(rt->true_h);
+        rt->false_a = (Atom *)cetta_embed_native_atom(rt->false_h);
     }
     cetta_atom_t **bq = calloc(2 * p->n_builtins + 1, sizeof(cetta_atom_t *));
     builtin_queries(fresh, p, bq);
@@ -664,11 +816,28 @@ FsRt *fs_open(cetta_engine_t *e, const FsPlan *p, bool force_invalid, const char
     d.arity = p->arity + (p->space_arg < 0 ? 1 : 0);
     snprintf(name, sizeof name, "cpk-hosted:%s", p->function);
     if (cetta_embed_register_callback(e, name, &d, &rt->hosted) != CETTA_OK) { *error = "register cpk-hosted"; return NULL; }
+    /* fnspec 3: the same function through match-rows' row hook (cpk-rows:f) */
+    snprintf(name, sizeof name, "cpk-rows-hook:%s:%p", p->function, (void *)rt);
+    cetta_rows_hook_t h = {.size = sizeof h, .context = rt, .enter = rows_enter, .query = rows_query, .row = rows_row,
+                           .leave = rows_leave};
+    if (cetta_embed_native_rows_hook_register(e, name, &h) != CETTA_OK) { *error = "register the match-rows hook"; return NULL; }
+    rt->rows_hook = strdup(name);
+    {
+        const char *ph = strstr(p->rows_def, "CPK_ROWS_HOOK");
+        if (!ph) { *error = "rows_def"; return NULL; }
+        char *src = fmt_s("%.*s%s%s", (int)(ph - p->rows_def), p->rows_def, name, ph + strlen("CPK_ROWS_HOOK"));
+        cetta_result_t *r = NULL;
+        bool ok = cetta_embed_run(e, src, strlen(src), NULL, &r) == CETTA_OK && cetta_embed_result_status(r) == CETTA_OK;
+        cetta_embed_result_release(r);
+        free(src);
+        if (!ok) { *error = "load the cpk-rows definition"; return NULL; }
+    }
     return rt;
 }
 
 void fs_close(FsRt *rt) {
     if (!rt) return;
+    if (rt->rows_hook) { cetta_embed_native_rows_hook_unregister(rt->engine, rt->rows_hook); free(rt->rows_hook); }
     cetta_embed_atom_release(rt->callable);
     cetta_embed_atom_release(rt->hosted);
     cetta_embed_atom_release(rt->parts_h);
@@ -682,6 +851,6 @@ void fs_close(FsRt *rt) {
         free(rt->baseline[i]);
     }
     free(rt->builtin_query_h); free(rt->baseline);
-    free(rt->lhs_args); free(rt->pats); free(rt->cvars); free(rt->consts);
+    free(rt->lhs_args); free(rt->pats); free(rt->cvars); free(rt->consts); free(rt->tmpls);
     free(rt);
 }

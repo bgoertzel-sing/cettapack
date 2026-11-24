@@ -47,10 +47,11 @@ static void die(const char *f, ...) {
 /* the profile engines are opened with: the plan's, unless a test overrides it */
 static bool g_profile_override;
 static const char *g_profile;
+static const char *g_language = "he";   /* fnspec 3: the forced-mismatch test opens PeTTa-language engines */
 static cetta_engine_t *engine_new(const char *profile) {
     if (g_profile_override) profile = g_profile;
     cetta_engine_config_t cfg = {.size = sizeof cfg, .abi_version = CETTA_EMBED_ABI_VERSION,
-                                 .language = "he", .profile = profile, .resource_root = CPK_CETTA_ROOT};
+                                 .language = g_language, .profile = profile, .resource_root = CPK_CETTA_ROOT};
     cetta_engine_t *e = NULL;
     cetta_status_t st = cetta_embed_engine_new(&cfg, &e);
     if (st != CETTA_OK) die("engine: %s", cetta_embed_status_name(st));
@@ -151,7 +152,8 @@ static void show_bag(const char *label, const Bag *b) {
 /* ---- environments ------------------------------------------------------------------ */
 
 typedef struct { const char *name; bool fallback; } Mode;
-static const Mode MODES[] = {{"fn-generic", false}, {"fn-hosted", false}, {"fn-spec", false}, {"fn-fallback", true}};
+static const Mode MODES[] = {{"fn-generic", false}, {"fn-hosted", false}, {"fn-spec", false}, {"fn-fallback", true},
+                             {"fn-rows", false}};   /* fnspec 3: the compiled function through match-rows' row hook (0004) */
 static const Mode *find_mode(const char *n) {
     for (size_t i = 0; i < sizeof MODES / sizeof *MODES; i++) if (!strcmp(MODES[i].name, n)) return &MODES[i];
     die("unknown mode %s", n);
@@ -263,6 +265,7 @@ static const char *mode_head(const Env *v, char *buf, size_t n) {
     const char *m = v->m->name;
     if (!strcmp(m, "fn-generic")) snprintf(buf, n, "%s", v->p->function);
     else if (!strcmp(m, "fn-hosted")) snprintf(buf, n, "%s-h", v->p->function);
+    else if (!strcmp(m, "fn-rows")) snprintf(buf, n, "cpk-rows:%s", v->p->function);
     else snprintf(buf, n, "cpk-fnspec:%s", v->p->function);
     return buf;
 }
@@ -437,8 +440,8 @@ static void difftest_case(const FsPlan *p, const char *label, const char *kbtext
     size_t ga = 0;
     for (int i = 0; i < nq; i++) ga += g[i].n;
     if (g_eval_error) { printf("FAIL %s %s reference evaluation error\n", p->site, label); g_fails++; }
-    static const char *modes[] = {"fn-hosted", "fn-spec", "fn-fallback"};
-    for (size_t mi = 0; mi < 3; mi++) {
+    static const char *modes[] = {"fn-hosted", "fn-spec", "fn-fallback", "fn-rows"};
+    for (size_t mi = 0; mi < 4; mi++) {
         const Mode *m = find_mode(modes[mi]);
         Env v = env_open(p, m, kbtext);
         char head[256]; mode_head(&v, head, sizeof head);
@@ -457,7 +460,7 @@ static void difftest_case(const FsPlan *p, const char *label, const char *kbtext
         }
         const FsStats *s = &v.rt->st;
         bool path = true;
-        if (!strcmp(m->name, "fn-spec")) path = mixed ? s->calls == (uint64_t)nq : (s->spec_calls == (uint64_t)nq && s->residual_calls == 0);
+        if (!strcmp(m->name, "fn-spec") || !strcmp(m->name, "fn-rows")) path = mixed ? s->calls == (uint64_t)nq : (s->spec_calls == (uint64_t)nq && s->residual_calls == 0);
         else if (!strcmp(m->name, "fn-fallback")) path = s->forced == (uint64_t)nq && s->residual_calls == (uint64_t)nq && s->spec_calls == 0;
         else path = s->hosted_calls == (uint64_t)nq;
         bool ok = same == nq && path && !g_eval_error;
@@ -494,7 +497,7 @@ static char *fmtx(const char *f, ...) {
     return s;
 }
 
-static void mutation_test(const FsPlan *p, const char *label, const char *kbtext, char **q, int nq, const char *nfmut) {
+static void mutation_test(const FsPlan *p, const char *label, const char *kbtext, char **q, int nq, const char *nfmut, const char *smode) {
     char *lhs = lhs_text(p);
     /* the compiled equation's body, and a redefinition: the same body under a marker */
     const char *eq = p->equation;                     /* (= LHS BODY) */
@@ -547,7 +550,7 @@ static void mutation_test(const FsPlan *p, const char *label, const char *kbtext
         steps[ns++] = (Step){"second-module-imported", fmtx("!(import! &self \"%s\")", second), EXPECT_RESIDUAL};
     }
     Env ref = env_open(p, find_mode("fn-generic"), kbtext);
-    Env sp = env_open(p, find_mode("fn-spec"), kbtext);
+    Env sp = env_open(p, find_mode(smode), kbtext);
     static Bag base_bags[4096];
     char rh[256], shd[256];
     mode_head(&ref, rh, sizeof rh); mode_head(&sp, shd, sizeof shd);
@@ -581,8 +584,8 @@ static void mutation_test(const FsPlan *p, const char *label, const char *kbtext
                   : steps[s].expect == EXPECT_RESIDUAL ? (res == (uint64_t)nq && spec == 0)
                   : (res > 0 && spec + res == (uint64_t)nq);
         bool ok = same == nq && path && !g_eval_error;
-        printf("%s %-20s %-14s mutation %-26s queries=%d same=%d ref_changed=%d spec=%" PRIu64 " residual=%" PRIu64 " expect=%s path=%s revalidations=%" PRIu64 "%s%s\n",
-               ok ? "PASS" : "FAIL", p->site, label, steps[s].label, nq, same, changed, spec, res,
+        printf("%s %-20s %-14s %s mutation %-26s queries=%d same=%d ref_changed=%d spec=%" PRIu64 " residual=%" PRIu64 " expect=%s path=%s revalidations=%" PRIu64 "%s%s\n",
+               ok ? "PASS" : "FAIL", p->site, label, smode, steps[s].label, nq, same, changed, spec, res,
                steps[s].expect == EXPECT_SPEC ? "spec" : steps[s].expect == EXPECT_RESIDUAL ? "residual" : "some-residual",
                path ? "ok" : "WRONG", sp.rt->st.revalidations, sp.rt->invalid_reason ? " guard: " : "",
                sp.rt->invalid_reason ? sp.rt->invalid_reason : "");
@@ -597,14 +600,15 @@ static void mutation_test(const FsPlan *p, const char *label, const char *kbtext
 
 /* recursion: a MeTTa function calling the function (fn-generic) or the compiled
  * callable (fn-spec) at the bottom of n nested calls */
-static void recursion_test(const FsPlan *p, const char *label, const char *kbtext, char **q, int nq) {
+static void recursion_test(const FsPlan *p, const char *label, const char *kbtext, char **q, int nq, const char *smode) {
     static const int depths[] = {1, 10, 100, 1000};
     char av[512] = ""; size_t n = 0;
     for (unsigned i = 0; i < p->arity; i++) n += (size_t)snprintf(av + n, sizeof av - n, " $a%u", i);
     Env ref = env_open(p, find_mode("fn-generic"), kbtext);
-    Env sp = env_open(p, find_mode("fn-spec"), kbtext);
+    Env sp = env_open(p, find_mode(smode), kbtext);
+    char sh_[256]; mode_head(&sp, sh_, sizeof sh_);
     char *d1 = fmtx("(= (cpk-depth $n%s) (if (== $n 0) (%s%s) (cpk-depth (- $n 1)%s)))", av, p->function, av, av);
-    char *d2 = fmtx("(= (cpk-depth $n%s) (if (== $n 0) (cpk-fnspec:%s%s) (cpk-depth (- $n 1)%s)))", av, p->function, av, av);
+    char *d2 = fmtx("(= (cpk-depth $n%s) (if (== $n 0) (%s%s) (cpk-depth (- $n 1)%s)))", av, sh_, av, av);
     run_text(ref.e, d1); run_text(sp.e, d2);
     int nqq = nq < 6 ? nq : 6;
     for (size_t di = 0; di < sizeof depths / sizeof *depths; di++) {
@@ -636,8 +640,8 @@ static void recursion_test(const FsPlan *p, const char *label, const char *kbtex
         }
         uint64_t spec = sp.rt->st.spec_calls - before.spec_calls;
         bool ok = same == nqq && spec == (uint64_t)nqq && !g_eval_error;
-        printf("%s %-20s %-14s recursion depth %-5d queries=%d same=%d spec=%" PRIu64 "\n", ok ? "PASS" : "FAIL",
-               p->site, label, depths[di], nqq, same, spec);
+        printf("%s %-20s %-14s %s recursion depth %-5d queries=%d same=%d spec=%" PRIu64 "\n", ok ? "PASS" : "FAIL",
+               p->site, label, smode, depths[di], nqq, same, spec);
         fflush(stdout);
         if (!ok) g_fails++;
     }
@@ -648,10 +652,10 @@ static void recursion_test(const FsPlan *p, const char *label, const char *kbtex
 /* a plan that uses once, opened in an engine of CeTTa's default he profile (where (once X)
  * is data, not the first-answer builtin): the runtime's profile probe must refuse it, every
  * call takes the residual and gives CeTTa's answers of that profile */
-static void profile_test(const FsPlan *p, const char *label, const char *kbtext, char **q, int nq) {
+static void profile_test(const FsPlan *p, const char *label, const char *kbtext, char **q, int nq, const char *smode) {
     g_profile_override = true; g_profile = NULL;
     Env ref = env_open(p, find_mode("fn-generic"), kbtext);
-    Env sp = env_open(p, find_mode("fn-spec"), kbtext);
+    Env sp = env_open(p, find_mode(smode), kbtext);
     g_profile_override = false;
     char rh[256], shd[256];
     mode_head(&ref, rh, sizeof rh); mode_head(&sp, shd, sizeof shd);
@@ -671,12 +675,68 @@ static void profile_test(const FsPlan *p, const char *label, const char *kbtext,
     const FsStats *s = &sp.rt->st;
     bool path = s->residual_calls == (uint64_t)nq && s->spec_calls == 0;
     bool ok = same == nq && path && !g_eval_error;
-    printf("%s %-20s %-14s profile-he (once is data) queries=%d same=%d spec=%" PRIu64 " residual=%" PRIu64 " expect=residual path=%s guard: %s\n",
-           ok ? "PASS" : "FAIL", p->site, label, nq, same, s->spec_calls, s->residual_calls, path ? "ok" : "WRONG",
+    printf("%s %-20s %-14s %s profile-he (once is data) queries=%d same=%d spec=%" PRIu64 " residual=%" PRIu64 " expect=residual path=%s guard: %s\n",
+           ok ? "PASS" : "FAIL", p->site, label, smode, nq, same, s->spec_calls, s->residual_calls, path ? "ok" : "WRONG",
            sp.rt->invalid_reason ? sp.rt->invalid_reason : "-");
     fflush(stdout);
     if (!ok) g_fails++;
     env_close(&ref); env_close(&sp);
+}
+
+/* fnspec 3, item 1: an existence-test plan opened in an engine whose == / not answer other
+ * atoms than he's True/False (a PeTTa-language engine: true/false).  The live == probe must
+ * set the mismatch, every call takes the residual, and the answers are that engine's own
+ * (fn-generic in an engine of the same language) */
+static void language_test(const FsPlan *p, const char *label, const char *kbtext, char **q, int nq, const char *smode) {
+    if (p->space_token) {
+        /* a named-space plan binds its token with bind! and reads it back with quote; a PeTTa-language
+         * engine does not resolve the token that way, so the test runs on the space-argument plans */
+        printf("SKIP %-20s %-14s language-petta: named space token %s (run on the space-argument exist sites)\n", p->site, label, p->space_token);
+        return;
+    }
+    g_language = "petta"; g_profile_override = true; g_profile = NULL;
+    Env ref = env_open(p, find_mode("fn-generic"), kbtext);
+    Env sp = env_open(p, find_mode(smode), kbtext);
+    g_language = "he"; g_profile_override = false;
+    char rh[256], shd[256];
+    mode_head(&ref, rh, sizeof rh); mode_head(&sp, shd, sizeof shd);
+    int same = 0, shown = 0;
+    size_t answers = 0;
+    char sample[128] = "-";
+    g_eval_error = false;
+    for (int i = 0; i < nq; i++) {
+        cetta_atom_t *x = query_atom(&ref, rh, q[i]), *y = query_atom(&sp, shd, q[i]);
+        Bag a = eval_bag(ref.e, x), b = eval_bag(sp.e, y);
+        if (bag_eq(&a, &b)) same++;
+        else if (shown++ < 3) {
+            fprintf(stderr, "  %s language petta: mismatch at %s\n", p->site, q[i]);
+            show_bag("fn-generic", &a); show_bag("fn-spec", &b);
+        }
+        if (b.n && !strcmp(sample, "-")) snprintf(sample, sizeof sample, "%s", b.items[0]);
+        answers += b.n;
+        bag_free(&a); bag_free(&b);
+        cetta_embed_atom_release(x); cetta_embed_atom_release(y);
+    }
+    const FsStats *s = &sp.rt->st;
+    bool path = s->residual_calls == (uint64_t)nq && s->spec_calls == 0 && sp.rt->eq_mismatch;
+    bool ok = same == nq && path && !g_eval_error;
+    printf("%s %-20s %-14s %s language-petta (== answers differ) queries=%d same=%d answers=%zu first-answer=%s spec=%" PRIu64 " residual=%" PRIu64
+           " eq_mismatch=%s expect=residual path=%s guard: %s\n",
+           ok ? "PASS" : "FAIL", p->site, label, smode, nq, same, answers, sample, s->spec_calls, s->residual_calls,
+           sp.rt->eq_mismatch ? "yes" : "no", path ? "ok" : "WRONG", sp.rt->invalid_reason ? sp.rt->invalid_reason : "-");
+    fflush(stdout);
+    if (!ok) g_fails++;
+    env_close(&ref); env_close(&sp);
+}
+
+/* the matching engine (the site's own language and profile): the probe passes, every call specialised */
+static void eq_probe_check(const FsPlan *p, const char *label, const char *kbtext) {
+    Env sp = env_open(p, find_mode("fn-spec"), kbtext);
+    bool ok = !sp.rt->eq_mismatch;
+    printf("%s %-20s %-14s eq-probe in the site's engine (%s): eq_mismatch=%s\n", ok ? "PASS" : "FAIL", p->site, label,
+           fs_profile(p) ? fs_profile(p) : "he", sp.rt->eq_mismatch ? "yes" : "no");
+    if (!ok) g_fails++;
+    env_close(&sp);
 }
 
 static int cmp_str(const void *a, const void *b) { return strcmp(*(char *const *)a, *(char *const *)b); }
@@ -708,9 +768,14 @@ static int cmd_difftest(const FsPlan *p, const char *cases, const char *kbfile, 
         int nq = read_lines(qs, lines, 4096);
         difftest_case(p, names[i], kb, lines, nq, mixed);
         if (i == 0) {
-            mutation_test(p, names[i], kb, lines, nq, nfmut);
-            recursion_test(p, names[i], kb, lines, nq);
-            if (p->once) profile_test(p, names[i], kb, lines, nq);
+            static const char *smodes[2] = {"fn-spec", "fn-rows"};
+            for (int k = 0; k < 2; k++) {
+                mutation_test(p, names[i], kb, lines, nq, nfmut, smodes[k]);
+                recursion_test(p, names[i], kb, lines, nq, smodes[k]);
+                if (p->once) profile_test(p, names[i], kb, lines, nq, smodes[k]);
+                if (p->exist) language_test(p, names[i], kb, lines, nq, smodes[k]);
+            }
+            if (p->exist || p->needs_bool) eq_probe_check(p, names[i], kb);
         }
         free(kb); free(qs); free(names[i]);
     }

@@ -13,7 +13,8 @@ import glob, json, os, statistics, sys
 from collections import defaultdict
 
 SHAPES = ['collapse-data', 'stream-data', 'collapse-filter', 'stream-filter',
-          'exist-filter', 'once-data', 'exist-data', 'once-filter']
+          'exist-filter', 'once-data', 'exist-data', 'once-filter',
+          'once-cond', 'exist-cond', 'stream-cond', 'collapse-cond']
 SHAPE_NOTE = {
     'collapse-data': 'survey rank 1',
     'stream-data': 'survey rank 2',
@@ -23,6 +24,10 @@ SHAPE_NOTE = {
     'once-data': 'collapse(once) + data, survey rank 5',
     'exist-data': 'existence test + data, survey rank 6',
     'once-filter': 'collapse(once) + filter, survey rank 7',
+    'once-cond': 'collapse(once) + if/case template tree, survey rank 9 (fnspec 3)',
+    'exist-cond': 'existence test + if/case template tree, survey rank 11 (fnspec 3)',
+    'stream-cond': 'stream + if/case template tree, survey rank 12 (fnspec 3)',
+    'collapse-cond': 'collapse + template tree with a boolean leaf; not a survey family (0 occurrences), the same compiler (fnspec 3)',
 }
 
 def load(d):
@@ -137,8 +142,10 @@ def main():
         for c in checks:
             print('- FAIL ' + c)
     else:
-        print('- every site: the same answers per batch (and answer items) in all four modes; fn-spec specialised every '
-              'timed call; fn-fallback took the residual on every timed call')
+        nm = {len(rows) for rows in sites.values()}
+        print('- every site: the same answers per batch (and answer items) in all {} modes; fn-spec specialised every '
+              'timed call; fn-fallback took the residual on every timed call'.format(
+                  'four' if nm == {4} else '/'.join(str(n) for n in sorted(nm))))
     print()
 
 if __name__ == '__main__':

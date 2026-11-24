@@ -1,0 +1,15 @@
+git am of upstream/cetta/0001-0004 on a fresh clone of the cetta submodule at a9b3a81186529fd99649e437809bdb6f58fce2fd (2026-11-24T06:11:30Z)
+3b71bbf2 match-rows: row hooks, compiled code inside the matcher's row loop
+41854a14 eval: match-rows, a direct entry to the conjunction matcher
+60427c73 mork bridge: bulk prefix lookup (mork_space_prefix_vals)
+c898fd4b embedding: in-process native borrowing for compiled kernels
+a9b3a811 Improve native PeTTa matching, iteration and memory use
+ include/cetta_embed_native.h |  30 +++++++++++++
+ src/embedding.c              |  88 +++++++++++++++++++++++++++++++++++++
+ src/eval.c                   | 100 +++++++++++++++++++++++++++++++++++++++++++
+ src/match_rows_hook.h        |  45 +++++++++++++++++++
+ 4 files changed, 263 insertions(+)
+6cdc7715079ea6e0d0489e25d86569166d6c7643027a34274176cf4b3f2b465c  upstream/cetta/0001-embedding-in-process-native-borrowing-for-compiled-k.patch
+9b8d6465e690a695a962aee7c7bf364472bc4cb29549fa8383d4873dfe04052c  upstream/cetta/0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch
+1efd7acd5142311fc7f86257be3920dfbceb7c63e6fab84430711b68d8b9d49a  upstream/cetta/0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch
+aa73397441aaad2a845c6a7a204bdf4d040dc712b7bba64ddc9dca290bd160dc  upstream/cetta/0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch

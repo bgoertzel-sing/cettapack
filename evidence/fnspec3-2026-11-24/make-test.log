@@ -1,0 +1,177 @@
+make test at bdd65b8 (+ uncommitted: bench/run_fnspec.sh summariser choice only), MAKETEST start 2026-11-24T07:44:17Z MAKETEST exit=0 2026-11-24T07:59:12Z 
+python3 tools/cpkc.py packs/target_expressed/site.metta --out-dir packs/target_expressed
+compiled cpk-site-target-expressed: order=[0, 1] meta_expanded_region_hash=197d65e3603e8aef
+gcc ... -o build/cettapack-host-target_expressed (site target_expressed)
+cp build/cettapack-host-target_expressed build/cettapack-host
+python3 bench/gen_kb.py --snps 240 --genes 60 --interactions 300 --annotations 200 --queries 40 --out build/kb-small.metta --queries-out build/queries-small.txt
+seed=20261106 atoms=1264 distinct=1168 kb_sha256=1b3d0eb4d554962dfdf13567ccd590f3ac1941f0974cb63c34c50fbcd388dbb3 queries=40 queries_sha256=0b0b190fd6db1763035cc82b01d803d0e4093c6cdb0385b215abf52550ba7699
+./build/cettapack-host hashes
+loaded=yes error=
+profile  live=c8500163d178e0d0cafa11b9622e728addd37693b950e419e2155b4da772840a manifest=c8500163d178e0d0cafa11b9622e728addd37693b950e419e2155b4da772840a
+langdef  live=a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1 manifest=a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1
+span     live=08fa03941175decbc869fc0f11ed104d92f36bb0eaeafa354a8532ea0f6beea7 manifest=08fa03941175decbc869fc0f11ed104d92f36bb0eaeafa354a8532ea0f6beea7 (recorded, not guarded: not semantic)
+normal.  live=490857633587bd433665641d30392232acea3f71964485a5d5d9f7033eee1803 manifest=490857633587bd433665641d30392232acea3f71964485a5d5d9f7033eee1803
+meta-exp live=197d65e3603e8aeff8792c3262d2b915d68c36f4e389d6e11ac2ca7f0b45f67d manifest=197d65e3603e8aeff8792c3262d2b915d68c36f4e389d6e11ac2ca7f0b45f67d
+pattern  live=493bfbc400571d00cfc001ee6f12ede9fb06dbc97d2dbf186ab4d9729cbee17d manifest=493bfbc400571d00cfc001ee6f12ede9fb06dbc97d2dbf186ab4d9729cbee17d
+template live=d4349816076071a986fe12fa11806ce1862a0ca9b88c06b61d3b5499eab253aa manifest=d4349816076071a986fe12fa11806ce1862a0ca9b88c06b61d3b5499eab253aa
+schema   live=2f8d0e0cbde5a7c5b7cf0b67214b9969ac923391303aaca0ea738e3e21cb3a2e manifest=2f8d0e0cbde5a7c5b7cf0b67214b9969ac923391303aaca0ea738e3e21cb3a2e
+digests_match=yes 
+CPK_TEST_LOG=build/test-results.jsonl ./build/cettapack-host test --kb build/kb.metta
+PASS A.9-1 ground match                       generic=1 kernel=1 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes
+PASS A.9-2 no result                          generic=0 kernel=0 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes
+PASS A.9-2b no result (dangling gene)          generic=0 kernel=0 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes
+PASS A.9-3 multiple results                   generic=3 kernel=3 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes
+PASS A.9-4 duplicates and multiplicity        generic=8 kernel=8 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes
+PASS A.9-4s support demand dedups              generic=3 kernel=3 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes
+PASS A.9-5 co-reference                       generic=2 kernel=2 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes
+PASS A.9-6 distinct variables                 generic=2 kernel=2 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes
+PASS A.9-7 result template                    generic=3 kernel=3 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes
+PASS A.9-9 profile mismatch -> fallback       generic=8 kernel=8 same_bag=yes verdict=INVALID(profile mismatch) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-10 schema hash mismatch -> fallback   generic=3 kernel=3 same_bag=yes verdict=INVALID(schema digest mismatch (compiled plan)) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-10r schema violation (variable record) generic=3 kernel=3 same_bag=yes verdict=INVALID(schema: live space schema hash mismatch (record 1: non-symbol field in a target record)) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-10b schema violation (number field)    generic=2 kernel=2 same_bag=yes verdict=INVALID(schema: live space schema hash mismatch (record 1: non-symbol field in a target record)) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-10c schema violation (variable head)   generic=2 kernel=2 same_bag=yes verdict=INVALID(schema: live space schema hash mismatch (record 1: non-symbol head on arity-3 record)) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-11 meta-expanded hash mismatch -> fallback generic=3 kernel=3 same_bag=yes verdict=INVALID(meta-expanded region hash mismatch) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-11b missing hash -> not loaded (fail closed) generic=3 kernel=3 same_bag=yes verdict=INVALID(pack not loaded (fail closed): missing or malformed hash identity.match_pattern_hash: not loading) path=fallback loaded=no space_unchanged=yes
+PASS A.9-14 PathMap disabled -> fallback       generic=8 kernel=8 same_bag=yes verdict=INVALID(PathMap narrowing disabled or unavailable) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-12 append-only patching path (stub) -> fallback generic=4 kernel=4 same_bag=yes verdict=PATCHABLE(append-only delta of 1 atoms; patching is an M1 stub: fallback) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-12r append over patch budget -> REPLAN -> fallback generic=4 kernel=4 same_bag=yes verdict=REPLAN(append of 1 atoms over the patch budget 0) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-13 destructive write invalidation -> fallback generic=2 kernel=2 same_bag=yes verdict=INVALID(destructive write since instantiation) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-in non-symbol input -> fallback       generic=4 kernel=4 same_bag=yes verdict=INVALID(input 1 is not a ground symbol) path=fallback loaded=yes space_unchanged=yes
+PASS A.9-long long symbol: MORK-query narrowing  generic=3 kernel=3 same_bag=yes verdict=VALID(ok) path=kernel loaded=yes space_unchanged=yes
+PASS A.9-15 generic CeTTa vs kernel, 300 seeds same=300/300 answers=2656 kernel_calls=300 fallbacks=0 kb_atoms=128576
+summary: 23 passed, 0 failed
+python3 tests/he_diff.py --host build/cettapack-host --kb build/kb-small.metta --queries build/queries-small.txt | tee build/test-he.txt
+PASS A.9-16 kernel vs HE 0.2.10  same_bag=37/37 answers=355 kb=build/kb-small.metta
+! python3 tools/cpkc.py tests/cross_space_site.metta --out-dir build/cross-space 2>build/test-cross.txt; cat build/test-cross.txt
+refused: nested match / cross-space join is not supported in M1 (A.9 item 8)
+python3 tools/emit_certificate.py packs/target_expressed build/test-results.jsonl build/kb.metta build/test-he.txt
+wrote packs/target_expressed/certificate.metta: 23 items + HE, claim bag-tested-adequate
+make -s difftest
+compiled cpk-site-gene_variants: order=[0, 1] meta_expanded_region_hash=3c70f02a255a61f8
+gcc ... -o build/cettapack-host-gene_variants (site gene_variants)
+compiled cpk-site-tissue_fanout: order=[0, 1] meta_expanded_region_hash=135be864290ee486
+gcc ... -o build/cettapack-host-tissue_fanout (site tissue_fanout)
+compiled cpk-site-variant_interactor: order=[0, 1, 2] meta_expanded_region_hash=cab81e2105e1e24a
+gcc ... -o build/cettapack-host-variant_interactor (site variant_interactor)
+site cpk-site-target-expressed
+PASS A.9-d1 differential bags                  seeds=17 same=17 answers=4 kernel_calls=17 fallbacks=0 bag
+PASS A.9-d1s differential bags                  seeds=17 same=17 answers=4 kernel_calls=17 fallbacks=0 support
+PASS A.9-d2 differential bags                  seeds=11 same=11 answers=10 kernel_calls=11 fallbacks=0 bag
+PASS A.9-d2s differential bags                  seeds=11 same=11 answers=4 kernel_calls=11 fallbacks=0 support
+PASS A.9-d3 differential bags                  seeds=10 same=10 answers=3 kernel_calls=10 fallbacks=0 bag
+PASS A.9-d3s differential bags                  seeds=10 same=10 answers=3 kernel_calls=10 fallbacks=0 support
+PASS A.9-d4 differential bags                  seeds=9 same=9 answers=3 kernel_calls=9 fallbacks=0 bag
+PASS A.9-d4s differential bags                  seeds=9 same=9 answers=2 kernel_calls=9 fallbacks=0 support
+PASS A.9-kb generic CeTTa vs kernel, benchmark KB seeds=200 same=200 answers=1653 kernel_calls=200 fallbacks=0 kb_atoms=128576
+summary: 9 passed, 0 failed
+site cpk-site-gene_variants
+PASS A.9-d1 differential bags                  seeds=17 same=17 answers=4 kernel_calls=17 fallbacks=0 bag
+PASS A.9-d1s differential bags                  seeds=17 same=17 answers=4 kernel_calls=17 fallbacks=0 support
+PASS A.9-d2 differential bags                  seeds=11 same=11 answers=10 kernel_calls=11 fallbacks=0 bag
+PASS A.9-d2s differential bags                  seeds=11 same=11 answers=4 kernel_calls=11 fallbacks=0 support
+PASS A.9-d3 differential bags                  seeds=10 same=10 answers=3 kernel_calls=10 fallbacks=0 bag
+PASS A.9-d3s differential bags                  seeds=10 same=10 answers=3 kernel_calls=10 fallbacks=0 support
+PASS A.9-d4 differential bags                  seeds=9 same=9 answers=3 kernel_calls=9 fallbacks=0 bag
+PASS A.9-d4s differential bags                  seeds=9 same=9 answers=2 kernel_calls=9 fallbacks=0 support
+PASS A.9-kb generic CeTTa vs kernel, benchmark KB seeds=200 same=200 answers=7377 kernel_calls=200 fallbacks=0 kb_atoms=128576
+summary: 9 passed, 0 failed
+site cpk-site-tissue_fanout
+PASS A.9-d1 differential bags                  seeds=17 same=17 answers=4 kernel_calls=17 fallbacks=0 bag
+PASS A.9-d1s differential bags                  seeds=17 same=17 answers=4 kernel_calls=17 fallbacks=0 support
+PASS A.9-d2 differential bags                  seeds=11 same=11 answers=10 kernel_calls=11 fallbacks=0 bag
+PASS A.9-d2s differential bags                  seeds=11 same=11 answers=4 kernel_calls=11 fallbacks=0 support
+PASS A.9-d3 differential bags                  seeds=10 same=10 answers=3 kernel_calls=10 fallbacks=0 bag
+PASS A.9-d3s differential bags                  seeds=10 same=10 answers=3 kernel_calls=10 fallbacks=0 support
+PASS A.9-d4 differential bags                  seeds=9 same=9 answers=3 kernel_calls=9 fallbacks=0 bag
+PASS A.9-d4s differential bags                  seeds=9 same=9 answers=2 kernel_calls=9 fallbacks=0 support
+PASS A.9-kb generic CeTTa vs kernel, benchmark KB seeds=200 same=200 answers=866427 kernel_calls=200 fallbacks=0 kb_atoms=128576
+summary: 9 passed, 0 failed
+site cpk-site-variant_interactor
+PASS A.9-d1 differential bags                  seeds=17 same=17 answers=3 kernel_calls=17 fallbacks=0 bag
+PASS A.9-d1s differential bags                  seeds=17 same=17 answers=3 kernel_calls=17 fallbacks=0 support
+PASS A.9-d2 differential bags                  seeds=11 same=11 answers=24 kernel_calls=11 fallbacks=0 bag
+PASS A.9-d2s differential bags                  seeds=11 same=11 answers=6 kernel_calls=11 fallbacks=0 support
+PASS A.9-d3 differential bags                  seeds=10 same=10 answers=2 kernel_calls=10 fallbacks=0 bag
+PASS A.9-d3s differential bags                  seeds=10 same=10 answers=2 kernel_calls=10 fallbacks=0 support
+PASS A.9-d4 differential bags                  seeds=9 same=9 answers=1 kernel_calls=9 fallbacks=0 bag
+PASS A.9-d4s differential bags                  seeds=9 same=9 answers=1 kernel_calls=9 fallbacks=0 support
+PASS A.9-kb generic CeTTa vs kernel, benchmark KB seeds=200 same=200 answers=9835 kernel_calls=200 fallbacks=0 kb_atoms=128576
+summary: 9 passed, 0 failed
+make -s probe-difftest
+gcc ... -o build/cettapack-probe-target_expressed (probe host, site target_expressed)
+gcc ... -o build/cettapack-probe-gene_variants (probe host, site gene_variants)
+gcc ... -o build/cettapack-probe-tissue_fanout (probe host, site tissue_fanout)
+gcc ... -o build/cettapack-probe-variant_interactor (probe host, site variant_interactor)
+summary: 0 failed
+summary: 0 failed
+summary: 0 failed
+summary: 0 failed
+make -s fnspec-difftest
+summary gv_collapse_cond: 0 failed
+summary gv_collapse_data: 0 failed
+summary gv_collapse_filter: 0 failed
+summary gv_exist_cond: 0 failed
+summary gv_exist_data: 0 failed
+summary gv_exist_filter: 0 failed
+summary gv_once_cond: 0 failed
+summary gv_once_data: 0 failed
+summary gv_once_filter: 0 failed
+summary gv_stream_cond: 0 failed
+summary gv_stream_data: 0 failed
+summary gv_stream_filter: 0 failed
+summary imp2_once_data: 0 failed
+summary imp_collapse_data: 0 failed
+summary imp_exist_filter: 0 failed
+summary num_collapse_filter: 0 failed
+summary num_exist_filter: 0 failed
+summary num_once_filter: 0 failed
+summary num_stream_filter: 0 failed
+summary rs_base_rate_rows: 0 failed
+summary rs_compound_connective: 0 failed
+summary rs_given_rule: 0 failed
+summary rs_hm_recurs: 0 failed
+summary rs_live_hypotheses: 0 failed
+summary rs_mil_run: 0 failed
+summary rs_sk_left_out: 0 failed
+summary rs_sk_needed: 0 failed
+summary rs_sk_needed_depth: 0 failed
+summary rs_sk_row_present: 0 failed
+summary rs_sk_summary_memo: 0 failed
+summary rs_stored_proof_tvs: 0 failed
+summary te_collapse_cond: 0 failed
+summary te_collapse_data: 0 failed
+summary te_collapse_filter: 0 failed
+summary te_exist_cond: 0 failed
+summary te_exist_data: 0 failed
+summary te_exist_filter: 0 failed
+summary te_once_cond: 0 failed
+summary te_once_data: 0 failed
+summary te_once_filter: 0 failed
+summary te_stream_cond: 0 failed
+summary te_stream_data: 0 failed
+summary te_stream_filter: 0 failed
+summary tf_collapse_cond: 0 failed
+summary tf_collapse_data: 0 failed
+summary tf_collapse_filter: 0 failed
+summary tf_exist_cond: 0 failed
+summary tf_exist_data: 0 failed
+summary tf_exist_filter: 0 failed
+summary tf_once_cond: 0 failed
+summary tf_once_data: 0 failed
+summary tf_once_filter: 0 failed
+summary tf_stream_cond: 0 failed
+summary tf_stream_data: 0 failed
+summary tf_stream_filter: 0 failed
+summary vi_collapse_cond: 0 failed
+summary vi_collapse_data: 0 failed
+summary vi_collapse_filter: 0 failed
+summary vi_exist_cond: 0 failed
+summary vi_exist_data: 0 failed
+summary vi_exist_filter: 0 failed
+summary vi_once_cond: 0 failed
+summary vi_once_data: 0 failed
+summary vi_once_filter: 0 failed
+summary vi_stream_cond: 0 failed
+summary vi_stream_data: 0 failed
+summary vi_stream_filter: 0 failed

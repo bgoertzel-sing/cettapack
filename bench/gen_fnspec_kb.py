@@ -114,10 +114,76 @@ def gen_kp(r):
     qs = ['p%d' % r.randrange(80000) for _ in range(200)]           # about half present
     return rows, qs
 
+# fnspec 3: the template-tree real sites
+def gen_hs(r):
+    rows, bucket = [], {}
+    stmts = [stmt(r, 400) for _ in range(2000)]
+    for _ in range(100000):
+        h, kb, s = r.randrange(5000), 'kb%d' % r.randrange(50), r.choice(stmts)
+        first, seen = 'i%d' % r.randrange(200), 'ctx%d' % r.randrange(200)
+        rows.append('(%d %s %s %s %s)' % (h, kb, s, first, seen))
+        bucket.setdefault(h, []).append((kb, s, first, seen))
+    qs = []
+    for k in range(200):
+        h = r.randrange(5000)
+        kb, s, first, seen = r.choice(bucket[h]) if h in bucket else ('kb0', stmts[0], 'i0', 'ctx0')
+        if k % 4 == 1:
+            first = 'i%d' % r.randrange(200)          # a new instance, the same context
+        elif k % 4 == 2:
+            first, seen = 'i%d' % r.randrange(200), 'ctx%d' % r.randrange(200)
+        elif k % 4 == 3:
+            s = r.choice(stmts)
+        qs.append('(%s %d %s %s %s)' % (kb, h, s, first, seen))
+    return rows, qs
+
+def gen_sm(r):
+    rows, bucket = [], {}
+    for _ in range(100000):
+        h, key, rh = r.randrange(5000), '(k c%d)' % r.randrange(300), r.randrange(20)
+        pins, cuts, flt = '(pins p%d)' % r.randrange(5), r.choice(['(cuts)', '(cuts c1)', '(cuts c1 c2)']), '(flt f%d)' % r.randrange(4)
+        rows.append('(%d %s %d %s %s %s (val %d))' % (h, key, rh, pins, cuts, flt, r.randrange(1000)))
+        bucket.setdefault(h, []).append((key, rh, pins, cuts, flt))
+    qs = []
+    for k in range(200):
+        h = r.randrange(5000)
+        key, rh, pins, cuts, flt = r.choice(bucket[h]) if h in bucket else ('(k c0)', 0, '(pins p0)', '(cuts)', '(flt f0)')
+        if k % 3 == 1:
+            flt = '(flt f%d)' % r.randrange(4)
+        elif k % 3 == 2:
+            pins = '(pins p%d)' % r.randrange(5)
+        qs.append('(%d %s %d %s %s %s)' % (h, key, rh, pins, cuts, flt))
+    return rows, qs
+
+def gen_sr(r):
+    rows, bucket = [], {}
+    for i in range(100000):
+        h, key, rh, ident = r.randrange(5000), '(key c%d c%d)' % (r.randrange(300), r.randrange(300)), r.randrange(10), 'id%d' % r.randrange(400)
+        rows.append('(%d %s %d (sk-row %s c p %d))' % (h, key, rh, ident, i))
+        bucket.setdefault(h, []).append((key, rh, ident))
+    qs = []
+    for k in range(200):
+        h = r.randrange(5000)
+        key, rh, ident = r.choice(bucket[h]) if h in bucket else ('(key c0 c0)', 0, 'id0')
+        if k % 2:
+            ident = 'id%d' % r.randrange(400)           # mostly absent
+        qs.append('(%d %s %d %s)' % (h, key, rh, ident))
+    return rows, qs
+
+def gen_sb(r):
+    rows = []
+    for i in range(100000):
+        mh, h = r.randrange(1000), r.randrange(20)
+        zero = r.random() < 0.4
+        pw, nw = r.choice(['0.0', '%.2f' % r.random()]) if not zero else '0.0', '0.0' if zero else '%.2f' % r.random()
+        c = '(InstanceEvidence (BaseRateEvidence %.2f %s) (BaseRateEvidence %.2f %s))' % (r.random(), pw, r.random(), nw)
+        rows.append('(%d %d st%d (seg p%d) (seg n%d) %s)' % (mh, h, i % 50, r.randrange(30), r.randrange(30), c))
+    qs = ['(%d %d)' % (r.randrange(1000), r.randrange(20)) for _ in range(200)]
+    return rows, qs
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--kind', required=True, choices=['hm_live', 'mil', 'base_rate', 'given_rules', 'logic_config',
-                                                      'sk_needed', 'kb_proofs'])
+                                                      'sk_needed', 'kb_proofs', 'hm_seen', 'sk_summary', 'sk_row', 'sk_member'])
     ap.add_argument('--out', required=True)
     ap.add_argument('--queries-out', required=True)
     ap.add_argument('--seed', type=int, default=20261118)
@@ -125,7 +191,8 @@ def main():
     a = ap.parse_args()
     r = random.Random(a.seed)
     rows, qs = {'hm_live': gen_hm, 'mil': gen_mil, 'base_rate': gen_br, 'given_rules': gen_gr, 'logic_config': gen_lc,
-                'sk_needed': gen_sk, 'kb_proofs': gen_kp}[a.kind](r)
+                'sk_needed': gen_sk, 'kb_proofs': gen_kp, 'hm_seen': gen_hs, 'sk_summary': gen_sm, 'sk_row': gen_sr,
+                'sk_member': gen_sb}[a.kind](r)
     out = []
     for x in rows:
         out.append(x)

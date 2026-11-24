@@ -134,14 +134,22 @@ bench: build/cettapack-host build/kb.metta
 clean:
 	rm -f build/cettapack-host
 
-.PHONY: all test bench clean difftest probes probe-difftest fnspec fnspec-difftest fnspec-recompute
+.PHONY: all test bench clean difftest probes probe-difftest fnspec fnspec-difftest fnspec-recompute fnspec3-recompute
 
 # Recompute the benchmark tables from the raw runs and compare with the committed summary
 # (fnspec 1 and fnspec 2 evidence; one summariser for both)
-FNSPEC_BENCH ?= evidence/fnspec-2026-11-18/bench evidence/fnspec2-2026-11-19/bench
+FNSPEC_BENCH ?= evidence/fnspec-2026-11-18/bench evidence/fnspec2-2026-11-19/bench evidence/fnspec3-2026-11-24/bench
 fnspec-recompute:
 	@mkdir -p build
 	@set -e; for d in $(FNSPEC_BENCH); do \
 	  python3 bench/summarize_fnspec.py $$d > build/fnspec-summary-recomputed.md; \
 	  cmp build/fnspec-summary-recomputed.md $$d/summary.md && echo "recomputed tables match $$d/summary.md"; \
 	done
+	@$(MAKE) -s fnspec3-recompute
+
+# fnspec 3, item 3: match-rows' row hook (0004) vs the embedding callback on every fnspec site
+FNSPEC3_HOOK ?= evidence/fnspec3-2026-11-24/hook-bench
+fnspec3-recompute:
+	@mkdir -p build
+	@python3 bench/summarize_rows_hook.py $(FNSPEC3_HOOK) > build/rows-hook-recomputed.md
+	@cmp build/rows-hook-recomputed.md evidence/fnspec3-2026-11-24/rows-hook.md && echo "recomputed tables match evidence/fnspec3-2026-11-24/rows-hook.md"

@@ -57,5 +57,10 @@ for site in $SITES; do
   python3 bench/check_fnspec_site.py "$OUT/runs-$site.jsonl" $exp | tee -a "$OUT/checks.txt"
   echo "done $site"
 done
-python3 bench/summarize_fnspec.py "$OUT" > "$OUT/summary.md"
+# the fnspec tables need the four reference modes; a hook-vs-callback run (MODES="fn-spec fn-rows") gets the hook table
+if echo " $MODES " | grep -q ' fn-generic '; then
+  python3 bench/summarize_fnspec.py "$OUT" > "$OUT/summary.md"
+else
+  python3 bench/summarize_rows_hook.py "$OUT" > "$OUT/summary.md"
+fi
 echo "summary: $OUT/summary.md"
