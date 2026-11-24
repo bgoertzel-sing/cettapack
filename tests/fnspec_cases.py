@@ -81,6 +81,48 @@ NUM = {
 }
 NUM_NF = "!(add-atom &self (= (k1 $x $y) bumped))\n!(add-atom &self (= (k2 $x $y) bumped))\n"
 
+# fnspec 2 (t-2026-11-19-cettapack-fnspec-2): the real sites of the existence-test and
+# collapse(once) shapes.  Row order matters for collapse(once): several rows per key, in
+# an order where the first row is not the only one, and rows whose filter fails first.
+GR = {
+    'c1_rows': ("(r1 kb1)\n(r1 kb1)\n(r2 kb1)\n(r1 kb2)\n((ctx r3) kb1)\n(\"s\" kb2)\n(7 kb3)\n(kb1 kb1)\n",
+                ['(kb1 r1)', '(kb2 r1)', '(kb1 r2)', '(kb2 r2)', '(kb1 (ctx r3))', '(kb2 "s")', '(kb3 7)', '(kb9 r9)',
+                 '(kb1 kb1)', '(kb3 7.0)']),
+    'c2_mixed': (";; expect: mixed\n($x kb4)\n(r5 $y)\n(r6 kb6)\n",
+                 ['(kb4 r1)', '(kb7 r5)', '(kb4 $q)', '(kb6 r6)', '($k r6)']),
+}
+GR_NF = "!(add-atom &self (= true yes))\n"
+
+LC = {
+    'c1_rows': ("(compound-premise-mode And conj)\n(compound-premise-mode And conj2)\n(compound-premise-mode Or disj)\n"
+                "(rule-form Implication BidirectionalImplication)\n(compound-premise-mode (Not x) neg)\n(logic-rule r1)\n"
+                "(compound-premise-mode And conj)\n(compound-premise-mode 3 three)\n",
+                ['And', 'Or', 'Not', 'Implication', '((Not x))', 'Zz', '"s"', '3', 'r1']),
+    'c2_mixed': (";; expect: mixed\n(compound-premise-mode $h free)\n(compound-premise-mode Xor xor)\n",
+                 ['And', 'Xor', '$q', '((Not $v))']),
+}
+LC_NF = "!(add-atom &self (= true yes))\n"
+
+SK = {
+    'c1_rows': ("(1 (sk a b) 0)\n(1 (sk a b) 0)\n(1 (sk a c) 2)\n(2 (sk a b) 5)\n(1 (sk a d) 9)\n(1 (sk a c) 4)\n"
+                "(3 (sk (sk a) b) 6)\n(2 (sk a c) 8)\n(3 (sk a b) 7)\n",
+                ['(1 (sk a b))', '(1 (sk a c))', '(2 (sk a b))', '(3 (sk a b))', '(1 (sk x y))', '(1 a)', '(2 (sk a c))',
+                 '(3 (sk (sk a) b))', '(9 (sk a b))']),
+    'c2_mixed': (";; expect: mixed\n(4 (sk $v b) 1)\n(4 (sk a b) 2)\n(5 1.5 0)\n(5 1 1)\n(6 \"s\" 2)\n(3 7 1)\n(3 (sk (sk a) b) 6)\n",
+                 ['(4 (sk a b))', '(5 1)', '(4 (sk $q b))', '(6 "s")', '(5 1.5)', '(3 7)', '(3 (sk (sk a) b))']),
+}
+SK_NF = "!(add-atom &self (= true yes))\n!(add-atom &self (= (sk a c) skc))\n"
+
+KP = {
+    'c1_rows': ("(fact ctx1 p1 (stv 0.9 0.8))\n(fact ctx1 p1 (stv 0.5 0.5))\n(rule ctx2 p1 (stv 1.0 1.0))\n"
+                "(fact ctx1 p2 (stv 0.1 0.2))\n(fact ctx1 (pf a) 3)\n(fact ctx1 p3 \"str\")\n(fact ctx1 p2 (stv 0.1 0.2))\n"
+                "(rule ctx3 p4 (simple 1))\n(fact ctx4 p4 (stv 0.9 0.8))\n",
+                ['p1', 'p2', 'p3', '((pf a))', 'p9', 'ctx1', 'p4']),
+    'c2_mixed': (";; expect: mixed\n(fact ctx1 q1 $tv)\n(fact ctx1 q2 (stv $a 0.5))\n(fact ctx1 q3 (stv 0.9 0.8))\n",
+                 ['q1', 'q2', 'q3', '$n']),
+}
+KP_NF = "!(add-atom &self (= (stv 0.9 $c) bumped))\n"
+
 def write_kind(out, kind, cases, nf):
     d = os.path.join(out, kind)
     os.makedirs(d, exist_ok=True)
@@ -103,6 +145,10 @@ def main():
     write_kind(a.out, 'mil', MIL, MIL_NF)
     write_kind(a.out, 'base_rate', BR, BR_NF)
     write_kind(a.out, 'num', NUM, NUM_NF)
+    write_kind(a.out, 'given_rules', GR, GR_NF)
+    write_kind(a.out, 'logic_config', LC, LC_NF)
+    write_kind(a.out, 'sk_needed', SK, SK_NF)
+    write_kind(a.out, 'kb_proofs', KP, KP_NF)
 
 if __name__ == '__main__':
     main()

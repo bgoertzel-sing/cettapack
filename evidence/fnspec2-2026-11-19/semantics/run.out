@@ -1,0 +1,10 @@
+== --lang he --profile he
+[((once 1) (once 2))] [()] [((once 2))] [((once 3))] [True] [False] 
+== --lang he --profile he-compat
+[((once 1) (once 2))] [()] [((once 2))] [((once 3))] [True] [False] 
+== --lang he --profile extended
+[(1)] [()] [(2)] [(3)] [True] [False] 
+== --lang he --profile he-prime
+[(1)] [()] [(2)] [(3)] [True] [False] 
+== PeTTa (default language)
+(1) () (2) (3) true false 

@@ -28,7 +28,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef enum { FS_STREAM_DATA, FS_COLLAPSE_DATA, FS_COLLAPSE_FILTER, FS_STREAM_FILTER } FsShape;
+typedef enum { FS_STREAM_DATA, FS_COLLAPSE_DATA, FS_COLLAPSE_FILTER, FS_STREAM_FILTER,
+               FS_ONCE_DATA, FS_ONCE_FILTER, FS_EXIST_DATA, FS_EXIST_FILTER } FsShape;
 typedef enum { FS_EQ, FS_ALPHA, FS_LT, FS_GT, FS_LE, FS_GE } FsCmp;
 
 typedef struct FsRt FsRt;
@@ -49,8 +50,13 @@ typedef struct {
     FsBuiltin builtins[16];
     unsigned n_builtins;
     unsigned n_cvars, n_consts, n_patterns;
+    int once;                    /* the body is (collapse (once (match ...))) [inside an existence test] */
+    int exist;                   /* 0 no existence test; 1 (not (== W ())): True when a row survives;
+                                    2 (== W ()): True when none does */
     int (*row)(FsCall *c, Bindings *row, Arena *a, Atom **answer);
     const char *kb, *queries, *origin, *setup;
+    const char *profile;         /* CeTTa he profile the site runs in ("" = the default he profile) */
+    const char *load;            /* "" definitions loaded into &self; "import": from a module (import!) */
 } FsPlan;
 
 typedef struct {
@@ -72,6 +78,8 @@ struct FsRt {
     Atom *named_space;                   /* the space atom of space_token */
     SpaceProgramToken tok;
     bool tok_valid, valid, force_invalid;
+    bool once_unavailable;               /* once is not CeTTa's first-answer builtin in this engine */
+    cetta_atom_t *true_h, *false_h;      /* the engine's results of (== () ()) and (== () (x)) */
     const char *invalid_reason;
     FsStats st;
     cetta_atom_t *callable, *hosted;
@@ -90,6 +98,8 @@ int fs_compare(FsCall *c, FsCmp op, Atom *x, Atom *y);   /* 1 true, 0 false, -1 
 bool fs_normal_form(FsCall *c, Atom *x);
 
 FsRt *fs_open(cetta_engine_t *e, const FsPlan *plan, bool force_invalid, const char **error);
+/* the profile an engine for this plan is opened with (NULL: CeTTa's default he profile) */
+const char *fs_profile(const FsPlan *plan);
 void fs_close(FsRt *rt);
 const FsPlan *fs_find(const char *site);
 const char *fs_shape_name(FsShape s);

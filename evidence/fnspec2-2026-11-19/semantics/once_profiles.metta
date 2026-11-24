@@ -1,0 +1,16 @@
+; fnspec 2: what (collapse (once (match ...))) means in CeTTa a9b3a811 per language/profile.
+; run.sh runs this file with --lang he under each profile, and in PeTTa (CeTTa's default language).
+!(bind! &s (new-space))
+!(add-atom &s (r a 1))
+!(add-atom &s (r a 2))
+!(add-atom &s (r b 3))
+!(add-atom &s (r b 0))
+(= (onced $k) (collapse (once (match &s (r $k $v) $v))))
+(= (oncef $k) (collapse (once (match &s (r $k $v) (if (> $v 1) $v (empty))))))
+(= (ex $k) (not (== (collapse (once (match &s (r $k $v) true))) ())))
+!(onced a)
+!(onced z)
+!(oncef a)
+!(oncef b)
+!(ex a)
+!(ex z)

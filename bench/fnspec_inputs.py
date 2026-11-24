@@ -45,7 +45,7 @@ def main():
                 print('fnspec_inputs: the M1 KB differs from build/kb.metta', file=sys.stderr)
                 return 1
             os.remove(tmp)
-    elif kb in ('hm_live', 'mil', 'base_rate'):
+    elif kb in ('hm_live', 'mil', 'base_rate', 'given_rules', 'logic_config', 'sk_needed', 'kb_proofs'):
         kbf = os.path.join(d, 'kb-%s.metta' % kb)
         qf = os.path.join(d, 'queries-%s.txt' % kb)
         if not (os.path.exists(kbf) and os.path.exists(qf)):
