@@ -7,7 +7,7 @@
     "meta_expanded_region_hash": "cab81e2105e1e24a0822088ac6fb562ef5535b67c1e4c42a92dd28803fe7a1ca",
     "match_pattern_hash": "7e956250efc47574d076e90dfbea8c472fe5d999c1c20a8bf10530a9458a7119",
     "langdef_pack_digest": "a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1",
-    "profile_digest": "e167bdbb490bba7aeff20d3352cf5774f0352d8f3fd4f9e4108b0d8b83183f09",
+    "profile_digest": "c8500163d178e0d0cafa11b9622e728addd37693b950e419e2155b4da772840a",
     "operator_schema_hashes": [
       "d245d662fb4fbceb9a7ec83f0406595939993b49cc47efea579850761dcd1b91",
       "69e45d2502b273559b6fe7dab096c560f77dbb2189a553d31d5ea75893b8848a",
@@ -69,7 +69,7 @@
     "profile_components": {
       "method": "cpk-profile-v1",
       "cetta": "a9b3a81186529fd99649e437809bdb6f58fce2fd",
-      "patches": "3c94a7b3fa71e2287aab8f4fddf5e1bf286af45be854486be8ecef885d874bd1",
+      "patches": "0e2db156374f666e7fc3581e5d31907a8754d47de24026a3c233c0ae2facf327",
       "build": "mork",
       "language": "he"
     },

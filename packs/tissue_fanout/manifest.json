@@ -7,7 +7,7 @@
     "meta_expanded_region_hash": "135be864290ee486a0f597ef65a4e2ab1f744a89d19e72411bc80aa0d7187c19",
     "match_pattern_hash": "2d80f78cb736045ebfa4fa3be4da98f2188627ac5714dd9d8306509022b39573",
     "langdef_pack_digest": "a68b1143db4eef4788c463c7adc0f04056db4632d18538f7b4d48b686cb081c1",
-    "profile_digest": "e167bdbb490bba7aeff20d3352cf5774f0352d8f3fd4f9e4108b0d8b83183f09",
+    "profile_digest": "c8500163d178e0d0cafa11b9622e728addd37693b950e419e2155b4da772840a",
     "operator_schema_hashes": [
       "d245d662fb4fbceb9a7ec83f0406595939993b49cc47efea579850761dcd1b91",
       "d5bd83e203481d2b852017d595ea7eb21326d131ad50e46b2cefb1c95987fd59"
@@ -68,7 +68,7 @@
     "profile_components": {
       "method": "cpk-profile-v1",
       "cetta": "a9b3a81186529fd99649e437809bdb6f58fce2fd",
-      "patches": "3c94a7b3fa71e2287aab8f4fddf5e1bf286af45be854486be8ecef885d874bd1",
+      "patches": "0e2db156374f666e7fc3581e5d31907a8754d47de24026a3c233c0ae2facf327",
       "build": "mork",
       "language": "he"
     },
