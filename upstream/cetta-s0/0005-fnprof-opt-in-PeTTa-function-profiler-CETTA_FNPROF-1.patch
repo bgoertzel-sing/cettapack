@@ -1,0 +1,928 @@
+From 12ddf63b16b376eb32ba127014fd3e99113597d9 Mon Sep 17 00:00:00 2001
+From: cettapack <cettapack@localhost>
+Date: Tue, 24 Nov 2026 06:46:02 -0700
+Subject: [PATCH] fnprof: opt-in PeTTa function profiler (CETTA_FNPROF=1), off
+ by default
+
+---
+ Makefile                   |  12 +-
+ src/cetta_fnprof.h         |  26 ++
+ src/eval.c                 |  15 +-
+ src/petta_search_machine.c | 674 ++++++++++++++++++++++++++++++++++++-
+ src/space.c                |   9 +
+ 5 files changed, 732 insertions(+), 4 deletions(-)
+ create mode 100644 src/cetta_fnprof.h
+
+diff --git a/Makefile b/Makefile
+index 1027d45d..64f02848 100644
+--- a/Makefile
++++ b/Makefile
+@@ -606,6 +606,16 @@ endif
+ ifeq ($(ENABLE_PYTHON),1)
+ BUILD_OBJ_TAG := $(BUILD_OBJ_TAG).python-config-$(PYTHON_CONFIG_ID)
+ endif
++# Opt-in PeTTa function profiler (src/cetta_fnprof.h); off by default.
++CETTA_FNPROF ?= 0
++ifneq ($(filter $(CETTA_FNPROF),0 1),$(CETTA_FNPROF))
++$(error CETTA_FNPROF must be 0 or 1)
++endif
++FNPROF_CPPFLAGS =
++ifeq ($(CETTA_FNPROF),1)
++BUILD_OBJ_TAG := $(BUILD_OBJ_TAG).fnprof
++FNPROF_CPPFLAGS = -DCETTA_FNPROF=1
++endif
+ ifeq ($(ENABLE_PETTA_TYPECHECK_V2),0)
+ BUILD_OBJ_TAG := $(BUILD_OBJ_TAG).no-petta-typecheck-v2
+ endif
+@@ -689,7 +699,7 @@ PROC_FORK_SPAWN_CPPFLAGS =
+ ifeq ($(CETTA_PROC_FORK_SPAWN),1)
+ PROC_FORK_SPAWN_CPPFLAGS = -DCETTA_PROC_FORK_SPAWN=1
+ endif
+-CPPFLAGS = -Isrc -I. -Iexperiments/gslt2parse_foundation/native $(BRIDGE_CFLAGS) $(PY_CFLAGS) $(GMP_CFLAGS) $(LIB_PROLOG_CFLAGS) $(HTTP_CFLAGS) $(DURABLE_CFLAGS) $(PROVENANCE_CPPFLAGS) $(PRIME_RECEIPT_INDEX_CPPFLAGS) $(PRIME_NEED_HEAP_INDEX_CPPFLAGS) $(PRIME_NEED_CLOSURE_CAPTURE_CPPFLAGS) $(PRIME_EVAL_STACK_CPPFLAGS) $(PROC_FORK_SPAWN_CPPFLAGS) -include $(BUILD_CONFIG_HEADER)
++CPPFLAGS = -Isrc -I. -Iexperiments/gslt2parse_foundation/native $(BRIDGE_CFLAGS) $(PY_CFLAGS) $(GMP_CFLAGS) $(LIB_PROLOG_CFLAGS) $(HTTP_CFLAGS) $(DURABLE_CFLAGS) $(PROVENANCE_CPPFLAGS) $(PRIME_RECEIPT_INDEX_CPPFLAGS) $(PRIME_NEED_HEAP_INDEX_CPPFLAGS) $(PRIME_NEED_CLOSURE_CAPTURE_CPPFLAGS) $(PRIME_EVAL_STACK_CPPFLAGS) $(PROC_FORK_SPAWN_CPPFLAGS) $(FNPROF_CPPFLAGS) -include $(BUILD_CONFIG_HEADER)
+ CFLAGS = -O3 -Wall -Werror -std=c11 -pthread
+ DEPFLAGS = -MMD -MP
+ # Libraries a binary does not use are not recorded as its dependencies, with
+diff --git a/src/cetta_fnprof.h b/src/cetta_fnprof.h
+new file mode 100644
+index 00000000..60be9766
+--- /dev/null
++++ b/src/cetta_fnprof.h
+@@ -0,0 +1,26 @@
++#ifndef CETTA_FNPROF_H
++#define CETTA_FNPROF_H
++
++/* Opt-in function profiler for PeTTa runs (cettapack S0).  Built only with
++ * `make CETTA_FNPROF=1`; with the default CETTA_FNPROF=0 every hook below
++ * compiles to nothing and no data structure changes.  The report is written
++ * at process exit to the file named by $CETTA_FNPROF_OUT (no file when the
++ * variable is unset). */
++#ifndef CETTA_FNPROF
++#define CETTA_FNPROF 0
++#endif
++
++#if CETTA_FNPROF
++#include <stdbool.h>
++#include <stdint.h>
++
++struct Space;
++/* A PeTTa space reference was resolved (match, count, update...): `name`
++ * is the reference as written when it is a symbol, else NULL. */
++void cetta_fnprof_space_access(struct Space *space, const char *name);
++/* space_publish_mutation: one published revision of `space`. */
++void cetta_fnprof_space_mutation(struct Space *space, bool equation_relevant,
++                                 bool prefix_rewritten);
++#endif
++
++#endif
+diff --git a/src/eval.c b/src/eval.c
+index b3fdc6ab..02155495 100644
+--- a/src/eval.c
++++ b/src/eval.c
+@@ -113,6 +113,7 @@ static bool eval_try_petta_native_fold(
+     Atom *acc_var, Atom *item_var, Atom *step, OutcomeSet *outcomes);
+ #include <string.h>
+ #include <strings.h>
++#include "cetta_fnprof.h"
+ #include <math.h>
+ #include <stdio.h>
+ #include <stdarg.h>
+@@ -47022,12 +47023,22 @@ static Space *petta_eval_machine_resolve_space(
+         space = petta_eval_transaction_clone_space(transaction, space);
+     }
+     space = payload_resolve_space_read(space);
+-    if (space)
++    if (space) {
++#if CETTA_FNPROF
++        cetta_fnprof_space_access(
++            space, reference->kind == ATOM_SYMBOL
++                       ? atom_name_cstr(reference) : NULL);
++#endif
+         return space;
++    }
+     if (reference->kind == ATOM_SYMBOL) {
+         const char *name = atom_name_cstr(reference);
+-        if (name && strcmp(name, "&self") == 0)
++        if (name && strcmp(name, "&self") == 0) {
++#if CETTA_FNPROF
++            cetta_fnprof_space_access(root_space, name);
++#endif
+             return root_space;
++        }
+     }
+     return NULL;
+ }
+diff --git a/src/petta_search_machine.c b/src/petta_search_machine.c
+index d7de67e2..6404ba52 100644
+--- a/src/petta_search_machine.c
++++ b/src/petta_search_machine.c
+@@ -62,6 +62,10 @@
+ #pragma weak term_universe_resource_image_owner_view
+ 
+ #include <assert.h>
++#include "cetta_fnprof.h"
++#if CETTA_FNPROF
++#include <pthread.h>
++#endif
+ #include <inttypes.h>
+ #include <limits.h>
+ #include <math.h>
+@@ -107,6 +111,619 @@ typedef enum {
+     PETTA_TABLE_ENTRY_COMPLETE,
+ } PettaTableEntryState;
+ 
++#if CETTA_FNPROF
++/* ---- cettapack S0 function profiler (CETTA_FNPROF=1 only) -------------
++ * Every machine goal and choice carries the profiler frame of the function
++ * activation that scheduled it.  An equation candidate opens a frame (its
++ * parent is the frame of the call's choice); the time between two frame
++ * switches is charged to the frame that was current (self time), and the
++ * frame tree gives inclusive time at exit.  A switch from a frame to one of
++ * its ancestors at a goal pop, or an emitted answer, counts one result for
++ * every frame on the way.  Space accesses (eval.c, resolve) and published
++ * mutations (space.c) are charged to the current frame's function. */
++enum {
++    FNPROF_F_USED = 1u,
++    FNPROF_F_ACCESS = 2u,
++    FNPROF_F_WRITE = 4u,
++    FNPROF_F_WRITE_EQ = 8u,
++    FNPROF_F_REC = 16u,
++};
++
++typedef struct {
++    uint32_t parent;
++    uint32_t fn;
++    uint32_t flags;
++    uint32_t pad;
++    uint64_t self_ns;
++} FnprofFrame;
++
++typedef struct {
++    SymbolId head;
++    uint64_t calls, candidates, results, frames, recursive_frames;
++    uint64_t self_ns, incl_ns;
++    uint64_t eq_rev_last, eq_rev_changes;
++    uint64_t data_rev_last, data_rev_changes;
++    bool rev_seen;
++    uint32_t self_flags, incl_flags;
++    /* The first equation of this head the machine tried (printed). */
++    char *first_equation;
++    /* The head as printed (the symbol table name, when the atom is a symbol). */
++    char *name;
++} FnprofFn;
++
++typedef struct {
++    uint64_t iid;
++    char name[96];
++    uint64_t accesses, mutations, append_only, rewritten, equation_mut;
++    uint64_t mutations_in_functions, mutations_after_first_access;
++    uint64_t first_access_ns, first_mut_ns, last_mut_ns;
++    bool accessed;
++} FnprofSpace;
++
++typedef struct {
++    uint32_t fn, sp;
++    uint64_t accesses, writes, writes_append, writes_rewrite, writes_eq;
++    uint64_t rev_changes, last_rev;
++    bool has_last;
++} FnprofEdge;
++
++static struct {
++    bool init;
++    pthread_t owner;
++    FnprofFrame *frames;
++    size_t frames_len, frames_cap;
++    FnprofFn *fns;
++    size_t fns_len, fns_cap;
++    uint32_t *fn_slots;
++    size_t fn_slot_cap;
++    FnprofSpace *spaces;
++    size_t spaces_len, spaces_cap;
++    FnprofEdge *edges;
++    size_t edges_len, edges_cap;
++    uint32_t *edge_slots;
++    size_t edge_slot_cap;
++    uint32_t cur;
++    uint64_t last_ns, start_ns;
++    uint64_t switches, frame_reuses, other_thread_events, result_walks;
++    uint64_t emit_results, ancestor_walk_limit_hits;
++    /* Match sites: (enclosing function, space, pattern head) -> synthetic head key. */
++    struct { uint32_t parent_fn; char *space; char *pattern_head; } *sites;
++    size_t sites_len, sites_cap;
++} g_fnprof;
++
++static inline uint64_t fnprof_now(void) {
++    struct timespec ts;
++    clock_gettime(CLOCK_MONOTONIC, &ts);
++    return (uint64_t)ts.tv_sec * 1000000000u + (uint64_t)ts.tv_nsec;
++}
++
++static void fnprof_report(void);
++
++static bool fnprof_grow(void **items, size_t *cap, size_t need, size_t size) {
++    if (need <= *cap)
++        return true;
++    size_t next = *cap ? *cap * 2u : 1024u;
++    while (next < need)
++        next *= 2u;
++    void *grown = realloc(*items, next * size);
++    if (!grown)
++        return false;
++    *items = grown;
++    *cap = next;
++    return true;
++}
++
++static uint32_t fnprof_fn_index(SymbolId head);
++
++static bool fnprof_ready(void) {
++    if (!g_fnprof.init) {
++        g_fnprof.init = true;
++        g_fnprof.owner = pthread_self();
++        g_fnprof.start_ns = g_fnprof.last_ns = fnprof_now();
++        if (!fnprof_grow((void **)&g_fnprof.frames, &g_fnprof.frames_cap, 1u,
++                         sizeof(FnprofFrame)))
++            abort();
++        g_fnprof.frames[0] = (FnprofFrame){0};
++        g_fnprof.frames_len = 1u;
++        (void)fnprof_fn_index(SYMBOL_ID_NONE); /* fn 0: outside any equation */
++        atexit(fnprof_report);
++    }
++    if (!pthread_equal(pthread_self(), g_fnprof.owner)) {
++        g_fnprof.other_thread_events++;
++        return false;
++    }
++    return true;
++}
++
++static uint32_t fnprof_fn_index(SymbolId head) {
++    if (g_fnprof.fns_len * 2u + 2u > g_fnprof.fn_slot_cap) {
++        size_t cap = g_fnprof.fn_slot_cap ? g_fnprof.fn_slot_cap * 2u : 4096u;
++        uint32_t *slots = calloc(cap, sizeof(*slots));
++        if (!slots)
++            abort();
++        for (size_t i = 0; i < g_fnprof.fns_len; i++) {
++            size_t h = ((size_t)g_fnprof.fns[i].head * 2654435761u) & (cap - 1u);
++            while (slots[h])
++                h = (h + 1u) & (cap - 1u);
++            slots[h] = (uint32_t)i + 1u;
++        }
++        free(g_fnprof.fn_slots);
++        g_fnprof.fn_slots = slots;
++        g_fnprof.fn_slot_cap = cap;
++    }
++    size_t mask = g_fnprof.fn_slot_cap - 1u;
++    size_t h = ((size_t)head * 2654435761u) & mask;
++    while (g_fnprof.fn_slots[h]) {
++        uint32_t i = g_fnprof.fn_slots[h] - 1u;
++        if (g_fnprof.fns[i].head == head)
++            return i;
++        h = (h + 1u) & mask;
++    }
++    if (!fnprof_grow((void **)&g_fnprof.fns, &g_fnprof.fns_cap,
++                     g_fnprof.fns_len + 1u, sizeof(FnprofFn)))
++        abort();
++    uint32_t index = (uint32_t)g_fnprof.fns_len++;
++    g_fnprof.fns[index] = (FnprofFn){.head = head};
++    g_fnprof.fn_slots[h] = index + 1u;
++    return index;
++}
++
++static inline void fnprof_switch(uint32_t to) {
++    if (to == g_fnprof.cur)
++        return;
++    uint64_t now = fnprof_now();
++    g_fnprof.frames[g_fnprof.cur].self_ns += now - g_fnprof.last_ns;
++    g_fnprof.last_ns = now;
++    g_fnprof.cur = to;
++    g_fnprof.switches++;
++}
++
++static inline uint32_t fnprof_stamp(uint32_t frame) {
++    if (!fnprof_ready())
++        return frame;
++    if (!frame)
++        frame = g_fnprof.cur;
++    g_fnprof.frames[frame].flags |= FNPROF_F_USED;
++    return frame;
++}
++
++static char *fnprof_print(Atom *atom) {
++    char *text = NULL;
++    size_t len = 0;
++    FILE *mem = open_memstream(&text, &len);
++    if (!mem)
++        return NULL;
++    atom_print(atom, mem);
++    fclose(mem);
++    return text;
++}
++
++static Atom *fnprof_head_atom(Atom *atom) {
++    if (atom && atom->kind == ATOM_EXPR && atom->expr.len > 0u)
++        return atom->expr.elems[0];
++    return atom;
++}
++
++static void fnprof_name(uint32_t fn, Atom *head_atom) {
++    if (!g_fnprof.fns[fn].name && head_atom && head_atom->kind == ATOM_SYMBOL)
++        g_fnprof.fns[fn].name = fnprof_print(head_atom);
++}
++
++static SymbolId fnprof_atom_head(Atom *atom) {
++    if (atom && atom->kind == ATOM_SYMBOL)
++        return atom->sym_id;
++    if (atom && atom->kind == ATOM_EXPR && atom->expr.len > 0u &&
++        atom->expr.elems[0]->kind == ATOM_SYMBOL)
++        return atom->expr.elems[0]->sym_id;
++    return SYMBOL_ID_NONE;
++}
++
++/* A call (the first alternative of an equation choice). */
++static void fnprof_call(Atom *query_head, Space *self_space) {
++    if (!fnprof_ready())
++        return;
++    uint32_t fn_index = fnprof_fn_index(fnprof_atom_head(query_head));
++    fnprof_name(fn_index, fnprof_head_atom(query_head));
++    FnprofFn *fn = &g_fnprof.fns[fn_index];
++    fn->calls++;
++    uint64_t eq = space_equation_revision(self_space);
++    uint64_t data = space_revision(self_space);
++    if (fn->rev_seen) {
++        if (eq != fn->eq_rev_last)
++            fn->eq_rev_changes++;
++        if (data != fn->data_rev_last)
++            fn->data_rev_changes++;
++    }
++    fn->rev_seen = true;
++    fn->eq_rev_last = eq;
++    fn->data_rev_last = data;
++}
++
++/* One equation candidate of a call: opens (or reuses) the callee frame. */
++static void fnprof_candidate(Atom *equation, uint32_t parent) {
++    if (!fnprof_ready())
++        return;
++    SymbolId head = SYMBOL_ID_NONE;
++    if (equation && equation->kind == ATOM_EXPR && equation->expr.len == 3u)
++        head = fnprof_atom_head(equation->expr.elems[1]);
++    uint32_t fn = fnprof_fn_index(head);
++    g_fnprof.fns[fn].candidates++;
++    if (!g_fnprof.fns[fn].first_equation && equation) {
++        g_fnprof.fns[fn].first_equation = fnprof_print(equation);
++        if (equation->kind == ATOM_EXPR && equation->expr.len == 3u)
++            fnprof_name(fn, fnprof_head_atom(equation->expr.elems[1]));
++    }
++    uint32_t cur = g_fnprof.cur;
++    if (cur != 0u && cur + 1u == g_fnprof.frames_len &&
++        !(g_fnprof.frames[cur].flags & FNPROF_F_USED) &&
++        g_fnprof.frames[cur].parent == parent &&
++        g_fnprof.frames[cur].fn == fn) {
++        g_fnprof.frame_reuses++;
++        return;
++    }
++    if (!fnprof_grow((void **)&g_fnprof.frames, &g_fnprof.frames_cap,
++                     g_fnprof.frames_len + 1u, sizeof(FnprofFrame)))
++        abort();
++    uint32_t index = (uint32_t)g_fnprof.frames_len++;
++    uint32_t flags = 0u;
++    uint32_t a = parent;
++    for (unsigned steps = 0; a != 0u; steps++) {
++        if (steps == 4096u) {
++            g_fnprof.ancestor_walk_limit_hits++;
++            break;
++        }
++        if (g_fnprof.frames[a].fn == fn) {
++            flags |= FNPROF_F_REC;
++            break;
++        }
++        a = g_fnprof.frames[a].parent;
++    }
++    g_fnprof.frames[index] = (FnprofFrame){.parent = parent, .fn = fn,
++                                           .flags = flags};
++    fnprof_switch(index);
++}
++
++/* Results along cur -> ancestor (exclusive); false when \`to\` is no
++ * ancestor of the current frame. */
++/* A space query (match) starts: it runs in a frame of its own, keyed by the
++ * enclosing function, the space and the pattern's head, so a match site has
++ * self/inclusive time, executions (calls), rows handed back (candidates) and
++ * answers (results) like a function. */
++#define FNPROF_SITE_KEY_BASE 0xC0000000u
++static void fnprof_match_site(Atom *space, Atom *pattern) {
++    if (!fnprof_ready())
++        return;
++    uint32_t parent = g_fnprof.cur;
++    uint32_t parent_fn = g_fnprof.frames[parent].fn;
++    char *space_text = fnprof_print(space);
++    Atom *ph = fnprof_head_atom(pattern);
++    char *head_text = ph && ph->kind == ATOM_SYMBOL ? fnprof_print(ph) : NULL;
++    if (!head_text)
++        head_text = strdup(pattern && pattern->kind == ATOM_EXPR ? "(...)" : "_");
++    if (!space_text)
++        space_text = strdup("");
++    size_t site = g_fnprof.sites_len;
++    for (size_t i = 0; i < g_fnprof.sites_len; i++) {
++        if (g_fnprof.sites[i].parent_fn == parent_fn &&
++            strcmp(g_fnprof.sites[i].space, space_text) == 0 &&
++            strcmp(g_fnprof.sites[i].pattern_head, head_text) == 0) {
++            site = i;
++            break;
++        }
++    }
++    if (site == g_fnprof.sites_len) {
++        if (!fnprof_grow((void **)&g_fnprof.sites, &g_fnprof.sites_cap,
++                         g_fnprof.sites_len + 1u, sizeof(*g_fnprof.sites)))
++            abort();
++        g_fnprof.sites_len++;
++        g_fnprof.sites[site].parent_fn = parent_fn;
++        g_fnprof.sites[site].space = space_text;
++        g_fnprof.sites[site].pattern_head = head_text;
++    } else {
++        free(space_text);
++        free(head_text);
++    }
++    uint32_t fn = fnprof_fn_index((SymbolId)(FNPROF_SITE_KEY_BASE + site));
++    FnprofFn *f = &g_fnprof.fns[fn];
++    f->calls++;
++    if (!f->name) {
++        const char *owner = g_fnprof.fns[parent_fn].name
++            ? g_fnprof.fns[parent_fn].name
++            : (g_fnprof.fns[parent_fn].head == SYMBOL_ID_NONE
++                   ? "<outside-equations>" : "?");
++        size_t len = strlen(owner) + strlen(g_fnprof.sites[site].space) +
++            strlen(g_fnprof.sites[site].pattern_head) + 24u;
++        f->name = malloc(len);
++        if (f->name)
++            snprintf(f->name, len, "match@%s %s (%s ...)", owner,
++                     g_fnprof.sites[site].space,
++                     g_fnprof.sites[site].pattern_head);
++        f->first_equation = fnprof_print(pattern);
++    }
++    if (!fnprof_grow((void **)&g_fnprof.frames, &g_fnprof.frames_cap,
++                     g_fnprof.frames_len + 1u, sizeof(FnprofFrame)))
++        abort();
++    uint32_t index = (uint32_t)g_fnprof.frames_len++;
++    uint32_t flags = FNPROF_F_USED;
++    uint32_t a = parent;
++    for (unsigned steps = 0; a != 0u && steps < 4096u; steps++) {
++        if (g_fnprof.frames[a].fn == fn) {
++            flags |= FNPROF_F_REC;
++            break;
++        }
++        a = g_fnprof.frames[a].parent;
++    }
++    g_fnprof.frames[index] = (FnprofFrame){.parent = parent, .fn = fn,
++                                           .flags = flags};
++    fnprof_switch(index);
++}
++
++static void fnprof_match_row(uint32_t frame) {
++    if (!fnprof_ready())
++        return;
++    g_fnprof.fns[g_fnprof.frames[frame].fn].candidates++;
++}
++
++static bool fnprof_count_results_to(uint32_t to) {
++    uint32_t a = g_fnprof.cur;
++    unsigned steps = 0;
++    while (a != to && a != 0u) {
++        if (++steps > 4096u) {
++            g_fnprof.ancestor_walk_limit_hits++;
++            return false;
++        }
++        a = g_fnprof.frames[a].parent;
++    }
++    if (a != to)
++        return false;
++    g_fnprof.result_walks++;
++    for (a = g_fnprof.cur; a != to; a = g_fnprof.frames[a].parent)
++        g_fnprof.fns[g_fnprof.frames[a].fn].results++;
++    return true;
++}
++
++static inline void fnprof_pop(uint32_t frame) {
++    if (!fnprof_ready() || frame == g_fnprof.cur)
++        return;
++    (void)fnprof_count_results_to(frame);
++    fnprof_switch(frame);
++}
++
++static void fnprof_emit(uint32_t base) {
++    if (!fnprof_ready())
++        return;
++    if (fnprof_count_results_to(base))
++        g_fnprof.emit_results++;
++}
++
++static void fnprof_resume(uint32_t frame) {
++    if (!fnprof_ready())
++        return;
++    fnprof_switch(frame);
++}
++
++static uint32_t fnprof_space_index(Space *space) {
++    uint64_t iid = space_instance_id(space);
++    for (size_t i = g_fnprof.spaces_len; i > 0; i--) {
++        if (g_fnprof.spaces[i - 1u].iid == iid)
++            return (uint32_t)(i - 1u);
++    }
++    if (!fnprof_grow((void **)&g_fnprof.spaces, &g_fnprof.spaces_cap,
++                     g_fnprof.spaces_len + 1u, sizeof(FnprofSpace)))
++        abort();
++    uint32_t index = (uint32_t)g_fnprof.spaces_len++;
++    g_fnprof.spaces[index] = (FnprofSpace){.iid = iid};
++    snprintf(g_fnprof.spaces[index].name, sizeof(g_fnprof.spaces[index].name),
++             "space#%" PRIu64, iid);
++    return index;
++}
++
++static FnprofEdge *fnprof_edge(uint32_t fn, uint32_t sp) {
++    if (g_fnprof.edges_len * 2u + 2u > g_fnprof.edge_slot_cap) {
++        size_t cap = g_fnprof.edge_slot_cap ? g_fnprof.edge_slot_cap * 2u : 4096u;
++        uint32_t *slots = calloc(cap, sizeof(*slots));
++        if (!slots)
++            abort();
++        for (size_t i = 0; i < g_fnprof.edges_len; i++) {
++            uint64_t key = ((uint64_t)g_fnprof.edges[i].fn << 32) | g_fnprof.edges[i].sp;
++            size_t h = (size_t)(key * 11400714819323198485ull >> 20) & (cap - 1u);
++            while (slots[h])
++                h = (h + 1u) & (cap - 1u);
++            slots[h] = (uint32_t)i + 1u;
++        }
++        free(g_fnprof.edge_slots);
++        g_fnprof.edge_slots = slots;
++        g_fnprof.edge_slot_cap = cap;
++    }
++    uint64_t key = ((uint64_t)fn << 32) | sp;
++    size_t mask = g_fnprof.edge_slot_cap - 1u;
++    size_t h = (size_t)(key * 11400714819323198485ull >> 20) & mask;
++    while (g_fnprof.edge_slots[h]) {
++        FnprofEdge *edge = &g_fnprof.edges[g_fnprof.edge_slots[h] - 1u];
++        if (edge->fn == fn && edge->sp == sp)
++            return edge;
++        h = (h + 1u) & mask;
++    }
++    if (!fnprof_grow((void **)&g_fnprof.edges, &g_fnprof.edges_cap,
++                     g_fnprof.edges_len + 1u, sizeof(FnprofEdge)))
++        abort();
++    uint32_t index = (uint32_t)g_fnprof.edges_len++;
++    g_fnprof.edges[index] = (FnprofEdge){.fn = fn, .sp = sp};
++    g_fnprof.edge_slots[h] = index + 1u;
++    return &g_fnprof.edges[index];
++}
++
++void cetta_fnprof_space_access(struct Space *space, const char *name) {
++    if (!space || !fnprof_ready())
++        return;
++    uint32_t sp = fnprof_space_index(space);
++    FnprofSpace *s = &g_fnprof.spaces[sp];
++    if (name && strncmp(s->name, "space#", 6) == 0)
++        snprintf(s->name, sizeof(s->name), "%s", name);
++    s->accesses++;
++    if (!s->accessed) {
++        s->accessed = true;
++        s->first_access_ns = fnprof_now() - g_fnprof.start_ns;
++    }
++    FnprofFrame *frame = &g_fnprof.frames[g_fnprof.cur];
++    frame->flags |= FNPROF_F_ACCESS;
++    FnprofEdge *edge = fnprof_edge(frame->fn, sp);
++    edge->accesses++;
++    uint64_t rev = space_revision(space);
++    if (edge->has_last && edge->last_rev != rev)
++        edge->rev_changes++;
++    edge->has_last = true;
++    edge->last_rev = rev;
++}
++
++void cetta_fnprof_space_mutation(struct Space *space, bool equation_relevant,
++                                 bool prefix_rewritten) {
++    if (!space || !fnprof_ready())
++        return;
++    uint32_t sp = fnprof_space_index(space);
++    FnprofSpace *s = &g_fnprof.spaces[sp];
++    uint64_t t = fnprof_now() - g_fnprof.start_ns;
++    if (!s->mutations)
++        s->first_mut_ns = t;
++    s->last_mut_ns = t;
++    s->mutations++;
++    if (prefix_rewritten)
++        s->rewritten++;
++    else
++        s->append_only++;
++    if (equation_relevant)
++        s->equation_mut++;
++    if (g_fnprof.cur != 0u)
++        s->mutations_in_functions++;
++    if (s->accessed)
++        s->mutations_after_first_access++;
++    FnprofFrame *frame = &g_fnprof.frames[g_fnprof.cur];
++    frame->flags |= FNPROF_F_WRITE | (equation_relevant ? FNPROF_F_WRITE_EQ : 0u);
++    FnprofEdge *edge = fnprof_edge(frame->fn, sp);
++    edge->writes++;
++    if (prefix_rewritten)
++        edge->writes_rewrite++;
++    else
++        edge->writes_append++;
++    if (equation_relevant)
++        edge->writes_eq++;
++}
++
++static void fnprof_json_string(FILE *out, const char *text) {
++    fputc('"', out);
++    for (const unsigned char *p = (const unsigned char *)(text ? text : "");
++         *p; p++) {
++        if (*p == '"' || *p == '\\')
++            fprintf(out, "\\%c", *p);
++        else if (*p < 0x20u)
++            fprintf(out, "\\u%04x", *p);
++        else
++            fputc(*p, out);
++    }
++    fputc('"', out);
++}
++
++static void fnprof_report(void) {
++    if (!g_fnprof.init || !pthread_equal(pthread_self(), g_fnprof.owner))
++        return;
++    fnprof_switch(0u);
++    uint64_t now = fnprof_now();
++    g_fnprof.frames[0].self_ns += now - g_fnprof.last_ns;
++    g_fnprof.last_ns = now;
++    const char *path = getenv("CETTA_FNPROF_OUT");
++    if (!path || !*path)
++        return;
++    size_t n = g_fnprof.frames_len;
++    uint64_t *incl = calloc(n ? n : 1u, sizeof(*incl));
++    uint32_t *iflags = calloc(n ? n : 1u, sizeof(*iflags));
++    if (!incl || !iflags)
++        return;
++    for (size_t i = 0; i < n; i++) {
++        incl[i] = g_fnprof.frames[i].self_ns;
++        iflags[i] = g_fnprof.frames[i].flags;
++    }
++    for (size_t i = n; i-- > 1u;) {
++        incl[g_fnprof.frames[i].parent] += incl[i];
++        iflags[g_fnprof.frames[i].parent] |= iflags[i];
++    }
++    for (size_t i = 0; i < n; i++) {
++        FnprofFn *fn = &g_fnprof.fns[g_fnprof.frames[i].fn];
++        fn->self_ns += g_fnprof.frames[i].self_ns;
++        fn->self_flags |= g_fnprof.frames[i].flags;
++        fn->incl_flags |= iflags[i];
++        if (i != 0u)
++            fn->frames++;
++        if (g_fnprof.frames[i].flags & FNPROF_F_REC)
++            fn->recursive_frames++;
++        else
++            fn->incl_ns += incl[i];
++    }
++    FILE *out = fopen(path, "w");
++    if (!out)
++        return;
++    fprintf(out, "{\"schema\":\"cetta-fnprof-v1\",\"total_ns\":%" PRIu64
++            ",\"frames\":%zu,\"switches\":%" PRIu64 ",\"frame_reuses\":%" PRIu64
++            ",\"other_thread_events\":%" PRIu64 ",\"result_walks\":%" PRIu64
++            ",\"emit_results\":%" PRIu64 ",\"ancestor_walk_limit_hits\":%" PRIu64
++            ",\n\"functions\":[\n",
++            now - g_fnprof.start_ns, n, g_fnprof.switches, g_fnprof.frame_reuses,
++            g_fnprof.other_thread_events, g_fnprof.result_walks,
++            g_fnprof.emit_results, g_fnprof.ancestor_walk_limit_hits);
++    for (size_t i = 0; i < g_fnprof.fns_len; i++) {
++        FnprofFn *fn = &g_fnprof.fns[i];
++        fputs(i ? ",\n{\"head\":" : "{\"head\":", out);
++        fnprof_json_string(out, fn->head == SYMBOL_ID_NONE
++                                    ? "<outside-equations>"
++                                    : fn->name ? fn->name
++                                    : symbol_bytes(g_symbols, fn->head));
++        fprintf(out, ",\"calls\":%" PRIu64 ",\"candidates\":%" PRIu64
++                ",\"results\":%" PRIu64 ",\"frames\":%" PRIu64
++                ",\"recursive_frames\":%" PRIu64 ",\"self_ns\":%" PRIu64
++                ",\"incl_ns\":%" PRIu64 ",\"self_eq_rev_changes\":%" PRIu64
++                ",\"self_data_rev_changes\":%" PRIu64
++                ",\"self_flags\":%u,\"incl_flags\":%u,\"first_equation\":",
++                fn->calls, fn->candidates, fn->results, fn->frames,
++                fn->recursive_frames, fn->self_ns, fn->incl_ns,
++                fn->eq_rev_changes, fn->data_rev_changes, fn->self_flags,
++                fn->incl_flags);
++        fnprof_json_string(out, fn->first_equation ? fn->first_equation : "");
++        fputc('}', out);
++    }
++    fputs("],\n\"spaces\":[\n", out);
++    for (size_t i = 0; i < g_fnprof.spaces_len; i++) {
++        FnprofSpace *s = &g_fnprof.spaces[i];
++        fputs(i ? ",\n{\"name\":" : "{\"name\":", out);
++        fnprof_json_string(out, s->name);
++        fprintf(out, ",\"accesses\":%" PRIu64 ",\"mutations\":%" PRIu64
++                ",\"append_only\":%" PRIu64 ",\"rewritten\":%" PRIu64
++                ",\"equation_mutations\":%" PRIu64
++                ",\"mutations_in_functions\":%" PRIu64
++                ",\"mutations_after_first_access\":%" PRIu64
++                ",\"first_access_ns\":%" PRIu64 ",\"first_mut_ns\":%" PRIu64
++                ",\"last_mut_ns\":%" PRIu64 "}",
++                s->accesses, s->mutations, s->append_only, s->rewritten,
++                s->equation_mut, s->mutations_in_functions,
++                s->mutations_after_first_access, s->first_access_ns,
++                s->first_mut_ns, s->last_mut_ns);
++    }
++    fputs("],\n\"edges\":[\n", out);
++    for (size_t i = 0; i < g_fnprof.edges_len; i++) {
++        FnprofEdge *e = &g_fnprof.edges[i];
++        fprintf(out, "%s{\"fn\":%u,\"space\":%u,\"accesses\":%" PRIu64
++                ",\"writes\":%" PRIu64 ",\"writes_append\":%" PRIu64
++                ",\"writes_rewrite\":%" PRIu64 ",\"writes_eq\":%" PRIu64
++                ",\"rev_changes_between_accesses\":%" PRIu64 "}",
++                i ? ",\n" : "", e->fn, e->sp, e->accesses, e->writes,
++                e->writes_append, e->writes_rewrite, e->writes_eq,
++                e->rev_changes);
++    }
++    fputs("]}\n", out);
++    fclose(out);
++    free(incl);
++    free(iflags);
++}
++#endif /* CETTA_FNPROF */
++
+ typedef struct {
+     CettaProducerReads reads;
+     bool checked;
+@@ -462,6 +1079,9 @@ typedef struct {
+     bool ready_branches : 1;
+     /* Cold scope receipts share existing resume/commit goal kinds. */
+     uint8_t open_scope_kind;
++#if CETTA_FNPROF
++    uint32_t fnprof_frame;
++#endif
+ } PettaGoal;
+ 
+ _Static_assert(sizeof(((PettaGoal *)0)->native_return) <=
+@@ -819,6 +1439,9 @@ typedef struct {
+ 
+ typedef struct {
+     PettaChoiceKind kind;
++#if CETTA_FNPROF
++    uint32_t fnprof_frame;
++#endif
+     /* PeTTa's search context is binding-only: it cannot acquire a scratch
+      * arena through search_context_scratch().  The generic product
+      * checkpoint would therefore store an inert ArenaMark in every live
+@@ -1607,6 +2230,9 @@ struct PettaMachineImpl {
+     uint64_t next_goal_instance;
+     uint64_t current_source_root;
+     uint64_t query_source_root;
++#if CETTA_FNPROF
++    uint32_t fnprof_base;
++#endif
+     size_t heap_collect_after;
+     /* What the last heap collection copied: the next waits for twice as
+      * much new allocation. */
+@@ -5276,6 +5902,9 @@ static bool petta_goal_push(PettaMachineImpl *machine, const PettaGoal *goal) {
+         return false;
+     PettaGoal *stored = &machine->goals[machine->goal_len++];
+     *stored = *goal;
++#if CETTA_FNPROF
++    stored->fnprof_frame = fnprof_stamp(stored->fnprof_frame);
++#endif
+     if (!stored->source_root)
+         stored->source_root = machine->current_source_root;
+     stored->manufacture_epoch = manufacture_epoch;
+@@ -5505,6 +6134,9 @@ static bool petta_choice_push_at_goal_trail_mark(
+     }
+     if (!choice.source_root)
+         choice.source_root = machine->current_source_root;
++#if CETTA_FNPROF
++    choice.fnprof_frame = fnprof_stamp(choice.fnprof_frame);
++#endif
+     /*
+      * The first equation alternative may be selected before its choice record
+      * is installed.  In that case the original continuation remains the
+@@ -19349,6 +19981,22 @@ static bool petta_machine_advance_choice(
+ 
+     if (!choice->source_root)
+         choice->source_root = machine->current_source_root;
++#if CETTA_FNPROF
++    if (fnprof_ready()) {
++        if (!choice->fnprof_frame)
++            choice->fnprof_frame = g_fnprof.cur;
++        g_fnprof.frames[choice->fnprof_frame].flags |= FNPROF_F_USED;
++        fnprof_resume(choice->fnprof_frame);
++        if (choice->kind == PETTA_CHOICE_MATCH)
++            fnprof_match_row(choice->fnprof_frame);
++        if (choice->kind == PETTA_CHOICE_EQUATION &&
++            choice->as.equation.next_equation == 0u)
++            fnprof_call(choice->as.equation.query_head
++                            ? choice->as.equation.query_head
++                            : choice->as.equation.query,
++                        machine->space);
++    }
++#endif
+     /* Matching and body scheduling use the declaration root. Returning to
+      * the caller, including after a failed candidate, restores its origin. */
+     __attribute__((cleanup(petta_source_context_restore)))
+@@ -19419,6 +20067,9 @@ static bool petta_machine_advance_choice(
+                     choice->as.equation.selection_first, selected_index);
+             machine->current_source_root = candidate.source_root
+                 ? candidate.source_root : choice->source_root;
++#if CETTA_FNPROF
++            fnprof_candidate(candidate.equation, choice->fnprof_frame);
++#endif
+             const bool directional = candidate.activation_layout.binding == CETTA_RULE_BIND_HEAD;
+             /* An equation whose body binds variables of its own, with no
+              * closed template, keeps them in its activation's slot frame
+@@ -28637,6 +29288,9 @@ static bool petta_machine_start_ready_match_mode(
+         !expected || !failure) {
+         return false;
+     }
++#if CETTA_FNPROF
++    fnprof_match_site(reference, pattern);
++#endif
+     /* A match answers its template, and a template that is not a finite
+      * tree is no answer (P-GRAPH-3): a space holds finite terms only, so the
+      * match cannot make the template finite. */
+@@ -41766,6 +42420,9 @@ static bool petta_machine_init_internal(
+     impl->instance_id = petta_machine_fresh_instance_id();
+     impl->query_source_root = source_root;
+     impl->current_source_root = source_root;
++#if CETTA_FNPROF
++    impl->fnprof_base = fnprof_ready() ? g_fnprof.cur : 0u;
++#endif
+     impl->identity_exhaustions = cetta_frame_identity_exhaustions();
+     impl->identity_mints_seen = cetta_frame_identity_thread_mints();
+     impl->space = space;
+@@ -42224,6 +42881,9 @@ static PettaMachineStep petta_machine_next_local(
+             return impl->terminal_step;
+         }
+         if (impl->goal_len == 0u) {
++#if CETTA_FNPROF
++            fnprof_emit(impl->fnprof_base);
++#endif
+             if (!petta_machine_emit(impl, answer, environment)) {
+                 impl->terminal = true;
+                 impl->terminal_step = PETTA_MACHINE_STEP_CAPACITY;
+@@ -42234,6 +42894,9 @@ static PettaMachineStep petta_machine_next_local(
+         }
+ 
+         PettaGoal goal = impl->goals[--impl->goal_len];
++#if CETTA_FNPROF
++        fnprof_pop(goal.fnprof_frame);
++#endif
+         impl->manufacture_epoch = goal.manufacture_epoch;
+         impl->current_source_root = goal.source_root;
+         uint32_t body_resume_steps = 0u;
+@@ -42495,6 +43158,11 @@ void petta_machine_destroy(PettaMachine *machine) {
+     if (!machine || !machine->impl)
+         return;
+     PettaMachineImpl *impl = machine->impl;
++#if CETTA_FNPROF
++    /* Back to the frame that started this machine: the next top-level query
++     * (or the parent after a child machine) is not inside this one's frames. */
++    uint32_t fnprof_base = impl->fnprof_base;
++#endif
+     impl->destroy_parent = NULL;
+     impl->destroy_handle = machine;
+     for (;;) {
+@@ -42521,8 +43189,12 @@ void petta_machine_destroy(PettaMachine *machine) {
+         PettaMachine *handle = impl->destroy_handle;
+         petta_machine_destroy_local(impl);
+         handle->impl = NULL;
+-        if (!parent)
++        if (!parent) {
++#if CETTA_FNPROF
++            fnprof_resume(fnprof_base);
++#endif
+             return;
++        }
+         free(handle);
+         impl = parent;
+     }
+diff --git a/src/space.c b/src/space.c
+index bc43bc2d..46898965 100644
+--- a/src/space.c
++++ b/src/space.c
+@@ -32,6 +32,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <strings.h>
++#include "cetta_fnprof.h"
+ 
+ static __attribute__((noinline, cold)) bool space_proof_prepare_mutation_slow(Space *);
+ /* Selected storage is not a module-own view: both constructors of such
+@@ -10906,6 +10907,14 @@ static void space_publish_mutation(
+         abort();
+     }
+     s->revision++;
++#if CETTA_FNPROF
++    cetta_fnprof_space_mutation(
++        s,
++        (equation_projection &
++         (SPACE_MUTATION_EQUATION_PROJECTION_RELEVANT |
++          SPACE_MUTATION_EQUATION_PROJECTION_OPAQUE)) != 0,
++        prefix_effect == SPACE_MUTATION_PREFIX_REWRITTEN);
++#endif
+     if (prefix_effect == SPACE_MUTATION_PREFIX_REWRITTEN) {
+         s->prefix_epoch = space_fresh_prefix_epoch();
+     } else if (prefix_effect != SPACE_MUTATION_PREFIX_APPEND_ONLY) {
+-- 
+2.34.1
+
