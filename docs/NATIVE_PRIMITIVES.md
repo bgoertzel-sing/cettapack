@@ -4,7 +4,33 @@ Task t-2026-11-26-cettapack-native-primitives (goal 2026-11-24-cettapack-roadmap
 Branch hive/t-2026-11-26-cettapack-native-primitives. **Started from the S1 branch head f5bac2a (main efcfdd3 + S0
 f8126a1 + S1), not main**: neither S0 nor S1 is merged into main.
 
-<!-- SUMMARY -->
+## Summary
+
+**Question.** Can native primitives for PeTTaChainer's frontier priority queue and proof store, added as CeTTa patch
+files, cut real PeTTaChainer run time on w1-w3 with byte-identical answers?
+
+**Answer: no measurable end-to-end gain; the time is not in heap or store operations.** Measured per row (Do 1): CeTTa
+a9b3a811 *already* runs PeTTaChainer's heap inserts natively (src/petta_priority_heap.c); the only heap operation
+still going through SWI-Prolog is PeTTaChainer's own `heap_pop` helper, which converts the whole heap term both ways
+on every pop: **0.3% / 0.6% / 1.4%** of w1/w2/w3. The order's top rows (advance-frontier-waiter-heap,
+spawn-frontier-goal-heap) contain no heap operation at all: their time is interpreting long function bodies (equation
+selection, matching, dispatch, allocation, copying, hashing). The proof-store rows (5-14% of the runs) make no Prolog
+calls and are per-call interpretation too; a native lookup could take at most about 1-3% and would need PeTTaChainer
+edits, so it was not built. externalize-compiled-addition (w3's 7%) is a recursive term walk during KB ingestion.
+The one primitive worth building, a native `heap_pop` (patch 0010, opt-in through a one-line shim file; PeTTaChainer
+unchanged), answers exactly as SWI: all **6,148** real pops in w1-w3 were computed both ways with identical results,
+7 of 7 bag-test programs pass (4,208 pops, including tie order, duplicates, int/float ties, empty pops, large heaps),
+and all 390 w1-w3 file-runs of this task (profiling, check mode, 364 benchmark file-runs) answer byte-identically to
+S0. It cuts the pop's own row to 0.23-0.66x and
+**peak memory by about a third (w1 181 -> 119 MB, w3 356 -> 220 MB)**, but end to end the paired user-time ratio is
+1.006 / 0.989 / 0.985 (w1/w2/w3, RUNS=5): w1 and w2 inside noise, w3 a 1.5% gain smaller than the base-vs-base
+spread. It does not beat the noise.
+
+**Open / for the reader.** (1) Running the shim as a first file makes w1 about 9% faster by itself (base vs base, every
+row alike); that is a process effect, not the primitive, and is separated out (section 5). (2) The larger Prolog
+costs are `copy_term` (1.5-3.7%) and `cyclic_term` checks (0.9-1.2%), both CeTTa-side conversions; even together they
+are small next to per-call interpretation, which is where S1/S2 point. (3) Whether to keep 0010 for its memory
+saving is a choice for andy/Ben; nothing was sent to Zar's CeTTa.
 
 ## 1. Inputs and pins
 
@@ -132,8 +158,8 @@ against the silent failure that the shim does nothing (it caught exactly that on
 - **w1-w3 end to end, check mode** (evidence/np-2026-11-26/check/checks.md): 13 of 13 file-runs pass; every one of the
   **6,148 heap_pop calls** of w1-w3 was computed natively and by SWI-Prolog and the two answers were identical (0
   differences, 0 declines).
-- **w1-w3 end to end, on and off**: every file-run of the benchmark (section 5) passes its check line; stdout
-  byte-identical to S0's in all of them.
+- **w1-w3 end to end, on and off**: all 364 benchmark file-runs (section 5: bench 130, bench-aa 78, bench-offon
+  130, bench-off 26) and the 13 Do 1 file-runs pass their check lines; stdout byte-identical to S0's in all of them.
 - **Bag tests** (bench/np/gen_heap_bagtests.py, seed 20261126; bench/np/run_bagtests.sh; evidence/np-2026-11-26/
   bagtest/summary.md): seven PeTTa programs, each importing PeTTaChainer
   as its examples do and running heap operation sequences through PeTTaChainer's own heap functions, each run in four
@@ -161,7 +187,63 @@ against the silent failure that the shim does nothing (it caught exactly that on
 
 ## 5. Benchmark (acceptance 3)
 
-<!-- BENCH -->
+Same binary (`on`: profiler on, as S0 ran it) in both arms, interleaved per run, every w1-w3 file-run, one lock per
+batch (ledger.txt: start/end time and load average per batch; S2's batches ran between ours). User seconds are summed
+over a workload's files per run; ratios are new/base of the same batch; median (min-max). Answers: every file-run of
+every arm is byte-identical to S0's stdout and passes its check line (checks.md in each directory); in every native
+arm all heap_pop calls were answered natively (w1 8,290 / w2 7,435 / w3 15,015 over 5 runs; 0 declined).
+
+**5.1 Against the S0 configuration** (the order's comparison: base = S0's command line, no shim; new = shim on;
+RUNS=5; evidence/np-2026-11-26/bench/summary.md):
+
+| workload | file-runs | answers as S0 | base user s | new user s | paired user ratio new/base | paired wall ratio | peak RSS MB base -> new |
+|---|---|---|---|---|---|---|---|
+| w1-examples | 110 | 110 of 110 | 48.5 (40.5-54.5) | 45.6 (39.8-54.8) | 0.984 (0.935-1.006) | 0.983 (0.933-1.004) | 163 -> 119 |
+| w2-wmtm | 10 | 10 of 10 | 23.6 (20.5-30.6) | 24.2 (19.6-28.1) | 0.957 (0.916-1.056) | 0.957 (0.911-1.056) | 126 -> 123 |
+| w3-benchgen | 10 | 10 of 10 | 75.2 (66.4-84.5) | 68.9 (62.8-92.2) | 0.955 (0.914-1.091) | 0.953 (0.913-1.093) | 349 -> 219 |
+
+**5.2 Base vs base** (the noise and a confound; base = S0's command line, new = the shim file run first with the
+switch *off*, so no native call; RUNS=3; bench-aa/summary.md): w1 0.911 (0.837-0.934), w2 0.999 (0.921-1.092), w3
+1.021 (0.970-1.023); peak RSS w1 163 -> 181 MB. Running any first file in the same process makes w1 about 9% faster
+on every profiler row alike (each row 0.84-0.94x) and adds 18 MB; w2 and w3 move within noise. That is a process
+effect of the two-file invocation (the cause was not traced; plausibly allocator and Prolog-runtime state set up
+before PeTTaChainer loads), not the primitive, and it is part of 5.1's w1 numbers.
+
+**5.3 The primitive alone** (both arms run the shim file; base = switch off, new = switch on; RUNS=5; a quieter
+host, load 3-4.5; bench-offon/summary.md):
+
+| workload | file-runs | answers as S0 | base user s | new user s | paired user ratio new/base | paired wall ratio | peak RSS MB base -> new |
+|---|---|---|---|---|---|---|---|
+| w1-examples | 110 | 110 of 110 | 39.3 (38.5-40.2) | 39.6 (38.9-40.6) | 1.006 (0.977-1.033) | 1.006 (0.976-1.032) | 181 -> 119 |
+| w2-wmtm | 10 | 10 of 10 | 20.4 (20.1-20.9) | 20.1 (19.8-23.8) | 0.989 (0.957-1.141) | 0.989 (0.957-1.142) | 127 -> 123 |
+| w3-benchgen | 10 | 10 of 10 | 64.9 (63.9-71.2) | 63.9 (62.9-66.0) | 0.985 (0.925-0.989) | 0.983 (0.925-0.987) | 356 -> 220 |
+
+**5.4 Profiler rows before -> after** (self seconds, sum over the workload's files, median over runs; full tables with
+ranges in the summary.md files):
+
+| comparison, workload | advance-frontier-waiter-heap | spawn-frontier-goal-heap | commit-proof-candidate-heap | proof-output-key-by-id | goal-merged-proof-ids | externalize-compiled-addition | search-agenda-heap (the pop) |
+|---|---|---|---|---|---|---|---|
+| 5.1, w1 | 6.44 -> 6.28 | 2.61 -> 2.50 | 3.42 -> 3.20 | 1.76 -> 1.70 | 1.30 -> 1.16 | 0.45 -> 0.42 | 0.51 -> 0.31 |
+| 5.1, w2 | 1.72 -> 1.81 | 1.71 -> 1.73 | 0.62 -> 0.65 | 0.39 -> 0.42 | 0.92 -> 0.92 | 0.58 -> 0.63 | 0.34 -> 0.18 |
+| 5.1, w3 | 2.84 -> 2.88 | 2.08 -> 2.05 | 1.45 -> 1.44 | 0.59 -> 0.44 | 1.35 -> 1.32 | 5.55 -> 4.86 | 1.56 -> 0.38 |
+| 5.3, w1 | 5.26 -> 5.38 | 2.13 -> 2.19 | 2.70 -> 2.76 | 1.47 -> 1.46 | 1.02 -> 1.01 | 0.35 -> 0.35 | 0.42 -> 0.27 |
+| 5.3, w2 | 1.49 -> 1.49 | 1.47 -> 1.44 | 0.53 -> 0.53 | 0.35 -> 0.34 | 0.81 -> 0.77 | 0.50 -> 0.51 | 0.29 -> 0.15 |
+| 5.3, w3 | 2.57 -> 2.55 | 1.88 -> 1.86 | 1.32 -> 1.27 | 0.38 -> 0.38 | 1.21 -> 1.21 | 4.58 -> 4.73 | 1.44 -> 0.34 |
+
+Only the pop's row moves beyond noise: 0.66x / 0.52x / 0.23x of itself in 5.3 (0.42 -> 0.27 s, 0.29 -> 0.15 s,
+1.44 -> 0.34 s); the order's named top rows and the proof-store rows do not change (they never pop).
+
+**5.5 Profiler off** (one pair per workload, build `off`, base = S0's command line, new = shim on; bench-off/
+summary.md): w1 1.053, w2 0.981, w3 0.969; peak RSS w1 154 -> 108, w3 311 -> 181 MB.
+
+**Does it beat the noise?** No, not end to end. In 5.1 every paired range straddles 1.0 (and w1's median there
+includes the 5.2 invocation effect). In 5.3, the clean comparison, w1 and w2 straddle 1.0; w3's range (0.925-0.989)
+stays below 1.0, but its median gain, 1.5%, is smaller than the base-vs-base spread (w3 0.970-1.023 in 5.2), so by
+the order's criterion it is not shown to beat noise either. It is consistent with what Do 1 bounded: the pop's row
+saves 1.1 s of 65 s on w3 (1.7%), 0.15 s of 39 s on w1 (0.4%). **Peak memory** is the measurable gain: -34% on w1
+(181 -> 119 MB) and -38% on w3 (356 -> 220 MB) in 5.3, every run (ranges of 1 MB). Inferred, not measured
+separately: converting the whole heap into SWI-Prolog on every pop grows SWI's stacks and CeTTa's conversion
+arenas, and the native pop avoids both.
 
 ## 6. Interpretation decisions (dispatcher's, followed)
 
@@ -203,6 +285,7 @@ BUILD=on SHIM=check bench/np/run_workloads.sh evidence/np-2026-11-26/check      
 BUILD=on bench/np/run_bagtests.sh evidence/np-2026-11-26/bagtest
 BUILD=on BASE_SHIM=none NEW_SHIM=off RUNS=3 bench/np/run_bench.sh evidence/np-2026-11-26/bench-aa   # base vs base
 BUILD=on RUNS=5 bench/np/run_bench.sh evidence/np-2026-11-26/bench                               # base vs native
+BUILD=on BASE_SHIM=off NEW_SHIM=on RUNS=5 bench/np/run_bench.sh evidence/np-2026-11-26/bench-offon  # primitive alone
 BUILD=off RUNS=1 bench/np/run_bench.sh evidence/np-2026-11-26/bench-off                          # profiler off
 bash bench/np/recompute_np.sh      # every table above, byte for byte
 ```
@@ -213,5 +296,5 @@ bash bench/np/recompute_np.sh      # every table above, byte for byte
 - bench/np/: build_np_cetta.sh, run_workloads.sh, run_bench.sh, run_bagtests.sh, gen_heap_bagtests.py,
   bagtest/common.inc, row_breakdown.py, summarize_checks.py, summarize_bagtests.py, summarize_bench.py, recompute_np.sh.
 - evidence/np-2026-11-26/: do1/ (profiles, gzipped samples + SAMPLES.sha256, breakdown.md/json, checks.md, ledger),
-  check/, bagtest/, bench/, bench-aa/, bench-off/ (raw stdout/stderr/time/exit/check per file-run, env files, ledgers,
+  check/, bagtest/, bench/, bench-aa/, bench-offon/, bench-off/ (raw stdout/stderr/time/exit/check per file-run, env files, ledgers,
   summaries), binaries.txt, make-test.log.

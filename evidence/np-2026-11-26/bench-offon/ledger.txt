@@ -1,0 +1,10 @@
+batch r=1 order=off on start=2026-11-26T20:21:18Z load_start=3.23 4.00 4.93
+batch r=1 end=2026-11-26T20:25:39Z load_end=3.30 3.66 4.55
+batch r=2 order=on off start=2026-11-26T20:25:39Z load_start=3.30 3.66 4.55
+batch r=2 end=2026-11-26T20:29:51Z load_end=3.22 3.26 4.16
+batch r=3 order=off on start=2026-11-26T20:29:51Z load_start=3.22 3.26 4.16
+batch r=3 end=2026-11-26T20:34:03Z load_end=2.83 3.04 3.85
+batch r=4 order=on off start=2026-11-26T20:34:03Z load_start=2.83 3.04 3.85
+batch r=4 end=2026-11-26T20:38:13Z load_end=3.04 3.06 3.66
+batch r=5 order=off on start=2026-11-26T20:38:13Z load_start=3.04 3.06 3.66
+batch r=5 end=2026-11-26T20:42:32Z load_end=4.11 3.50 3.68

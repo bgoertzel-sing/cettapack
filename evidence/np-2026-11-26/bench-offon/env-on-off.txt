@@ -1,0 +1,195 @@
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=aa3e2c309079e431c07ad388fe0543cb8c0b9280 dirty=2
+host=pop-os nproc=8 date=2026-11-26T20:21:19Z load=3.23 4.00 4.93
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=ce9e058273baeeafc39f728287ab6cbceed08656 dirty=1
+host=pop-os nproc=8 date=2026-11-26T20:22:39Z load=2.95 3.73 4.76
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=ce9e058273baeeafc39f728287ab6cbceed08656 dirty=1
+host=pop-os nproc=8 date=2026-11-26T20:23:25Z load=3.79 3.85 4.74
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=ce9e058273baeeafc39f728287ab6cbceed08656 dirty=1
+host=pop-os nproc=8 date=2026-11-26T20:26:20Z load=3.01 3.55 4.47
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=ce9e058273baeeafc39f728287ab6cbceed08656 dirty=1
+host=pop-os nproc=8 date=2026-11-26T20:27:21Z load=2.83 3.40 4.36
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=ce9e058273baeeafc39f728287ab6cbceed08656 dirty=1
+host=pop-os nproc=8 date=2026-11-26T20:28:46Z load=2.92 3.28 4.24
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=ce9e058273baeeafc39f728287ab6cbceed08656 dirty=1
+host=pop-os nproc=8 date=2026-11-26T20:29:51Z load=3.20 3.26 4.16
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=ce9e058273baeeafc39f728287ab6cbceed08656 dirty=1
+host=pop-os nproc=8 date=2026-11-26T20:31:14Z load=3.05 3.20 4.06
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=ce9e058273baeeafc39f728287ab6cbceed08656 dirty=1
+host=pop-os nproc=8 date=2026-11-26T20:31:55Z load=2.96 3.16 4.00
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=ce9e058273baeeafc39f728287ab6cbceed08656 dirty=1
+host=pop-os nproc=8 date=2026-11-26T20:34:43Z load=2.78 3.00 3.80
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=ce9e058273baeeafc39f728287ab6cbceed08656 dirty=1
+host=pop-os nproc=8 date=2026-11-26T20:35:44Z load=3.00 3.03 3.76
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=ce9e058273baeeafc39f728287ab6cbceed08656 dirty=1
+host=pop-os nproc=8 date=2026-11-26T20:37:08Z load=3.11 3.06 3.71
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=ce9e058273baeeafc39f728287ab6cbceed08656 dirty=1
+host=pop-os nproc=8 date=2026-11-26T20:38:13Z load=3.04 3.06 3.66
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=ce9e058273baeeafc39f728287ab6cbceed08656 dirty=1
+host=pop-os nproc=8 date=2026-11-26T20:39:33Z load=3.30 3.12 3.63
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
+tag=on-off build=on shim=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-on/cetta foreign=0
+cetta_sha256=d7335df37bf33e32a136eb2bc1fd3e4eb9db5831738eee12be275a6801d8cd63
+cetta_build_head=ce40a9d9d8635946799fb67341f43c1da516a094 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=ce9e058273baeeafc39f728287ab6cbceed08656 dirty=1
+host=pop-os nproc=8 date=2026-11-26T20:40:14Z load=3.21 3.12 3.61
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6
+file np_heaps.metta sha256=68b59f89944afa42faa2c6602a302bee1583d9cc8c6db566e8d3127ca48761d0
+file np_heaps_off.metta sha256=643b5e355b3d4f05abbc8937e4aa4d1859303414772f6ea6f62103d5ad010258
