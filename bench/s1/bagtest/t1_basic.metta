@@ -1,0 +1,17 @@
+;; S1 bag test t1: forward-register-base-rate!'s interest match (compiled site fwd_register_base_rate_interest)
+;; alpha-variants hit the stored row (no new row); non-variants, other extractors and inits add rows.
+;; 12 site calls; expected route with CETTA_S1_SITES=1: 12 specialised.
+!(cpk-reg kb1 (Inheritance $x c1))
+!(cpk-reg kb1 (Inheritance $y c1))
+!(cpk-reg kb1 (Inheritance $x c2))
+!(cpk-reg kb1 (Inheritance a c1))
+!(cpk-reg kb1 (Inheritance a c1))
+!(cpk-reg kb1 (Inheritance $x $x))
+!(cpk-reg kb1 (Inheritance $u $v))
+!(cpk-reg kb1 (Inheritance $p $p))
+!(cpk-reg-init kb1 (Inheritance $x c1) 1.0)
+!(cpk-reg-inh kb1 (Inheritance $x c1))
+!(cpk-reg-inh kb1 (Inheritance $z c1))
+!(cpk-reg kb2 (Inheritance $x c1))
+!(cpk-rows)
+!(size-atom (cpk-rows))

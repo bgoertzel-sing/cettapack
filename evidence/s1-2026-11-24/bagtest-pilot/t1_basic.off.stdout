@@ -1,0 +1,15 @@
+true
+()
+()
+()
+()
+()
+()
+()
+()
+()
+()
+()
+()
+(((fwd_trigger kb1 Inheritance) 0 kb1 (Inheritance $V0 c1) extract-tv (BaseRateEvidence 0.0 0.0) BaseRateAcc base-rate result-tv) ((fwd_trigger kb1 Inheritance) 1 kb1 (Inheritance $V1 c2) extract-tv (BaseRateEvidence 0.0 0.0) BaseRateAcc base-rate result-tv) ((fwd_trigger kb1 Inheritance) 2 kb1 (Inheritance a c1) extract-tv (BaseRateEvidence 0.0 0.0) BaseRateAcc base-rate result-tv) ((fwd_trigger kb1 Inheritance) 3 kb1 (Inheritance $V2 $V2) extract-tv (BaseRateEvidence 0.0 0.0) BaseRateAcc base-rate result-tv) ((fwd_trigger kb1 Inheritance) 4 kb1 (Inheritance $V3 $V4) extract-tv (BaseRateEvidence 0.0 0.0) BaseRateAcc base-rate result-tv) ((fwd_trigger kb1 Inheritance) 5 kb1 (Inheritance $V5 c1) extract-tv (BaseRateEvidence 1.0 0.0) BaseRateAcc base-rate result-tv) ((fwd_trigger kb1 Inheritance) 6 kb1 (Inheritance $V6 c1) (extract-inheritance-tv kb1 (Inheritance $V6 c1)) (BaseRateEvidence 0.0 0.0) WeightedBaseRateAcc (weighted-base-rate-in-universe kb1) result-tv) ((fwd_trigger kb2 Inheritance) 7 kb2 (Inheritance $V7 c1) extract-tv (BaseRateEvidence 0.0 0.0) BaseRateAcc base-rate result-tv))
+8

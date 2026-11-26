@@ -1,0 +1,944 @@
+{
+ "w1-examples": {
+  "by_module_self": {
+   "<other>": 1441,
+   "<outside any equation>": 4402,
+   "backward_chainer.metta": 90604,
+   "backward_proof_store.metta": 19173,
+   "chainer_runtime_core.metta": 20,
+   "chainer_utils.metta": 12009,
+   "compile.metta": 2860,
+   "compiled_query_runtime.metta": 1052,
+   "fold_inverse.metta": 10,
+   "forward_chainer.metta": 724,
+   "lib/lib_import.metta": 28,
+   "lib/lib_roman.metta": 1223,
+   "lib/lib_spaces.metta": 1,
+   "logic_config.metta": 26,
+   "petta_chainer.metta": 2675,
+   "query_runtime.metta": 5,
+   "tv_formulas.metta": 755
+  },
+  "categories_all": {
+   "allocation and freeing": 18768,
+   "choice points, trail and backtracking": 1832,
+   "copying and instantiation": 14004,
+   "equation selection and call preparation": 28983,
+   "goal dispatch and evaluation": 20730,
+   "grounded ops and arithmetic": 1787,
+   "hashing, interning and term universe": 12305,
+   "matching, unification and fact iteration": 31070,
+   "other machine": 26,
+   "prolog (SWI-Prolog and the foreign boundary)": 6528,
+   "space mutation (add/remove atoms)": 975
+  },
+  "files": [
+   "prof-pilot.w1-examples.base_rate_acceptance_game_pettachainer.r1.sym.json",
+   "prof-pilot.w1-examples.deductionrevision.r1.sym.json",
+   "prof-pilot.w1-examples.direct.r1.sym.json",
+   "prof-pilot.w1-examples.existential_residual.r1.sym.json",
+   "prof-pilot.w1-examples.flyingraven.r1.sym.json",
+   "prof-pilot.w1-examples.machine_failure_inversion.r1.sym.json",
+   "prof-pilot.w1-examples.raveninduction.r1.sym.json",
+   "prof-pilot.w1-examples.raveninduction_implication_pettachainer.r1.sym.json",
+   "prof-pilot.w1-examples.smokes.r1.sym.json",
+   "prof-pilot.w1-examples.stationops_fold_inverse.r1.sym.json",
+   "prof-pilot.w1-examples.toothbrush.r1.sym.json",
+   "prof-r2.w1-examples.base_rate_acceptance_game_pettachainer.r2.sym.json",
+   "prof-r2.w1-examples.base_rate_acceptance_game_pettachainer.r3.sym.json",
+   "prof-r2.w1-examples.deductionrevision.r2.sym.json",
+   "prof-r2.w1-examples.deductionrevision.r3.sym.json",
+   "prof-r2.w1-examples.direct.r2.sym.json",
+   "prof-r2.w1-examples.direct.r3.sym.json",
+   "prof-r2.w1-examples.existential_residual.r2.sym.json",
+   "prof-r2.w1-examples.existential_residual.r3.sym.json",
+   "prof-r2.w1-examples.flyingraven.r2.sym.json",
+   "prof-r2.w1-examples.flyingraven.r3.sym.json",
+   "prof-r2.w1-examples.machine_failure_inversion.r2.sym.json",
+   "prof-r2.w1-examples.machine_failure_inversion.r3.sym.json",
+   "prof-r2.w1-examples.raveninduction.r2.sym.json",
+   "prof-r2.w1-examples.raveninduction.r3.sym.json",
+   "prof-r2.w1-examples.raveninduction_implication_pettachainer.r2.sym.json",
+   "prof-r2.w1-examples.raveninduction_implication_pettachainer.r3.sym.json",
+   "prof-r2.w1-examples.smokes.r2.sym.json",
+   "prof-r2.w1-examples.smokes.r3.sym.json",
+   "prof-r2.w1-examples.stationops_fold_inverse.r2.sym.json",
+   "prof-r2.w1-examples.stationops_fold_inverse.r3.sym.json",
+   "prof-r2.w1-examples.toothbrush.r2.sym.json",
+   "prof-r2.w1-examples.toothbrush.r3.sym.json"
+  ],
+  "profiler_samples": 9576,
+  "samples": 146584,
+  "samples_without_profiler": 137008,
+  "search_counts": {
+   "functions.calls": 663351,
+   "functions.candidates": 510480,
+   "functions.extra_candidates": 88281,
+   "functions.frames": 2827791,
+   "functions.results": 752316,
+   "functions.rows": 5286,
+   "functions.with_more_candidates_than_calls": 687,
+   "match sites.calls": 41430,
+   "match sites.candidates": 56634,
+   "match sites.frames": 58218,
+   "match sites.results": 37614
+  },
+  "search_incl": 126183,
+  "search_incl_categories": {
+   "allocation and freeing": 17022,
+   "choice points, trail and backtracking": 1754,
+   "copying and instantiation": 12868,
+   "equation selection and call preparation": 27732,
+   "goal dispatch and evaluation": 19084,
+   "grounded ops and arithmetic": 1665,
+   "hashing, interning and term universe": 10972,
+   "matching, unification and fact iteration": 28626,
+   "prolog (SWI-Prolog and the foreign boundary)": 5577,
+   "space mutation (add/remove atoms)": 883
+  },
+  "search_self": 109777,
+  "search_self_categories": {
+   "allocation and freeing": 14933,
+   "choice points, trail and backtracking": 1537,
+   "copying and instantiation": 11637,
+   "equation selection and call preparation": 22575,
+   "goal dispatch and evaluation": 16935,
+   "grounded ops and arithmetic": 1395,
+   "hashing, interning and term universe": 9767,
+   "matching, unification and fact iteration": 26177,
+   "prolog (SWI-Prolog and the foreign boundary)": 4027,
+   "space mutation (add/remove atoms)": 794
+  },
+  "search_self_top_functions": [
+   [
+    "prepared_pure_program_cache_has_decline_head",
+    5924
+   ],
+   [
+    "__default_morecore@libc.so.6",
+    5060
+   ],
+   [
+    "bindings_apply_fold_impl",
+    2033
+   ],
+   [
+    "malloc@libc.so.6",
+    2021
+   ],
+   [
+    "__nss_database_lookup@libc.so.6",
+    1911
+   ],
+   [
+    "timer_settime@libc.so.6",
+    1653
+   ],
+   [
+    "free@libc.so.6",
+    1249
+   ],
+   [
+    "petta_eval_open_foreign_reads_current",
+    1247
+   ],
+   [
+    "atom_has_vars",
+    1183
+   ],
+   [
+    "bindings_lookup_value_id",
+    1048
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    1022
+   ],
+   [
+    "petta_eval_open_program_lookup_locked",
+    985
+   ],
+   [
+    "atom_summary_add_ids",
+    849
+   ],
+   [
+    "petta_table_safety_scan_relation",
+    819
+   ],
+   [
+    "petta_eval_machine_builtin_equations",
+    810
+   ],
+   [
+    "bindings_frame_table_lookup",
+    776
+   ],
+   [
+    "oem_run_body_mode",
+    761
+   ],
+   [
+    "petta_program_refresh_callability",
+    751
+   ],
+   [
+    "petta_machine_next_local",
+    692
+   ],
+   [
+    "pl_current_predicate1_va@libswipl.so.10.0.2",
+    627
+   ],
+   [
+    "cetta_open_equation_cursor_open",
+    612
+   ],
+   [
+    "petta_machine_start_space_query",
+    608
+   ],
+   [
+    "oem_resolve_in",
+    606
+   ],
+   [
+    "oem_activate",
+    579
+   ],
+   [
+    "atom_deep_copy_impl",
+    547
+   ]
+  ],
+  "top_rows_self": [
+   [
+    "advance-frontier-waiter-heap",
+    17748
+   ],
+   [
+    "frontier-remaining-score",
+    9326
+   ],
+   [
+    "commit-proof-candidate-heap",
+    8786
+   ],
+   [
+    "spawn-frontier-heap",
+    7400
+   ],
+   [
+    "spawn-frontier-goal-heap",
+    7363
+   ],
+   [
+    "proof-output-key-by-id",
+    4774
+   ],
+   [
+    "<outside-equations>",
+    4402
+   ],
+   [
+    "advance-frontier-proof-waiters-heap",
+    3904
+   ],
+   [
+    "make-and-bundle",
+    3583
+   ],
+   [
+    "chainer-acyclic-term?",
+    3403
+   ],
+   [
+    "goal-merged-proof-ids",
+    3394
+   ],
+   [
+    "ensure-goal-at-depth",
+    3261
+   ],
+   [
+    "goal-live-proof-ids-for-output-key",
+    2519
+   ],
+   [
+    "schedule-goal-row",
+    2428
+   ],
+   [
+    "wake-proof-commit-heap",
+    2305
+   ],
+   [
+    "proof-fold-flat-semidet",
+    2263
+   ],
+   [
+    "expand-direct-goal-step",
+    1962
+   ],
+   [
+    "advance-unconditioned-frontier-waiter-heap",
+    1918
+   ],
+   [
+    "premise-evidence-overlap?",
+    1824
+   ],
+   [
+    "rule-expected-score",
+    1632
+   ],
+   [
+    "noncyclic-proof-source-ids",
+    1575
+   ],
+   [
+    "search-agenda-heap",
+    1497
+   ],
+   [
+    "expand-goal-heap",
+    1404
+   ],
+   [
+    "schedule-aggregate-waiters-heap",
+    1321
+   ],
+   [
+    "proof-output-groups",
+    1319
+   ],
+   [
+    "match@rule-goal-full-view ccls_index ((...) ...)",
+    1315
+   ],
+   [
+    "bounded-agenda-prune",
+    1270
+   ],
+   [
+    "externalize-compiled-addition",
+    1263
+   ],
+   [
+    "search-agenda-step",
+    1173
+   ],
+   [
+    "goal-live-proof-ids-compute",
+    1023
+   ]
+  ]
+ },
+ "w2-wmtm": {
+  "by_module_self": {
+   "<other>": 1049,
+   "<outside any equation>": 1146,
+   "backward_chainer.metta": 42322,
+   "backward_proof_store.metta": 6827,
+   "chainer_runtime_core.metta": 4,
+   "chainer_utils.metta": 6992,
+   "compile.metta": 1848,
+   "compiled_query_runtime.metta": 608,
+   "forward_chainer.metta": 858,
+   "lib/lib_import.metta": 3,
+   "lib/lib_roman.metta": 715,
+   "logic_config.metta": 18,
+   "petta_chainer.metta": 3044,
+   "query_runtime.metta": 2,
+   "tv_formulas.metta": 295
+  },
+  "categories_all": {
+   "allocation and freeing": 9078,
+   "choice points, trail and backtracking": 780,
+   "copying and instantiation": 7105,
+   "equation selection and call preparation": 11301,
+   "goal dispatch and evaluation": 10051,
+   "grounded ops and arithmetic": 867,
+   "hashing, interning and term universe": 6377,
+   "matching, unification and fact iteration": 15912,
+   "other machine": 16,
+   "prolog (SWI-Prolog and the foreign boundary)": 3682,
+   "space mutation (add/remove atoms)": 562
+  },
+  "files": [
+   "prof-pilot.w2-wmtm.s0_w2_wmtm.r1.sym.json",
+   "prof-r2.w2-wmtm.s0_w2_wmtm.r2.sym.json",
+   "prof-r2.w2-wmtm.s0_w2_wmtm.r3.sym.json"
+  ],
+  "profiler_samples": 2383,
+  "samples": 68114,
+  "samples_without_profiler": 65731,
+  "search_counts": {
+   "functions.calls": 290988,
+   "functions.candidates": 263736,
+   "functions.extra_candidates": 47790,
+   "functions.frames": 1079406,
+   "functions.results": 346002,
+   "functions.rows": 501,
+   "functions.with_more_candidates_than_calls": 66,
+   "match sites.calls": 31977,
+   "match sites.candidates": 48372,
+   "match sites.frames": 40566,
+   "match sites.results": 26598
+  },
+  "search_incl": 58090,
+  "search_incl_categories": {
+   "allocation and freeing": 7914,
+   "choice points, trail and backtracking": 685,
+   "copying and instantiation": 6105,
+   "equation selection and call preparation": 10290,
+   "goal dispatch and evaluation": 8883,
+   "grounded ops and arithmetic": 742,
+   "hashing, interning and term universe": 5673,
+   "matching, unification and fact iteration": 13757,
+   "prolog (SWI-Prolog and the foreign boundary)": 3519,
+   "space mutation (add/remove atoms)": 522
+  },
+  "search_self": 49149,
+  "search_self_categories": {
+   "allocation and freeing": 6848,
+   "choice points, trail and backtracking": 569,
+   "copying and instantiation": 5270,
+   "equation selection and call preparation": 8194,
+   "goal dispatch and evaluation": 7560,
+   "grounded ops and arithmetic": 637,
+   "hashing, interning and term universe": 4944,
+   "matching, unification and fact iteration": 12328,
+   "prolog (SWI-Prolog and the foreign boundary)": 2341,
+   "space mutation (add/remove atoms)": 458
+  },
+  "search_self_top_functions": [
+   [
+    "__default_morecore@libc.so.6",
+    2301
+   ],
+   [
+    "prepared_pure_program_cache_has_decline_head",
+    1380
+   ],
+   [
+    "malloc@libc.so.6",
+    950
+   ],
+   [
+    "bindings_apply_fold_impl",
+    906
+   ],
+   [
+    "__nss_database_lookup@libc.so.6",
+    877
+   ],
+   [
+    "timer_settime@libc.so.6",
+    783
+   ],
+   [
+    "free@libc.so.6",
+    554
+   ],
+   [
+    "bindings_lookup_value_id",
+    528
+   ],
+   [
+    "atom_has_vars",
+    474
+   ],
+   [
+    "atom_summary_add_ids",
+    455
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    428
+   ],
+   [
+    "petta_eval_open_foreign_reads_current",
+    410
+   ],
+   [
+    "petta_eval_machine_builtin_equations",
+    385
+   ],
+   [
+    "pl_current_predicate1_va@libswipl.so.10.0.2",
+    368
+   ],
+   [
+    "petta_eval_open_program_lookup_locked",
+    365
+   ],
+   [
+    "petta_table_safety_scan_relation",
+    363
+   ],
+   [
+    "bindings_frame_table_lookup",
+    342
+   ],
+   [
+    "oem_resolve_in",
+    334
+   ],
+   [
+    "petta_machine_next_local",
+    310
+   ],
+   [
+    "bindings_resolve_value_root",
+    302
+   ],
+   [
+    "oem_run_body_mode",
+    297
+   ],
+   [
+    "petta_program_refresh_callability",
+    295
+   ],
+   [
+    "atom_deep_copy_impl",
+    271
+   ],
+   [
+    "petta_machine_start_space_query",
+    266
+   ],
+   [
+    "cetta_open_equation_cursor_open",
+    251
+   ]
+  ],
+  "top_rows_self": [
+   [
+    "spawn-frontier-goal-heap",
+    4976
+   ],
+   [
+    "advance-frontier-waiter-heap",
+    4726
+   ],
+   [
+    "match@rule-goal-full-view ccls_index ((...) ...)",
+    3974
+   ],
+   [
+    "frontier-remaining-score",
+    3197
+   ],
+   [
+    "rule-expected-score",
+    3154
+   ],
+   [
+    "goal-merged-proof-ids",
+    2419
+   ],
+   [
+    "schedule-goal-row",
+    2364
+   ],
+   [
+    "chainer-acyclic-term?",
+    2339
+   ],
+   [
+    "spawn-frontier-heap",
+    2324
+   ],
+   [
+    "ensure-goal-at-depth",
+    2054
+   ],
+   [
+    "commit-proof-candidate-heap",
+    1637
+   ],
+   [
+    "externalize-compiled-addition",
+    1560
+   ],
+   [
+    "next-gid",
+    1535
+   ],
+   [
+    "make-and-bundle",
+    1281
+   ],
+   [
+    "chainer-run-many",
+    1177
+   ],
+   [
+    "<outside-equations>",
+    1146
+   ],
+   [
+    "proof-output-key-by-id",
+    1059
+   ],
+   [
+    "proof-fold-flat-semidet",
+    1049
+   ],
+   [
+    "search-agenda-step",
+    911
+   ],
+   [
+    "search-agenda-heap",
+    910
+   ],
+   [
+    "bounded-agenda-prune",
+    896
+   ],
+   [
+    "advance-frontier-proof-waiters-heap",
+    870
+   ],
+   [
+    "expand-goal-heap",
+    808
+   ],
+   [
+    "internalize-runtime-addition",
+    806
+   ],
+   [
+    "proof-fold-flat-semidet_Spec_[expand-rule-goal-fold]",
+    764
+   ],
+   [
+    "expand-direct-goal-step",
+    730
+   ],
+   [
+    "add-to-kb",
+    664
+   ],
+   [
+    "goal-live-proof-ids-for-output-key",
+    644
+   ],
+   [
+    "run-aggregate-heap",
+    555
+   ],
+   [
+    "store-rule-expected-score!",
+    545
+   ]
+  ]
+ },
+ "w3-benchgen": {
+  "by_module_self": {
+   "<other>": 3124,
+   "<outside any equation>": 17432,
+   "backward_chainer.metta": 62604,
+   "backward_proof_store.metta": 8741,
+   "chainer_runtime_core.metta": 27,
+   "chainer_utils.metta": 14903,
+   "compile.metta": 17725,
+   "compiled_query_runtime.metta": 6150,
+   "forward_chainer.metta": 22353,
+   "lib/lib_import.metta": 3,
+   "lib/lib_roman.metta": 801,
+   "logic_config.metta": 44,
+   "petta_chainer.metta": 34600,
+   "tv_formulas.metta": 1318
+  },
+  "categories_all": {
+   "allocation and freeing": 26840,
+   "choice points, trail and backtracking": 2494,
+   "copying and instantiation": 20698,
+   "equation selection and call preparation": 34548,
+   "goal dispatch and evaluation": 28766,
+   "grounded ops and arithmetic": 2956,
+   "hashing, interning and term universe": 18115,
+   "matching, unification and fact iteration": 46092,
+   "other machine": 265,
+   "prolog (SWI-Prolog and the foreign boundary)": 7762,
+   "space mutation (add/remove atoms)": 1289
+  },
+  "files": [
+   "prof-pilot.w3-benchgen.s0_w3_benchgen.r1.sym.json",
+   "prof-r2.w3-benchgen.s0_w3_benchgen.r2.sym.json",
+   "prof-r2.w3-benchgen.s0_w3_benchgen.r3.sym.json"
+  ],
+  "profiler_samples": 19228,
+  "samples": 209053,
+  "samples_without_profiler": 189825,
+  "search_counts": {
+   "functions.calls": 392835,
+   "functions.candidates": 329283,
+   "functions.extra_candidates": 56832,
+   "functions.frames": 1377747,
+   "functions.results": 451374,
+   "functions.rows": 459,
+   "functions.with_more_candidates_than_calls": 51,
+   "match sites.calls": 50070,
+   "match sites.candidates": 61092,
+   "match sites.frames": 78777,
+   "match sites.results": 29076
+  },
+  "search_incl": 89165,
+  "search_incl_categories": {
+   "allocation and freeing": 13297,
+   "choice points, trail and backtracking": 906,
+   "copying and instantiation": 9194,
+   "equation selection and call preparation": 17260,
+   "goal dispatch and evaluation": 12927,
+   "grounded ops and arithmetic": 1332,
+   "hashing, interning and term universe": 8694,
+   "matching, unification and fact iteration": 18073,
+   "other machine": 15,
+   "prolog (SWI-Prolog and the foreign boundary)": 6575,
+   "space mutation (add/remove atoms)": 892
+  },
+  "search_self": 71345,
+  "search_self_categories": {
+   "allocation and freeing": 10804,
+   "choice points, trail and backtracking": 738,
+   "copying and instantiation": 7746,
+   "equation selection and call preparation": 12273,
+   "goal dispatch and evaluation": 10504,
+   "grounded ops and arithmetic": 1065,
+   "hashing, interning and term universe": 7415,
+   "matching, unification and fact iteration": 15532,
+   "other machine": 10,
+   "prolog (SWI-Prolog and the foreign boundary)": 4472,
+   "space mutation (add/remove atoms)": 786
+  },
+  "search_self_top_functions": [
+   [
+    "__default_morecore@libc.so.6",
+    4044
+   ],
+   [
+    "prepared_pure_program_cache_has_decline_head",
+    1830
+   ],
+   [
+    "malloc@libc.so.6",
+    1343
+   ],
+   [
+    "timer_settime@libc.so.6",
+    1302
+   ],
+   [
+    "__nss_database_lookup@libc.so.6",
+    1178
+   ],
+   [
+    "bindings_apply_fold_impl",
+    1073
+   ],
+   [
+    "free@libc.so.6",
+    1004
+   ],
+   [
+    "pl_current_predicate1_va@libswipl.so.10.0.2",
+    912
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    608
+   ],
+   [
+    "atom_has_vars",
+    593
+   ],
+   [
+    "atom_deep_copy_memo_lookup",
+    590
+   ],
+   [
+    "atom_summary_add_ids",
+    565
+   ],
+   [
+    "bindings_lookup_value_id",
+    553
+   ],
+   [
+    "petta_eval_open_foreign_reads_current",
+    539
+   ],
+   [
+    "petta_eval_machine_builtin_equations",
+    534
+   ],
+   [
+    "bindings_frame_table_lookup",
+    533
+   ],
+   [
+    "atom_deep_copy_impl",
+    523
+   ],
+   [
+    "oem_run_body_mode",
+    511
+   ],
+   [
+    "petta_program_refresh_callability",
+    452
+   ],
+   [
+    "petta_table_safety_scan_relation",
+    443
+   ],
+   [
+    "valid_term_t___LD@libswipl.so.10.0.2",
+    439
+   ],
+   [
+    "petta_eval_open_program_lookup_locked",
+    401
+   ],
+   [
+    "petta_machine_start_space_query",
+    382
+   ],
+   [
+    "term_universe_entry_offset",
+    373
+   ],
+   [
+    "cetta_open_equation_cursor_open",
+    371
+   ]
+  ],
+  "top_rows_self": [
+   [
+    "<outside-equations>",
+    17432
+   ],
+   [
+    "externalize-compiled-addition",
+    14619
+   ],
+   [
+    "match@forward-register-base-rate! &forward_base_rate_interest (forward-base-rate-interest-row ...)",
+    10222
+   ],
+   [
+    "add-to-kb",
+    8600
+   ],
+   [
+    "internalize-runtime-addition",
+    7475
+   ],
+   [
+    "advance-frontier-waiter-heap",
+    6288
+   ],
+   [
+    "store-rule-expected-score!",
+    5976
+   ],
+   [
+    "spawn-frontier-goal-heap",
+    5253
+   ],
+   [
+    "frontier-remaining-score",
+    5058
+   ],
+   [
+    "chainer-acyclic-term?",
+    4880
+   ],
+   [
+    "search-agenda-heap",
+    4628
+   ],
+   [
+    "schedule-goal-row",
+    3778
+   ],
+   [
+    "match@add-to-kb &forward_frontier (forward-frontier-row ...)",
+    3734
+   ],
+   [
+    "compile-inheritance-rule-lifts",
+    3589
+   ],
+   [
+    "match@forward-output-row-for-fact &forward_canonical_evidence (forward-canonical-evidence-row ...)",
+    3363
+   ],
+   [
+    "forward-output-row-for-fact",
+    3312
+   ],
+   [
+    "rule-expected-score",
+    3121
+   ],
+   [
+    "commit-proof-candidate-heap",
+    3061
+   ],
+   [
+    "spawn-frontier-heap",
+    3037
+   ],
+   [
+    "goal-merged-proof-ids",
+    2839
+   ],
+   [
+    "match@compile-specialization-fact-triggers &spec_template (specialization-template-row ...)",
+    2665
+   ],
+   [
+    "match@rule-goal-full-view ccls_index ((...) ...)",
+    2660
+   ],
+   [
+    "inverse-implication",
+    2334
+   ],
+   [
+    "ensure-goal-at-depth",
+    2296
+   ],
+   [
+    "make-and-bundle",
+    2031
+   ],
+   [
+    "expand-goal-heap",
+    1974
+   ],
+   [
+    "next-gid",
+    1967
+   ],
+   [
+    "bounded-agenda-prune",
+    1959
+   ],
+   [
+    "search-agenda-step",
+    1931
+   ],
+   [
+    "chainer-run-many",
+    1756
+   ]
+  ]
+ }
+}

@@ -1,0 +1,2 @@
+{"schema":"cettapack-s1-sites-v1","mode":1,"sites":[
+{"site":"fwd_register_base_rate_interest","function":"forward-register-base-rate!","parsed":true,"valid":true,"invalid_reason":"","offered":9,"recognised":9,"specialised":5,"answers":2,"rows":19,"revalidations":5,"residual":{"invalid":4,"forced":0,"inputs":0,"rowvar":0,"value":0,"order":0,"space":0,"query":0}}]}

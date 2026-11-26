@@ -1,0 +1,2 @@
+is (), should ((: (conditional-implication (merge/revision (by cInheritsD (by aInheritsC (ctx proof 0))) (by bInheritsD (by aInheritsB (ctx proof 0))))) (Inheritance A D) (STV 0.5 0.010716021787382696))). ❌ 
+exit 1

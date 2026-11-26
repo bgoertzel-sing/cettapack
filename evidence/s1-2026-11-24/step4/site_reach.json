@@ -1,0 +1,492 @@
+{
+ "w1-examples": {
+  "rows": {
+   "match@<outside-equations> &concept_prior_confidence (concept-prior-confidence ...)": {
+    "row source": 1
+   },
+   "match@<outside-equations> &rule_evidence_names (existentialExampleKb ...)": {
+    "row source": 1
+   },
+   "match@<outside-equations> &rule_evidence_names (machineForwardKb ...)": {
+    "row source": 1
+   },
+   "match@<outside-equations> &temp_query_ref (clause_ref ...)": {
+    "per-row work": 2,
+    "row source": 3
+   },
+   "match@add-to-kb &forward_canonical_evidence (forward-canonical-evidence-row ...)": {
+    "per-row work": 2,
+    "row source": 3
+   },
+   "match@add-to-kb &forward_frontier (forward-frontier-row ...)": {
+    "row source": 3
+   },
+   "match@advance-frontier-waiter-heap &aggregate (stored-aggregate-row ...)": {
+    "row source": 2
+   },
+   "match@advance-frontier-waiter-heap &proof_superseded ((...) ...)": {
+    "per-row work": 2,
+    "row source": 36
+   },
+   "match@aggregate-foldall-step-acc &universe_size (universe-size ...)": {
+    "row source": 9
+   },
+   "match@chainer-run-many &aggregate (_ ...)": {
+    "per-row work": 1,
+    "row source": 2
+   },
+   "match@chainer-run-many &aggregate_forward_approx (_ ...)": {
+    "per-row work": 1,
+    "row source": 3
+   },
+   "match@chainer-run-many &aggregate_search_budget (_ ...)": {
+    "row source": 4
+   },
+   "match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "per-row work": 1,
+    "row source": 3
+   },
+   "match@chainer-run-many &forward_member_inheritance_empty_cache (forward-member-inheritance-empty-cache-row ...)": {
+    "per-row work": 1,
+    "row source": 1
+   },
+   "match@chainer-run-many &goal_live_cache (_ ...)": {
+    "row source": 1
+   },
+   "match@chainer-run-many &goal_lookup (_ ...)": {
+    "per-row work": 1,
+    "row source": 3
+   },
+   "match@chainer-run-many &goal_waiter (_ ...)": {
+    "row source": 1
+   },
+   "match@chainer-run-many &proof_invalidated_epoch (_ ...)": {
+    "row source": 3
+   },
+   "match@chainer-run-many &proof_parent (_ ...)": {
+    "row source": 1
+   },
+   "match@chainer-run-many &proof_static_live (_ ...)": {
+    "per-row work": 2
+   },
+   "match@chainer-run-many &proof_superseded (_ ...)": {
+    "row source": 1
+   },
+   "match@commit-proof-candidate-heap &aggregate (stored-aggregate-row ...)": {
+    "per-row work": 1,
+    "row source": 33
+   },
+   "match@compile-inheritance-lifts-for-context &inheritance_lift_instance (inheritance-lift-instance-row ...)": {
+    "per-row work": 7,
+    "row source": 25
+   },
+   "match@compile-specialization-fact-triggers &spec_template (specialization-template-row ...)": {
+    "per-row work": 59,
+    "row source": 206
+   },
+   "match@emit-specialization &inheritance_lift_instance (inheritance-lift-instance-row ...)": {
+    "per-row work": 1,
+    "row source": 1
+   },
+   "match@ensure-goal-at-depth &goal_lookup ((...) ...)": {
+    "per-row work": 301,
+    "row source": 530
+   },
+   "match@expand-direct-goal-heap &kb ((...) ...)": {
+    "per-row work": 6,
+    "row source": 17
+   },
+   "match@expand-direct-goal-heap &kb (CPU ...)": {
+    "per-row work": 6,
+    "row source": 10
+   },
+   "match@fold-flat &temp_query_ref (clause_ref ...)": {
+    "row source": 2
+   },
+   "match@forward-fact-evidence &forward_canonical_evidence (forward-canonical-evidence-row ...)": {
+    "per-row work": 3,
+    "row source": 31
+   },
+   "match@forward-output-row-for-fact &forward_canonical_evidence (forward-canonical-evidence-row ...)": {
+    "row source": 4
+   },
+   "match@forward-register-base-rate! &forward_base_rate_interest (forward-base-rate-interest-row ...)": {
+    "per-row work": 27,
+    "row source": 13
+   },
+   "match@forward-register-member-inheritance-premise! &forward_member_inheritance_identity (forward-member-inheritance-identity-row ...)": {
+    "row source": 4
+   },
+   "match@goal-live-proof-ids-compute &aggregate (stored-aggregate-row ...)": {
+    "row source": 2
+   },
+   "match@goal-live-proof-ids-compute &proof (stored-proof-row ...)": {
+    "per-row work": 1,
+    "row source": 2
+   },
+   "match@goal-merged-proof-ids &goal_live_cache (goal-live-cache-row ...)": {
+    "per-row work": 1,
+    "row source": 4
+   },
+   "match@invalidate-proof-dependent-step &proof_invalidated_epoch ((...) ...)": {
+    "per-row work": 4,
+    "row source": 12
+   },
+   "match@invalidate-proof-dependent-step &proof_parent ((...) ...)": {
+    "per-row work": 2,
+    "row source": 10
+   },
+   "match@invalidate-proof-dependents! &proof_parent ((...) ...)": {
+    "per-row work": 4,
+    "row source": 2
+   },
+   "match@match@compile-specialization-fact-triggers &spec_template (specialization-template-row ...) &kb ((...) ...)": {
+    "per-row work": 3,
+    "row source": 2
+   },
+   "match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "per-row work": 1
+   },
+   "match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 2
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "per-row work": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "per-row work": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "per-row work": 1,
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "per-row work": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "per-row work": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "per-row work": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "per-row work": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "per-row work": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "per-row work": 1,
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "per-row work": 2,
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@match@spawn-aggregate-goal-cached-or-live-heap &forward_member_inheritance_identity (forward-member-inheritance-identity-row ...) &forward_member_inheritance_empty_cache (forward-member-inheritance-empty-cache-row ...)": {
+    "row source": 4
+   },
+   "match@rule-expected-score rule_expected ((...) ...)": {
+    "per-row work": 7,
+    "row source": 10
+   },
+   "match@rule-goal-full-view ccls_index ((...) ...)": {
+    "per-row work": 337,
+    "row source": 978
+   },
+   "match@run-aggregate-heap &aggregate_forward_approx ((...) ...)": {
+    "per-row work": 4,
+    "row source": 41
+   },
+   "match@run-aggregate-heap &concept_prior_confidence (concept-prior-confidence ...)": {
+    "per-row work": 2,
+    "row source": 16
+   },
+   "match@run-aggregate-heap &universe_size (universe-size ...)": {
+    "per-row work": 2,
+    "row source": 26
+   },
+   "match@spawn-aggregate-goal-cached-or-live-heap &forward_member_inheritance_identity (forward-member-inheritance-identity-row ...)": {
+    "per-row work": 2,
+    "row source": 5
+   },
+   "match@spawn-aggregate-goal-heap &base_rate_cache (base-rate ...)": {
+    "per-row work": 1,
+    "row source": 4
+   },
+   "match@spawn-aggregate-goal-live-heap &aggregate (stored-aggregate-row ...)": {
+    "per-row work": 1,
+    "row source": 5
+   },
+   "match@spawn-frontier-heap &rule_evidence_names (deductionRevisionKb ...)": {
+    "per-row work": 1,
+    "row source": 1
+   },
+   "match@spawn-frontier-heap &rule_evidence_names (ravenDerivedKb ...)": {
+    "row source": 3
+   },
+   "match@store-computed-base-rate! &base_rate_cache (base-rate ...)": {
+    "per-row work": 12,
+    "row source": 2
+   },
+   "match@wake-proof-commit-heap &goal_waiter ((...) ...)": {
+    "per-row work": 159,
+    "row source": 187
+   }
+  },
+  "sums": {
+   "all": 2.3903568012732994,
+   "ext": 2.288142399264056,
+   "ext_work": 0.6965181394058423,
+   "src": 1.6755860900800923,
+   "work": 0.7147707111932071
+  },
+  "total": 136967
+ },
+ "w2-wmtm": {
+  "rows": {
+   "match@add-to-kb &forward_frontier (forward-frontier-row ...)": {
+    "row source": 8
+   },
+   "match@advance-frontier-waiter-heap &proof_superseded ((...) ...)": {
+    "row source": 11
+   },
+   "match@aggregate-foldall-step-acc &universe_size (universe-size ...)": {
+    "per-row work": 1,
+    "row source": 6
+   },
+   "match@chainer-run-many &aggregate_forward_approx (_ ...)": {
+    "row source": 7
+   },
+   "match@chainer-run-many &goal_waiter (_ ...)": {
+    "row source": 1
+   },
+   "match@commit-proof-candidate-heap &aggregate (stored-aggregate-row ...)": {
+    "per-row work": 3,
+    "row source": 4
+   },
+   "match@compile-inheritance-lifts-for-context &inheritance_lift_instance (inheritance-lift-instance-row ...)": {
+    "per-row work": 1,
+    "row source": 8
+   },
+   "match@compile-specialization-fact-triggers &spec_template (specialization-template-row ...)": {
+    "per-row work": 69,
+    "row source": 362
+   },
+   "match@ensure-goal-at-depth &goal_lookup ((...) ...)": {
+    "per-row work": 161,
+    "row source": 180
+   },
+   "match@expand-direct-goal-heap &kb ((...) ...)": {
+    "per-row work": 11,
+    "row source": 22
+   },
+   "match@expand-direct-goal-heap &kb (CPU ...)": {
+    "per-row work": 5,
+    "row source": 4
+   },
+   "match@forward-fact-evidence &forward_canonical_evidence (forward-canonical-evidence-row ...)": {
+    "row source": 16
+   },
+   "match@forward-output-row-for-fact &forward_canonical_evidence (forward-canonical-evidence-row ...)": {
+    "per-row work": 1,
+    "row source": 1
+   },
+   "match@forward-register-base-rate! &forward_base_rate_interest (forward-base-rate-interest-row ...)": {
+    "per-row work": 270,
+    "row source": 63
+   },
+   "match@forward-register-member-inheritance-premise! &forward_member_inheritance_identity (forward-member-inheritance-identity-row ...)": {
+    "per-row work": 1,
+    "row source": 1
+   },
+   "match@goal-merged-proof-ids &goal_live_cache (goal-live-cache-row ...)": {
+    "row source": 1
+   },
+   "match@invalidate-proof-dependent-step &proof_invalidated_epoch ((...) ...)": {
+    "row source": 2
+   },
+   "match@invalidate-proof-dependents! &proof_parent ((...) ...)": {
+    "row source": 2
+   },
+   "match@match@match@match@match@chainer-run-many &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...) &aggregate_search_budget (aggregate-search-budget-row ...)": {
+    "row source": 1
+   },
+   "match@rule-expected-score rule_expected ((...) ...)": {
+    "per-row work": 17,
+    "row source": 27
+   },
+   "match@rule-goal-full-view ccls_index ((...) ...)": {
+    "per-row work": 1068,
+    "row source": 2906
+   },
+   "match@run-aggregate-heap &aggregate_forward_approx ((...) ...)": {
+    "row source": 11
+   },
+   "match@run-aggregate-heap &concept_prior_confidence (concept-prior-confidence ...)": {
+    "per-row work": 2,
+    "row source": 12
+   },
+   "match@run-aggregate-heap &universe_size (universe-size ...)": {
+    "per-row work": 1,
+    "row source": 3
+   },
+   "match@spawn-aggregate-goal-heap &base_rate_cache (base-rate ...)": {
+    "per-row work": 1,
+    "row source": 1
+   },
+   "match@store-computed-base-rate! &base_rate_cache (base-rate ...)": {
+    "per-row work": 145,
+    "row source": 7
+   },
+   "match@wake-proof-commit-heap &goal_waiter ((...) ...)": {
+    "per-row work": 69,
+    "row source": 57
+   }
+  },
+  "sums": {
+   "all": 8.444660844161772,
+   "ext": 8.14339186269438,
+   "ext_work": 2.550135418885609,
+   "src": 5.666291348406926,
+   "work": 2.778369495754846
+  },
+  "total": 65722
+ },
+ "w3-benchgen": {
+  "rows": {
+   "match@<outside-equations> &temp_query_ref (clause_ref ...)": {
+    "row source": 1
+   },
+   "match@add-to-kb &forward_canonical_evidence (forward-canonical-evidence-row ...)": {
+    "per-row work": 1
+   },
+   "match@add-to-kb &forward_frontier (forward-frontier-row ...)": {
+    "per-row work": 5,
+    "row source": 3729
+   },
+   "match@advance-frontier-waiter-heap &proof_superseded ((...) ...)": {
+    "per-row work": 10,
+    "row source": 188
+   },
+   "match@commit-proof-candidate-heap &aggregate (stored-aggregate-row ...)": {
+    "row source": 11
+   },
+   "match@compile-specialization-fact-triggers &spec_template (specialization-template-row ...)": {
+    "per-row work": 760,
+    "row source": 1904
+   },
+   "match@ensure-goal-at-depth &goal_lookup ((...) ...)": {
+    "per-row work": 116,
+    "row source": 481
+   },
+   "match@expand-direct-goal-heap &kb ((...) ...)": {
+    "per-row work": 12,
+    "row source": 24
+   },
+   "match@expand-direct-goal-heap &kb (CPU ...)": {
+    "per-row work": 10,
+    "row source": 9
+   },
+   "match@forward-fact-evidence &forward_canonical_evidence (forward-canonical-evidence-row ...)": {
+    "per-row work": 2,
+    "row source": 22
+   },
+   "match@forward-output-row-for-fact &forward_canonical_evidence (forward-canonical-evidence-row ...)": {
+    "per-row work": 5,
+    "row source": 3358
+   },
+   "match@forward-register-base-rate! &forward_base_rate_interest (forward-base-rate-interest-row ...)": {
+    "per-row work": 9861,
+    "row source": 361
+   },
+   "match@goal-live-proof-ids-compute &proof (stored-proof-row ...)": {
+    "per-row work": 4,
+    "row source": 23
+   },
+   "match@rule-expected-score rule_expected ((...) ...)": {
+    "per-row work": 11,
+    "row source": 21
+   },
+   "match@rule-goal-full-view ccls_index ((...) ...)": {
+    "per-row work": 698,
+    "row source": 1963
+   },
+   "match@run-aggregate-heap &aggregate_forward_approx ((...) ...)": {
+    "per-row work": 4,
+    "row source": 23
+   },
+   "match@spawn-aggregate-goal-heap &base_rate_cache (base-rate ...)": {
+    "per-row work": 1,
+    "row source": 21
+   },
+   "match@spawn-aggregate-goal-live-heap &aggregate (stored-aggregate-row ...)": {
+    "row source": 1
+   },
+   "match@store-computed-base-rate! &base_rate_cache (base-rate ...)": {
+    "per-row work": 84,
+    "row source": 3
+   },
+   "match@wake-proof-commit-heap &goal_waiter ((...) ...)": {
+    "per-row work": 113,
+    "row source": 168
+   }
+  },
+  "sums": {
+   "all": 12.649304256653162,
+   "ext": 12.473326764911985,
+   "ext_work": 6.110739368904672,
+   "src": 6.486403894687482,
+   "work": 6.162900361965679
+  },
+  "total": 189797
+ }
+}
