@@ -8,7 +8,39 @@ Resumed 2026-11-26 10:08 (host time) after a stalled first worker: started 2026-
 PT without a commit or a report. Its uncommitted drafts were reviewed; what was kept, fixed or redone is in section 8.
 Evidence of this run is under evidence/s2-2026-11-26/ (the draft's ranking table stays in evidence/s2-2026-11-24/rank).
 
-@@SUMMARY@@
+## Summary
+
+**Question.** How much of real PeTTaChainer run time can cettapack take by compiling the chainer's hot
+deterministic agenda functions whole, with CeTTa's answers and with guards that hold when definitions change?
+
+**Answer.** Little, and not measurably end to end on this host. Under the order's rules only three of S1's top 13
+search functions can be compiled: frontier-remaining-score (rank 3, with its seven callees), make-and-bundle (12) and
+proof-output-key-by-id (13, with two callees). Every other hot row, including four of the top five, writes the
+chainer's spaces, pushes and pops its Prolog agenda heaps, changes state or collapses nondeterministic queries,
+inside one mutually recursive agenda cluster; reproducing that faithfully is a different and much larger compiler,
+so they stay CeTTa's. The compiled functions run inside CeTTa's own PeTTa machine through a new opt-in hook
+(patch file 0008, off by default), are 2.7-4.5x faster than CeTTa on the calls they answer, and take over the work
+of 7.0% / 3.7% / 2.7% of the run on w1/w2/w3 (8.8% / 5.0% / 7.0% of the search episode); the sampler measures the
+saving at **5.2 / 2.3 / 2.1% of the run**. End to end (RUNS=5, interleaved, paired), on/off user time is
+**0.924 (0.804-1.072) on w1, 0.944 (0.868-1.144) on w2, 0.932 (0.908-0.974) on w3**: all three medians point the
+same way, w3 was faster in all five runs, but by the stated criterion none beats the host's run-to-run noise.
+Peak memory falls 5% on w1 and is unchanged on w2/w3. S1's ceiling for compiling the whole search episode was
+11.7-63.9% of the run saved (1.13-2.77x); S2 reaches about 2-5% (1.02-1.06x). By the order's Do 4 the stage stopped
+there.
+
+**Correctness.** All 195 end-to-end file-runs (and 52 pilot, 26 sampler runs) give S0's answers byte for byte with
+no failed test. Six bag-test programs give CeTTa's answers in on and forced-invalid modes; definitions changed
+mid-run in &self (an extra equation, a builtin or constructor equation, type declarations, the function replaced,
+a change inside one evaluation) and in PeTTaChainer's own &proof space take the residual while changed and are
+respecialised after. Two faithfulness bugs in the stalled first worker's draft were found by these tests and fixed
+before any measurement (section 8).
+
+**Open, needs a decision.** The remaining lever is the agenda cluster itself (S1's 2.8x ceiling lives there). It
+needs either (a) a compiler that reproduces space writes, Prolog heap operations, state and nondeterministic
+collapses in order under guards, or (b) cheaper per-call paths inside CeTTa (equation selection, call preparation,
+allocation), which are CeTTa internals and need andy. Two CeTTa behaviours were found on the way and are recorded
+for andy: a second `(-> Atom Number)` type declaration of expr-arity makes CeTTa not terminate, and a catch-all
+equation in &proof makes it raise instantiation_error (3.4). Nothing was sent to Zar's CeTTa; the patches are files.
 
 ## 1. Inputs and pins
 
@@ -32,7 +64,7 @@ Patch files (sha256):
 | upstream/cetta-s0/0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch | f2019a5cfbedde455109e32378f87f0b670a8bce7f419e56eaa367db7af24317 |
 | upstream/cetta-s1/0006-fnprof-C-level-sampler-CETTA_FNPROF_SAMPLE_US-sample.patch | 2de0d29f411e6f3c07116ae07b2f6690fdeeb7398d33a4b147e8e48ea01c1494 |
 | upstream/cetta-s1/0007-s1-sites-opt-in-compiled-match-site-hook-in-PeTTa-s-.patch | c1c5af23196f022ac3e435b77a64d24217398c6ae6f61be82eccc0bc82d9a438 |
-| upstream/cetta-s2/0008-s2-fns-opt-in-compiled-function-hook-at-ready-call-d.patch | @@P0008@@ |
+| upstream/cetta-s2/0008-s2-fns-opt-in-compiled-function-hook-at-ready-call-d.patch | 92a19e4601620d554e63be7505f66993a5a19abc5657d0dfeb7c0c0aacf6f578 |
 
 Builds (bench/s2/build_s2_cetta.sh; sha256 in evidence/s2-2026-11-26/binaries.txt): `fns` = 0001-0008 with
 CETTA_S1_SITES=1 CETTA_S2_FNS=1 and cettapack's src/cpk_s1_sites.c and src/cpk_s2_fns.c built in (packs off/on is the
@@ -159,7 +191,16 @@ invalid. Pass = on and invalid stdout and exit byte-identical to off, and the co
 predicts (bench/s2/bagtest/expected.json, bench/s2/check_routes.py; in invalid mode every offered call is forced to
 the residual). Results: evidence/s2-2026-11-26/bagtest/summary.md.
 
-@@BAGTABLE@@
+| test | off = on | off = invalid | routes | verdict |
+|---|---|---|---|---|
+| t1_values | yes | yes | offered 47 answered 35 declined: invalid 0, call 12; invalid mode forced 124/124 | pass |
+| t2_proof_store | yes | yes | offered 31 answered 25 declined: invalid 0, call 6; invalid mode forced 47/47 | pass |
+| t3_redefine_self | yes | yes | offered 33 answered 13 declined: invalid 20, call 0; invalid mode forced 50/50 | pass |
+| t4_redefine_module | yes | yes | offered 15 answered 7 declined: invalid 8, call 0; invalid mode forced 25/25 | pass |
+| t5_proof_data | yes | yes | offered 7 answered 3 declined: invalid 0, call 4; invalid mode forced 11/11 | pass |
+| t6_types | yes | yes | offered 12 answered 7 declined: invalid 0, call 5; invalid mode forced 15/15 | pass |
+
+Every test: on and forced-invalid stdout and exit byte-identical to off (CeTTa); routes as constructed; in invalid mode every offered call forced to the residual. **0 failures.**
 
 What they cover: every compiled entry on values of each shape it covers and on shapes where it declines (variables
 a case would bind, CPU terms and premises, non-numbers, non-lists; t1); proof-store lookups: one row, no row, two rows
@@ -190,11 +231,184 @@ Found by the pilots and fixed or recorded:
 
 ## 4. End to end (order Do 3, acceptance 1-2)
 
-@@E2E@@
+Arms (bench/s2/run_e2e.sh, RUNS=5, rounds interleaved with the arm order rotating, each round under the shared bench
+lock /tmp/cettapack-bench.lock, load average 3.4-4.8 at round starts and ends, evidence/s2-2026-11-26/e2e/batches.txt):
+**base** = S0's base build; **off** = the S2 fns build with CETTA_S2_FNS=0 (packs off); **on** = the same binary with
+CETTA_S2_FNS=1 (packs on). S1's compiled site is switched off (CETTA_S1_SITES=0) in off and on, so on/off isolates
+S2. Full tables: evidence/s2-2026-11-26/e2e/summary.md (bench/s2/summarize_e2e.py; `--check` recomputes).
+
+### 4.1 Answers (acceptance 1)
+
+| workload | arm | runs x files | exit 0 | stdout = S0 base | failed tests |
+|---|---|---|---|---|---|
+| w1-examples | base | 5 x 11 | 55/55 | 55/55 | 0 |
+| w1-examples | off | 5 x 11 | 55/55 | 55/55 | 0 |
+| w1-examples | on | 5 x 11 | 55/55 | 55/55 | 0 |
+| w2-wmtm | base | 5 x 1 | 5/5 | 5/5 | 0 |
+| w2-wmtm | off | 5 x 1 | 5/5 | 5/5 | 0 |
+| w2-wmtm | on | 5 x 1 | 5/5 | 5/5 | 0 |
+| w3-benchgen | base | 5 x 1 | 5/5 | 5/5 | 0 |
+| w3-benchgen | off | 5 x 1 | 5/5 | 5/5 | 0 |
+| w3-benchgen | on | 5 x 1 | 5/5 | 5/5 | 0 |
+
+Every run of every arm exits 0 with S0's answers and no failed test: **yes**.
+
+### 4.2 Time and peak memory (sum over the workload's files per run; median (min-max) over 5 runs)
+
+| workload | arm | runs | user s | wall s | peak RSS MiB |
+|---|---|---|---|---|---|
+| w1-examples | base | 5 | 41.46 (38.01-42.13) | 41.97 (38.47-42.62) | 153 (153-154) |
+| w1-examples | off | 5 | 41.63 (37.30-42.11) | 42.15 (37.72-42.67) | 154 (153-154) |
+| w1-examples | on | 5 | 38.47 (33.24-43.56) | 38.98 (33.66-44.21) | 146 (146-147) |
+| w2-wmtm | base | 5 | 21.32 (20.40-23.24) | 21.39 (20.48-23.32) | 111 (109-111) |
+| w2-wmtm | off | 5 | 21.68 (19.93-24.23) | 21.77 (20.00-24.31) | 111 (110-111) |
+| w2-wmtm | on | 5 | 21.02 (18.84-24.32) | 21.09 (18.92-24.42) | 111 (111-112) |
+| w3-benchgen | base | 5 | 65.31 (61.09-67.35) | 65.76 (61.51-67.80) | 311 (310-311) |
+| w3-benchgen | off | 5 | 66.27 (58.45-71.22) | 66.60 (58.79-71.74) | 311 (310-311) |
+| w3-benchgen | on | 5 | 62.87 (56.56-65.80) | 63.27 (56.98-66.24) | 309 (308-309) |
+
+### 4.3 Paired ratios (run r of one arm against run r of another; acceptance 2)
+
+| workload | runs | on/off user | on/off wall | off/base user | on/base user | on/off peak RSS |
+|---|---|---|---|---|---|---|
+| w1-examples | 5 | 0.924 (0.804-1.072) | 0.925 (0.805-1.075) | 1.011 (0.892-1.095) | 1.012 (0.795-1.034) | 0.951 (0.950-0.955) |
+| w2-wmtm | 5 | 0.944 (0.868-1.144) | 0.944 (0.868-1.144) | 0.997 (0.977-1.180) | 0.953 (0.859-1.141) | 1.004 (1.000-1.010) |
+| w3-benchgen | 5 | 0.932 (0.908-0.974) | 0.932 (0.908-0.976) | 1.019 (0.931-1.081) | 0.960 (0.857-1.008) | 0.992 (0.990-0.999) |
+
+### 4.4 Does the gain beat run-to-run noise?
+
+Criterion: every paired on/off user ratio < 1, and median on/off < 1 - max(|off/base - 1|) (the gain is larger than the largest difference between two builds of the same code).
+
+| workload | on/off user, every run < 1 | median on/off | noise floor 1 - max abs(off/base - 1) | beats noise |
+|---|---|---|---|---|
+| w1-examples | no | 0.924 | 0.892 | **no** |
+| w2-wmtm | no | 0.944 | 0.820 | **no** |
+| w3-benchgen | yes | 0.932 | 0.919 | **no** |
+
+Plainly: **the gain does not beat run-to-run noise on any workload by the stated criterion.** The medians point the
+same way on all three (6-8% less user time with the functions on), and on w3 all five paired runs were faster
+(0.908-0.974; a sign test over five runs gives p = 1/32), but two builds of the same code (off and base) differ by up
+to 8% on w3 and 11-18% on w1/w2 run to run, which is as large as the effect. The size the coverage supports is
+smaller still (section 5): the sampler measures what compiling these functions removes at 5.2 / 2.3 / 2.1% of
+the run (w1/w2/w3), so the w2 and w3 medians (5.6%, 6.8%) are larger than the compiled code can explain, which again
+says noise dominates; w1's median (7.6%) is near its expected 5.2%. Peak
+memory falls 5% on w1 (146 vs 154 MiB, every run) and is unchanged on w2 and w3.
+
+### 4.5 The compiled functions in the on arm (counters summed over the workload's files; identical in all 5 runs)
+
+| workload | runs | function | offered | answered | declined: guard invalid | declined: call outside the code | same in every run |
+|---|---|---|---|---|---|---|---|
+| w1-examples | 5 | proof-output-key-by-id | 30282 | 30282 | 0 | 0 | yes |
+| w1-examples | 5 | proof-output-atom-by-id | 21899 | 21899 | 0 | 0 | yes |
+| w1-examples | 5 | and-bundle-premises | 19307 | 19307 | 0 | 0 | yes |
+| w1-examples | 5 | premises-expected-confidence | 18836 | 5854 | 0 | 12982 | yes |
+| w1-examples | 5 | term-confidence | 13738 | 1462 | 0 | 12276 | yes |
+| w1-examples | 5 | make-and-bundle | 13057 | 13057 | 0 | 0 | yes |
+| w1-examples | 5 | premises-expected-confidence-step | 12982 | 0 | 0 | 12982 | yes |
+| w1-examples | 5 | tv-confidence | 11457 | 11457 | 0 | 0 | yes |
+| w1-examples | 5 | candidate-output-key | 6633 | 6633 | 0 | 0 | yes |
+| w1-examples | 5 | frontier-remaining-score | 6529 | 1214 | 0 | 5315 | yes |
+| w1-examples | 5 | frontier-pool-potential | 5376 | 5376 | 0 | 0 | yes |
+| w2-wmtm | 5 | and-bundle-premises | 8269 | 8269 | 0 | 0 | yes |
+| w2-wmtm | 5 | premises-expected-confidence | 7827 | 2074 | 0 | 5753 | yes |
+| w2-wmtm | 5 | proof-output-key-by-id | 7446 | 7446 | 0 | 0 | yes |
+| w2-wmtm | 5 | proof-output-atom-by-id | 6584 | 6584 | 0 | 0 | yes |
+| w2-wmtm | 5 | make-and-bundle | 6398 | 6398 | 0 | 0 | yes |
+| w2-wmtm | 5 | premises-expected-confidence-step | 5753 | 0 | 0 | 5753 | yes |
+| w2-wmtm | 5 | term-confidence | 5717 | 403 | 0 | 5314 | yes |
+| w2-wmtm | 5 | tv-confidence | 4731 | 4731 | 0 | 0 | yes |
+| w2-wmtm | 5 | frontier-remaining-score | 2018 | 203 | 0 | 1815 | yes |
+| w2-wmtm | 5 | frontier-pool-potential | 1815 | 1815 | 0 | 0 | yes |
+| w2-wmtm | 5 | candidate-output-key | 1796 | 1796 | 0 | 0 | yes |
+| w3-benchgen | 5 | premises-expected-confidence | 19322 | 4782 | 0 | 14540 | yes |
+| w3-benchgen | 5 | premises-expected-confidence-step | 14540 | 0 | 0 | 14540 | yes |
+| w3-benchgen | 5 | tv-confidence | 14304 | 14304 | 0 | 0 | yes |
+| w3-benchgen | 5 | term-confidence | 14176 | 3252 | 0 | 10924 | yes |
+| w3-benchgen | 5 | and-bundle-premises | 10029 | 10029 | 0 | 0 | yes |
+| w3-benchgen | 5 | proof-output-atom-by-id | 8838 | 8838 | 0 | 0 | yes |
+| w3-benchgen | 5 | make-and-bundle | 7386 | 7386 | 0 | 0 | yes |
+| w3-benchgen | 5 | proof-output-key-by-id | 5159 | 5159 | 0 | 0 | yes |
+| w3-benchgen | 5 | frontier-remaining-score | 2643 | 339 | 0 | 2304 | yes |
+| w3-benchgen | 5 | candidate-output-key | 2462 | 2462 | 0 | 0 | yes |
+| w3-benchgen | 5 | frontier-pool-potential | 2382 | 2382 | 0 | 0 | yes |
+
+### Decline reasons (on arm, first run, summed over files)
+
+| workload | reason | calls |
+|---|---|---|
+| w1-examples | premises-expected-confidence-step: CPU premise (formula evaluation not compiled) | 31279 |
+| w1-examples | term-confidence: CPU term (formula evaluation not compiled) | 12276 |
+| w2-wmtm | premises-expected-confidence-step: CPU premise (formula evaluation not compiled) | 13321 |
+| w2-wmtm | term-confidence: CPU term (formula evaluation not compiled) | 5314 |
+| w3-benchgen | premises-expected-confidence-step: CPU premise (formula evaluation not compiled) | 31384 |
+| w3-benchgen | term-confidence: CPU term (formula evaluation not compiled) | 10924 |
+
+Recognised calls by reason (S2 counters, CETTA_S2_FNS_STATS per file): every decline in the runs is a call outside
+the compiled code (CPU premises and CPU terms: frontier-remaining-score answers 18.6% / 10.1% / 12.8% of its calls on
+w1/w2/w3); no guard was invalid in any workload run (the chainer does not redefine these functions); the counters
+are identical in all five runs.
+
 
 ## 5. Coverage, and why the stage stops (order Do 3-4)
 
-@@COVERAGE@@
+### 5.1 Measured with the sampler (fnsprof build, one run per workload and arm, under the bench lock)
+
+bench/s2/run_sprof.sh, bench/s2/compiled_samples.py (evidence/s2-2026-11-26/sprof/samples_compiled.md; every
+sampler run's stdout = S0's, 26/26). One SIGPROF sample per ms of CPU time; shares of samples without the profiler's
+own:
+
+| workload | arm | samples | search rows | compiled code | compiled, of search | fn rows (CeTTa) | compiled + fn rows |
+|---|---|---|---|---|---|---|---|
+| w1-examples | off | 46522 | 80.43% | 0.03% | 0.03% | 13.78% | 13.82% |
+| w1-examples | on | 45776 | 78.73% | 1.81% | 2.17% | 6.74% | 8.55% |
+| w2-wmtm | off | 24777 | 73.95% | 0.03% | 0.02% | 8.75% | 8.77% |
+| w2-wmtm | on | 26198 | 75.14% | 1.39% | 1.80% | 5.02% | 6.41% |
+| w3-benchgen | off | 83819 | 39.14% | 0.03% | 0.03% | 5.19% | 5.22% |
+| w3-benchgen | on | 78580 | 36.82% | 0.61% | 1.16% | 2.45% | 3.06% |
+
+Derived (same samples; "handed to compiled code" = the off arm's CeTTa time in the functions' rows minus the on
+arm's residual, i.e. the CeTTa work the compiled code now does, as a share of the off arm's search-episode
+samples):
+
+| workload | off: CeTTa in the functions' rows | on: residual calls | on: compiled code | on: both | saved (of run) | compiled code vs CeTTa on the calls it answers | handed to compiled code | S1 ceiling (whole episode, saved of run) |
+|---|---|---|---|---|---|---|---|---|
+| w1-examples | 13.8% | 6.7% | 1.8% | 8.6% | 5.2 points | 3.9x | 8.8% of search | 24.3-63.9% (1.32-2.77x) |
+| w2-wmtm | 8.7% | 5.0% | 1.4% | 6.4% | 2.3 points | 2.7x | 5.0% of search | 21.5-59.1% (1.27-2.45x) |
+| w3-benchgen | 5.2% | 2.5% | 0.6% | 3.1% | 2.1 points | 4.5x | 7.0% of search | 11.7-31.3% (1.13-1.46x) |
+
+So: compiled code now does the work of **7.0% / 3.7% / 2.7% of the run** (w1/w2/w3), **8.8% / 5.0% / 7.0% of the
+search episode**, at 2.7-4.5x CeTTa's speed for those calls, which removes **5.2 / 2.3 / 2.1 points** of the
+instrumented run. Against S1's ceiling for compiling the whole search episode (11.7-63.9% of the run saved,
+1.13-2.77x), S2 reaches 2-5% (about 1.02-1.06x), roughly a tenth of the ceiling's lower end on w1/w2 and a fifth on w3.
+That expected saving is smaller than the end-to-end noise (section 4.4), which is why the end-to-end medians
+(6-8%) cannot be taken at face value.
+
+### 5.2 Estimate from S1's profile and S2's counters (cross-check)
+
+bench/s2/coverage.py (evidence/s2-2026-11-26/coverage/coverage.md): S1's CeTTa self time per compiled function x the
+fraction of its calls S2 answered (e2e on arm, run 1). Estimated share handed to compiled code: 8.2% / 4.5% / 2.9% of
+the run (10.2% / 6.0% / 7.7% of search self time), against 7.0% / 3.7% / 2.7% measured in 5.1: the two agree within
+about a point.
+
+### 5.3 Why the stage stops (order Do 4)
+
+The order: after the top five, if the end-to-end gain is still within noise, stop compiling and say why. Of the top
+five, one (rank 3) can be compiled under the order's rules; with it and ranks 12-13 compiled, the end-to-end gain
+is within noise (pilot, RUNS=2: on/off 0.89-1.09; RUNS=5: 4.4). Why:
+
+1. **The residual dominates the hot list.** 17 of the top 20 rows are declined, holding 66.9% of mean search self
+   time (the top 20 hold 80.0%; the three compiled rows 13.1%). One is S1's ccls_index match site; the other 16 are
+   the agenda cluster: functions that write the chainer's spaces (&goal, &goal_waiter, &proof, caches), push and
+   pop the Prolog agenda heaps, change state, or collapse nondeterministic queries, and call each other. The order
+   declines what cannot be reproduced faithfully; reproducing those effects in order, under guards, is a different
+   and much larger compiler (section 6).
+2. **The compilable functions are cheap rows.** All compiled functions together are 13.9% / 9.1% / 5.6% of the run in
+   CeTTa (S1 profile), and frontier-remaining-score, the largest, can answer only 10-19% of its calls: the others
+   have CPU premises whose expected confidence is a nondeterministic TV-formula evaluation (cpu-expected-tv).
+3. **Call boundary and guards are not the problem:** the compiled code is 2.7-4.5x faster than CeTTa on the calls it
+   answers, including the hook, admission check, guard token compare and operand observation; off/base shows the hook
+   switched off costs nothing measurable (4.3: 1.011, 0.997, 1.019).
+
 
 ## 6. Limits
 
@@ -211,14 +425,25 @@ Found by the pilots and fixed or recorded:
 - **Guards not carried:** type declarations of the builtins are not compared (their equations are); the guard is
   global per revision (any invalid dependency or foreign definition sends every dependent function to the residual
   until the revision moves); a definition in &proof is guarded conservatively.
-- **The coverage share is an estimate** (5.1) combining S1's profile with S2's counters; the sampler measurement
-  (5.2) is from an instrumented build.
+- **Coverage** is measured with the sampler on an instrumented build, one run per arm (5.1), and cross-checked by an
+  estimate from S1's profile and S2's counters (5.2); they agree within about a point.
 - **Timing.** Shared host (8 cores, load 3.5-5.6 during the runs, another cettapack worker benchmarking under the same
   lock); five interleaved runs per arm, arm order rotating; paired ratios.
 
 ## 7. Ledger of checks (sanity gate)
 
-@@LEDGER@@
+| check | expected | observed | evidence |
+|---|---|---|---|
+| known-answer canary, per file-run | stdout byte-identical to S0's base run 1, exit 0, no failed test | 195/195 (RUNS=5), 52/52 (pilot), sampler runs: see sprof | e2e/*/W/*.check, e2e/summary.md |
+| per-unit structural check | check line written per run; tables use only "same" runs | written for every run; no DIFFERENT line | bench/s2/run_workloads.sh |
+| compiled code actually ran (not a silent no-op) | answered > 0 for each compiled entry on every workload | answered counts in 4.5, identical in 5 runs | e2e/on/W/*.fns.json |
+| guards not silently failing | invalid mode forces every offered call; redefinitions invalidate and respecialise | bag tests 6/6 | bagtest/summary.md, *.stats.json |
+| hook reachability | the hook is reached in real runs | first build: 0 offered (hook after the relation path), found and fixed | bagtest-pilot (pilot 1), section 2 |
+| faithfulness probes vs CeTTa | quote, stored outputs, decl changes | quote bug found and fixed; outputs returned verbatim; two CeTTa non-terminations/errors recorded | probes/, bagtest-pilot2/3 |
+| pilot before long run | RUNS=2 off/on before RUNS=5 | answers identical; within noise (Do 4 decision) | e2e-pilot/ |
+| shared-host discipline | every timed round under /tmp/cettapack-bench.lock, load logged | 5 e2e rounds + 2 pilot rounds + sampler rounds | e2e/batches.txt, e2e-pilot/batches.txt, sprof/batches.txt |
+| binaries | the runs used the recorded builds | fns 959d1c2d..., base 4b7c08c4... in every env file | binaries.txt, e2e/*/env-*.txt |
+| make test | EXIT=0, every suite 0 failed | EXIT=0, 76 suites 0 failed | make-test.log |
 
 ## 8. The stalled worker's drafts
 
