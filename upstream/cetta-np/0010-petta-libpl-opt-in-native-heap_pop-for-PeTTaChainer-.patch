@@ -1,0 +1,322 @@
+From c7ef44ac67a8d139aed02ca02fbbbab83ae8e872 Mon Sep 17 00:00:00 2001
+From: cettapack <cettapack@localhost>
+Date: Thu, 26 Nov 2026 10:18:33 -0700
+Subject: [PATCH] petta libpl: opt-in native heap_pop for PeTTaChainer
+ (cettapack_native_heaps/1)
+
+cettapack native-primitives (0010). Nothing changes until a program calls the
+foreign predicate cettapack_native_heaps(on|check|off), which this patch
+registers in the runtime's module. CeTTa already answers empty_heap,
+add_to_heap, get_from_heap and heap_size natively (petta_priority_heap.c);
+PeTTaChainer's heap_pop/2 (heap_helpers.pl: get_from_heap/4 as [P,X,Rest]) is
+an imported Prolog function, so each pop converts the whole heap term to
+Prolog and back. While on, heap_pop(H) is answered by the same
+petta_priority_heap_call as get_from_heap(H,P,X,Rest), packaged as (P X Rest);
+whatever that declines runs in SWI-Prolog as before. 'check' computes each pop
+both ways, answers SWI's and counts differences ($CETTA_NP_HEAPS_STATS,
+$CETTA_NP_HEAPS_LOG).
+---
+ src/petta_libpl.c | 252 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 252 insertions(+)
+
+diff --git a/src/petta_libpl.c b/src/petta_libpl.c
+index 677d46d0..5060ffeb 100644
+--- a/src/petta_libpl.c
++++ b/src/petta_libpl.c
+@@ -15,6 +15,7 @@
+ #include "foreign_region.h"
+ #include "shared_transition.h"
+ #include "cetta_fnprof.h"
++#include "petta_priority_heap.h"
+ 
+ #include <SWI-Prolog.h>
+ 
+@@ -982,6 +983,7 @@ _Static_assert(PETTA_LIBPL_STANDARD_BRIDGE_COUNT <=
+                        sizeof(uint64_t),
+                "each standard bridge has a currency slot");
+ 
++static foreign_t np_heaps_switch(term_t mode);
+ static bool petta_libpl_install_standard_bridges(
+     CettaLibPrologRuntime *runtime) {
+     if (!runtime || !runtime->module_name)
+@@ -1001,6 +1003,11 @@ static bool petta_libpl_install_standard_bridges(
+             return false;
+         }
+     }
++    /* cettapack np (0010): the shim's switch for the native heap_pop. */
++    if (!PL_register_foreign_in_module(
++            runtime->module_name, "cettapack_native_heaps", 1,
++            (pl_function_t)np_heaps_switch, 0))
++        return false;
+     return true;
+ }
+ 
+@@ -4416,6 +4423,208 @@ static bool petta_libpl_run_query(
+     return ok;
+ }
+ 
++/* ---- cettapack np (0010): native heap_pop for PeTTaChainer --------------
++ *
++ * Opt-in: nothing changes until a program calls the foreign predicate
++ * cettapack_native_heaps/1 (on | off | check), which the cettapack shim
++ * (bench/np/shim/np_heaps.metta) does before PeTTaChainer loads.  CeTTa
++ * already answers empty_heap/1, add_to_heap/4, get_from_heap/4 and
++ * heap_size/2 in C (src/petta_priority_heap.c, the ground finite fragment
++ * of SWI library(heaps)); PeTTaChainer's own heap_pop/2 (heap_helpers.pl:
++ * get_from_heap/4 packaged as [P, X, Rest]) is an imported Prolog function,
++ * so every pop converts the whole heap term to Prolog and back.  While on,
++ * heap_pop(H) is answered by the same petta_priority_heap_call as
++ * get_from_heap(H, P, X, Rest), packaged as (P X Rest); whatever that
++ * declines (a heap holding variables, a key outside the standard-order
++ * comparison, another shape), a non-variable result position or carried
++ * delayed goals run in SWI-Prolog as before.  `check` computes each pop
++ * both ways, answers SWI's, and counts differences (atoms compared field by
++ * field).  Counts (also of the other heap functions that reached SWI because
++ * CeTTa's native heap declined them) go to $CETTA_NP_HEAPS_STATS at exit,
++ * the first differences to $CETTA_NP_HEAPS_LOG. */
++enum { NP_HEAPS_OFF = 0, NP_HEAPS_ON = 1, NP_HEAPS_CHECK = 2 };
++#define NP_HEAPS_OPS 5
++static int g_np_heaps_mode = NP_HEAPS_OFF;
++static struct {
++    uint64_t calls[NP_HEAPS_OPS], native[NP_HEAPS_OPS], declined[NP_HEAPS_OPS],
++        checked[NP_HEAPS_OPS], mismatched[NP_HEAPS_OPS];
++    bool atexit_done;
++    FILE *log;
++    unsigned logged;
++} g_np_heaps;
++/* heap_pop is the one answered here; the others are only counted when they
++ * reach SWI (CeTTa's own native heap declined them). */
++static const char *const g_np_heaps_names[NP_HEAPS_OPS] = {
++    "heap_pop", "empty_heap", "add_to_heap", "get_from_heap", "heap_size"};
++
++static void np_heaps_report(void) {
++    const char *path = getenv("CETTA_NP_HEAPS_STATS");
++    if (!path || !*path)
++        return;
++    FILE *out = fopen(path, "w");
++    if (!out)
++        return;
++    fprintf(out, "{\"schema\":\"cettapack-np-heaps-v2\",\"mode\":%d,\"ops\":[",
++            g_np_heaps_mode);
++    for (int i = 0; i < NP_HEAPS_OPS; i++)
++        fprintf(out, "%s{\"name\":\"%s\",\"calls\":%" PRIu64 ",\"native\":%" PRIu64
++                ",\"declined\":%" PRIu64 ",\"checked\":%" PRIu64
++                ",\"mismatched\":%" PRIu64 "}",
++                i ? "," : "", g_np_heaps_names[i], g_np_heaps.calls[i],
++                g_np_heaps.native[i], g_np_heaps.declined[i],
++                g_np_heaps.checked[i], g_np_heaps.mismatched[i]);
++    fputs("]}\n", out);
++    fclose(out);
++}
++
++static foreign_t np_heaps_switch(term_t mode) {
++    char *text = NULL;
++    if (!PL_get_atom_chars(mode, &text))
++        return false;
++    if (strcmp(text, "on") == 0)
++        g_np_heaps_mode = NP_HEAPS_ON;
++    else if (strcmp(text, "check") == 0)
++        g_np_heaps_mode = NP_HEAPS_CHECK;
++    else if (strcmp(text, "off") == 0)
++        g_np_heaps_mode = NP_HEAPS_OFF;
++    else
++        return false;
++    if (!g_np_heaps.atexit_done) {
++        g_np_heaps.atexit_done = true;
++        atexit(np_heaps_report);
++    }
++    return true;
++}
++
++/* heap_pop(H) as get_from_heap(H, P, X, Rest) through CeTTa's native heap:
++ * the value (P X Rest), or NULL to decline.  *failed: no answer (empty heap). */
++static Atom *np_heap_pop_value(Arena *arena, Atom *expression, bool *failed) {
++    *failed = false;
++    if (expression->expr.len != 2u)
++        return NULL;
++    Atom *items[4] = {
++        atom_symbol(arena, "get_from_heap"), expression->expr.elems[1],
++        atom_var_with_id(arena, "$", fresh_var_id()),
++        atom_var_with_id(arena, "$", fresh_var_id())};
++    if (!items[0] || !items[2] || !items[3])
++        return NULL;
++    Atom *call = atom_expr(arena, items, 4u);
++    PettaPriorityHeapAnswer answer = {0};
++    PettaPriorityHeapStatus status = call
++        ? petta_priority_heap_call(arena, call, &answer)
++        : PETTA_PRIORITY_HEAP_DECLINED;
++    if (status == PETTA_PRIORITY_HEAP_NO_ANSWER) {
++        *failed = true;
++        return expression;
++    }
++    if (status != PETTA_PRIORITY_HEAP_ANSWER || !answer.result ||
++        !answer.key || !answer.value)
++        return NULL;
++    Atom *triple[3] = {answer.key, answer.value, answer.result};
++    return atom_expr(arena, triple, 3u);
++}
++
++static int np_heaps_op(const PettaLibplImport *entry) {
++    if (!entry || !entry->name)
++        return -1;
++    for (int i = 0; i < NP_HEAPS_OPS; i++)
++        if (strcmp(entry->name, g_np_heaps_names[i]) == 0)
++            return i;
++    return -1;
++}
++
++static bool np_atom_same(const Atom *a, const Atom *b, unsigned depth) {
++    if (a == b)
++        return true;
++    if (!a || !b || a->kind != b->kind || depth > 100000u)
++        return false;
++    switch (a->kind) {
++    case ATOM_SYMBOL:
++        return a->sym_id == b->sym_id;
++    case ATOM_VAR:
++        return var_id_eq(a->var_id, b->var_id) && a->sym_id == b->sym_id;
++    case ATOM_GROUNDED:
++        if (a->ground.gkind != b->ground.gkind)
++            return false;
++        if (a->ground.gkind == GV_INT || a->ground.gkind == GV_INTERNAL_TAG)
++            return a->ground.ival == b->ground.ival;
++        if (a->ground.gkind == GV_FLOAT)
++            return memcmp(&a->ground.fval, &b->ground.fval, sizeof(double)) == 0;
++        return atom_eq((Atom *)a, (Atom *)b);
++    case ATOM_EXPR:
++        if (a->expr.len != b->expr.len)
++            return false;
++        for (CettaExprLen i = 0; i < a->expr.len; i++)
++            if (!np_atom_same(a->expr.elems[i], b->expr.elems[i], depth + 1u))
++                return false;
++        return true;
++    default:
++        return atom_eq((Atom *)a, (Atom *)b);
++    }
++}
++
++static void np_heaps_log(const char *what, Atom *expression, Atom *native,
++                         const OutcomeSet *swi, CettaCount from) {
++    if (g_np_heaps.logged >= 20u)
++        return;
++    if (!g_np_heaps.log) {
++        const char *path = getenv("CETTA_NP_HEAPS_LOG");
++        if (!path || !*path)
++            return;
++        g_np_heaps.log = fopen(path, "w");
++        if (!g_np_heaps.log)
++            return;
++    }
++    g_np_heaps.logged++;
++    fprintf(g_np_heaps.log, "== %s\ncall: ", what);
++    atom_print(expression, g_np_heaps.log);
++    fputs("\nnative: ", g_np_heaps.log);
++    if (native) atom_print(native, g_np_heaps.log); else fputs("<none>", g_np_heaps.log);
++    for (CettaCount i = from; i < swi->len; i++) {
++        fputs("\nswi: ", g_np_heaps.log);
++        atom_print(swi->items[i].atom, g_np_heaps.log);
++    }
++    fputs("\n", g_np_heaps.log);
++    fflush(g_np_heaps.log);
++}
++
++/* 1: answered natively; 0: declined (SWI runs it); -1: failed.  In check
++ * mode nothing is answered here: *native_out gets the native value (or
++ * *native_failed) for the comparison after SWI's answer. */
++static int np_heaps_try(Arena *arena, Atom *expression, Atom *expected,
++                        const PettaLibplImport *entry, OutcomeSet *outcomes,
++                        const PettaLibplDelay *delay, int op,
++                        Atom **native_out, bool *native_failed) {
++    *native_out = NULL;
++    *native_failed = false;
++    if (op != 0 || !expected || expected->kind != ATOM_VAR ||
++        (delay && delay->carried) || entry->auto_resolved)
++        return 0;
++    bool failed = false;
++    Atom *value = np_heap_pop_value(arena, expression, &failed);
++    if (!value)
++        return 0;
++    if (g_np_heaps_mode == NP_HEAPS_CHECK) {
++        *native_out = failed ? NULL : value;
++        *native_failed = failed;
++        return 0;
++    }
++    if (failed)
++        return 1;
++    Bindings bindings;
++    bindings_init(&bindings);
++    Atom *vars[1] = {expected};
++    Atom *values[1] = {value};
++    if (!bindings_add_vars(&bindings, vars, values, 1u)) {
++        bindings_free(&bindings);
++        return 0;
++    }
++    CettaCount before = outcomes->len;
++    outcome_set_add(outcomes, value, &bindings);
++    bindings_free(&bindings);
++    return outcomes->len == before + 1u ? 1 : -1;
++}
++
+ static bool petta_libpl_registered_call_impl(
+     CettaLibPrologRuntime *runtime, Arena *arena,
+     Atom *expression, Atom *expected,
+@@ -4475,6 +4684,28 @@ static bool petta_libpl_registered_call_impl(
+     if (!entry->reference_stdlib)
+         petta_libpl_advance_revision(runtime);
+ 
++    int np_op = g_np_heaps_mode != NP_HEAPS_OFF ? np_heaps_op(entry) : -1;
++    Atom *np_native = NULL;
++    bool np_native_failed = false;
++    CettaCount np_before = outcomes->len;
++    bool np_compare = false;
++    if (np_op >= 0) {
++        g_np_heaps.calls[np_op]++;
++        int handled = np_heaps_try(arena, expression, expected, entry,
++                                   outcomes, delay, np_op,
++                                   &np_native, &np_native_failed);
++        if (handled > 0) {
++            g_np_heaps.native[np_op]++;
++            return true;
++        }
++        if (handled < 0)
++            return false;
++        np_compare = g_np_heaps_mode == NP_HEAPS_CHECK &&
++                     (np_native || np_native_failed);
++        if (!np_compare)
++            g_np_heaps.declined[np_op]++;
++    }
++
+     PettaLibplPlrefHandle erased_handle;
+     bool releases_handle =
+         expression->expr.len == 2u &&
+@@ -4554,6 +4785,27 @@ static bool petta_libpl_registered_call_impl(
+         ok = false;
+     }
+     petta_libpl_var_map_free(&variables);
++    if (np_compare) {
++        g_np_heaps.checked[np_op]++;
++        bool same = ok && (!raised || !*raised);
++        if (same && np_native_failed)
++            same = outcomes->len == np_before;
++        else if (same)
++            same = outcomes->len == np_before + 1u &&
++                   np_atom_same(outcomes->items[np_before].atom, np_native, 0u);
++        if (same && !np_native_failed) {
++            /* the answer binds the result variable to the same value */
++            BindingValue bound = bindings_lookup_value_id(
++                &outcomes->items[np_before].env, expected->var_id);
++            same = bound.skeleton &&
++                   np_atom_same(bound.skeleton, np_native, 0u);
++        }
++        if (!same) {
++            g_np_heaps.mismatched[np_op]++;
++            np_heaps_log(g_np_heaps_names[np_op], expression, np_native,
++                         outcomes, np_before);
++        }
++    }
+     if (ok && succeeded &&
+         (strcmp(entry->name, "consult") == 0 ||
+          strcmp(entry->name, "use_module") == 0 ||
+-- 
+2.34.1
+

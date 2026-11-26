@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""Native primitives, Do 1: where the time of the top PeTTaChainer rows goes.
+
+Inputs, per workload directory W (bench/np/run_workloads.sh with BUILD=prof FOREIGN=1):
+  W/NAME.TAG.r1.fnprof.json   profiler rows (S0's format) + "foreign" (upstream/cetta-np/0009: Prolog calls per row
+                              and predicate: calls, ns, ns converting arguments to Prolog, ns converting answers back,
+                              heap sizes)
+  SYMDIR/W.NAME.TAG.r1.sym.json  the sampler's stacks, symbolised (bench/s1/analyze_samples.py symbolise)
+For each workload and each row named in ROWS (and the groups: every row defined in backward_proof_store.metta =
+"proof store"; every row whose name holds "heap" = "frontier/agenda heap rows") it reports: self time and calls
+(profiler); the time of the row's own Prolog calls by predicate (0009, exact wall time, with the conversion
+share); and the row's samples by native category (bench/s1/sample_categories.py), the samples inside a Prolog
+call (petta_libpl_call on the stack) counted apart.
+
+  row_breakdown.py --runs DIR --sym SYMDIR --image IMG [--json OUT.json] > OUT.md
+"""
+import argparse
+import collections
+import glob
+import json
+import os
+import re
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "s1"))
+import sample_categories  # noqa: E402
+
+ROWS = ["advance-frontier-waiter-heap", "spawn-frontier-goal-heap", "spawn-frontier-heap",
+        "commit-proof-candidate-heap", "schedule-goal-heap", "schedule-goal-row", "search-agenda-heap",
+        "heap-take-best", "heap-prune-to-size", "forward-pop-agenda", "externalize-compiled-addition",
+        "proof-output-key-by-id", "proof-output-atom-by-id", "proof-stats-by-id", "goal-merged-proof-ids",
+        "goal-live-proof-ids", "store-proof-candidate"]
+HEAP_PREDS = {"empty_heap", "add_to_heap", "heap_size", "heap_pop", "get_from_heap"}
+WORKLOADS = ["w1-examples", "w2-wmtm", "w3-benchgen"]
+SHORT = {
+    "prolog (SWI-Prolog and the foreign boundary)": "prolog",
+    "equation selection and call preparation": "call prep",
+    "matching, unification and fact iteration": "matching",
+    "goal dispatch and evaluation": "dispatch",
+    "allocation and freeing": "alloc",
+    "copying and instantiation": "copying",
+    "hashing, interning and term universe": "hashing",
+    "choice points, trail and backtracking": "choice/trail",
+    "space mutation (add/remove atoms)": "space mutation",
+    "grounded ops and arithmetic": "grounded",
+    "profiler": "profiler",
+    "other machine": "other",
+}
+CAT_ORDER = list(SHORT)
+
+
+def defined_heads(image, fname):
+    heads = set()
+    with open(os.path.join(image, fname)) as f:
+        for line in f:
+            m = re.match(r"\(= \(([^\s()]+)", line)
+            if m:
+                heads.add(m.group(1))
+    return heads
+
+
+def load(args, w):
+    rows = collections.defaultdict(lambda: {"self_ns": 0, "calls": 0, "frames": 0, "prepared": 0})
+    foreign = collections.defaultdict(lambda: collections.Counter())
+    total = 0
+    files = sorted(glob.glob(os.path.join(args.runs, w, "*.r1.fnprof.json")))
+    for p in files:
+        d = json.load(open(p))
+        total += d["total_ns"]
+        fns = d["functions"]
+        for f in fns:
+            r = rows[f["head"]]
+            r["self_ns"] += f["self_ns"]
+            r["calls"] += f["calls"]
+            r["frames"] += f["frames"]
+            r["prepared"] += f["prepared_calls"]
+        for x in d.get("foreign", []):
+            c = foreign[(fns[x["fn"]]["head"], x["name"])]
+            for k in ("calls", "ns", "to_term_ns", "from_term_ns", "heap_calls", "heap_size_sum"):
+                c[k] += x[k]
+            c["heap_size_max"] = max(c["heap_size_max"], x["heap_size_max"])
+    samples = collections.defaultdict(collections.Counter)
+    nsamples = 0
+    for p in sorted(glob.glob(os.path.join(args.sym, w + ".*.sym.json"))):
+        d = json.load(open(p))
+        for s in d["samples"]:
+            nsamples += 1
+            row = s["rows"][0]
+            fns = {fn.split("@")[0] for fr in s["stack"] for fn in fr}
+            if "petta_libpl_call" in fns or "petta_libpl_call_raising" in fns:
+                cat = "inside a Prolog call"
+            else:
+                cat = sample_categories.categorise(s["stack"])
+            samples[row][cat] += 1
+            samples[row]["_n"] += 1
+    return files, total, rows, foreign, samples, nsamples
+
+
+def pct(a, b):
+    return 100.0 * a / b if b else 0.0
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--runs", required=True)
+    ap.add_argument("--sym", required=True)
+    ap.add_argument("--image", required=True)
+    ap.add_argument("--json")
+    args = ap.parse_args()
+    store_heads = defined_heads(args.image, "backward_proof_store.metta")
+    out = {}
+    print("# Do 1: where the time of the top rows goes\n")
+    print("Generated by bench/np/row_breakdown.py from %s (profiles with Prolog-call timing, upstream/cetta-np/0009) "
+          "and %s (the sampler's stacks, 1 ms of CPU time per sample).\n" % (args.runs, args.sym))
+    for w in WORKLOADS:
+        files, total, rows, foreign, samples, nsamples = load(args, w)
+        if not files:
+            continue
+        groups = {
+            "group: frontier/agenda heap rows (name holds 'heap')": [h for h in rows if "heap" in h],
+            "group: proof store (rows defined in backward_proof_store.metta)": [h for h in rows if h in store_heads],
+        }
+        allf = collections.Counter()
+        heapf = collections.Counter()
+        for (row, name), c in foreign.items():
+            allf["ns"] += c["ns"]
+            allf["calls"] += c["calls"]
+            if name in HEAP_PREDS:
+                heapf["ns"] += c["ns"]
+                heapf["calls"] += c["calls"]
+                heapf["conv"] += c["to_term_ns"] + c["from_term_ns"]
+                heapf["heap_calls"] += c["heap_calls"]
+                heapf["heap_size_sum"] += c["heap_size_sum"]
+                heapf["heap_size_max"] = max(heapf["heap_size_max"], c["heap_size_max"])
+        print("## %s\n" % w)
+        print("%d file(s), profiled time %.1f s, %d samples. All Prolog calls: %d, %.2f s (%.1f%% of the run). "
+              "Heap calls (empty_heap, add_to_heap, heap_size, heap_pop): %d, %.2f s (**%.1f%%** of the run), of "
+              "which converting terms between CeTTa and Prolog %.0f%%; mean heap size at a call %.0f, max %d.\n"
+              % (len(files), total / 1e9, nsamples, allf["calls"], allf["ns"] / 1e9, pct(allf["ns"], total),
+                 heapf["calls"], heapf["ns"] / 1e9, pct(heapf["ns"], total), pct(heapf["conv"], heapf["ns"]),
+                 heapf["heap_size_sum"] / heapf["heap_calls"] if heapf["heap_calls"] else 0, heapf["heap_size_max"]))
+        print("| row | calls | self s | self % of run | ms/call | own Prolog calls (exact): predicate calls, s, % of "
+              "row self, conversion share | samples | row samples by native category (%) |")
+        print("|---|---|---|---|---|---|---|---|")
+        wout = {"total_ns": total, "samples": nsamples, "foreign_all": dict(allf), "foreign_heap": dict(heapf),
+                "rows": {}}
+        targets = [(r, [r]) for r in ROWS if r in rows] + list(groups.items())
+        for label, members in targets:
+            self_ns = sum(rows[m]["self_ns"] for m in members)
+            calls = sum(rows[m]["calls"] + rows[m]["prepared"] for m in members)
+            fr = collections.defaultdict(collections.Counter)
+            for (row, name), c in foreign.items():
+                if row in members:
+                    key = name if (name in HEAP_PREDS or len(members) == 1) else (
+                        "callPredicate:*" if name.startswith("callPredicate:") else "other")
+                    fr[key].update(c)
+            ftxt = "; ".join("%s %d, %.2f s, %.1f%%, conv %.0f%%" % (
+                n, c["calls"], c["ns"] / 1e9, pct(c["ns"], self_ns), pct(c["to_term_ns"] + c["from_term_ns"], c["ns"]))
+                for n, c in sorted(fr.items(), key=lambda kv: -kv[1]["ns"])) or "none"
+            sc = collections.Counter()
+            for m in members:
+                sc.update(samples.get(m, {}))
+            n = sc.pop("_n", 0)
+            cats = ["inside a Prolog call"] + CAT_ORDER
+            stxt = ", ".join("%s %.0f" % (SHORT.get(c, "in Prolog call"), pct(sc[c], n))
+                             for c in sorted(cats, key=lambda c: -sc[c]) if sc[c] and pct(sc[c], n) >= 1.0)
+            name = label if len(members) == 1 else "%s (%d rows)" % (label, len(members))
+            print("| %s | %d | %.2f | %.1f | %.3f | %s | %d | %s |" % (
+                name, calls, self_ns / 1e9, pct(self_ns, total), (self_ns / 1e6 / calls) if calls else 0, ftxt, n,
+                stxt))
+            wout["rows"][label] = {"members": len(members), "calls": calls, "self_ns": self_ns,
+                                   "foreign": {k: dict(v) for k, v in fr.items()},
+                                   "samples": n, "categories": dict(sc)}
+        print()
+        out[w] = wout
+    if args.json:
+        with open(args.json, "w") as f:
+            json.dump(out, f, indent=1, sort_keys=True)
+            f.write("\n")
+
+
+if __name__ == "__main__":
+    main()
