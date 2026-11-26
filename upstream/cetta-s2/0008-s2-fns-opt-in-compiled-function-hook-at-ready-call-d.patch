@@ -1,0 +1,269 @@
+From ca93f83a26815b3e668bbc01b936541e6e4278d6 Mon Sep 17 00:00:00 2001
+From: cettapack <cettapack@localhost>
+Date: Thu, 26 Nov 2026 10:11:13 -0700
+Subject: [PATCH 0008] s2 fns: opt-in compiled-function hook at ready-call dispatch
+ in PeTTa's search machine (CETTA_S2_FNS=1)
+
+When PeTTa's machine dispatches a ready call (operands are values) that
+CeTTa's own admission for its relation path would run over the program's
+equations, before that path runs, a compiled function (src/cetta_s2_fns.c;
+the default has none) whose head matches may answer the call's single
+value, which the machine unifies with the expected result as that path
+does, or decline, having changed nothing, and the call runs as before.
+Run-time switch $CETTA_S2_FNS (0 off, 1 on, invalid: guards forced
+invalid).  Nothing is compiled or called with CETTA_S2_FNS=0 (the build
+default).
+---
+ Makefile                   | 15 +++++-
+ src/cetta_s2_fns.c         | 16 +++++++
+ src/cetta_s2_fns.h         | 54 ++++++++++++++++++++++
+ src/petta_search_machine.c | 95 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 179 insertions(+), 1 deletion(-)
+ create mode 100644 src/cetta_s2_fns.c
+ create mode 100644 src/cetta_s2_fns.h
+
+diff --git a/Makefile b/Makefile
+index 977e4d10..e22c3991 100644
+--- a/Makefile
++++ b/Makefile
+@@ -626,6 +626,16 @@ ifeq ($(CETTA_S1_SITES),1)
+ BUILD_OBJ_TAG := $(BUILD_OBJ_TAG).s1sites
+ S1_SITES_CPPFLAGS = -DCETTA_S1_SITES=1
+ endif
++# Opt-in compiled functions (src/cetta_s2_fns.h, cettapack S2); off by default.
++CETTA_S2_FNS ?= 0
++ifneq ($(filter $(CETTA_S2_FNS),0 1),$(CETTA_S2_FNS))
++$(error CETTA_S2_FNS must be 0 or 1)
++endif
++S2_FNS_CPPFLAGS =
++ifeq ($(CETTA_S2_FNS),1)
++BUILD_OBJ_TAG := $(BUILD_OBJ_TAG).s2fns
++S2_FNS_CPPFLAGS = -DCETTA_S2_FNS=1
++endif
+ ifeq ($(ENABLE_PETTA_TYPECHECK_V2),0)
+ BUILD_OBJ_TAG := $(BUILD_OBJ_TAG).no-petta-typecheck-v2
+ endif
+@@ -709,7 +719,7 @@ PROC_FORK_SPAWN_CPPFLAGS =
+ ifeq ($(CETTA_PROC_FORK_SPAWN),1)
+ PROC_FORK_SPAWN_CPPFLAGS = -DCETTA_PROC_FORK_SPAWN=1
+ endif
+-CPPFLAGS = -Isrc -I. -Iexperiments/gslt2parse_foundation/native $(BRIDGE_CFLAGS) $(PY_CFLAGS) $(GMP_CFLAGS) $(LIB_PROLOG_CFLAGS) $(HTTP_CFLAGS) $(DURABLE_CFLAGS) $(PROVENANCE_CPPFLAGS) $(PRIME_RECEIPT_INDEX_CPPFLAGS) $(PRIME_NEED_HEAP_INDEX_CPPFLAGS) $(PRIME_NEED_CLOSURE_CAPTURE_CPPFLAGS) $(PRIME_EVAL_STACK_CPPFLAGS) $(PROC_FORK_SPAWN_CPPFLAGS) $(FNPROF_CPPFLAGS) $(S1_SITES_CPPFLAGS) -include $(BUILD_CONFIG_HEADER)
++CPPFLAGS = -Isrc -I. -Iexperiments/gslt2parse_foundation/native $(BRIDGE_CFLAGS) $(PY_CFLAGS) $(GMP_CFLAGS) $(LIB_PROLOG_CFLAGS) $(HTTP_CFLAGS) $(DURABLE_CFLAGS) $(PROVENANCE_CPPFLAGS) $(PRIME_RECEIPT_INDEX_CPPFLAGS) $(PRIME_NEED_HEAP_INDEX_CPPFLAGS) $(PRIME_NEED_CLOSURE_CAPTURE_CPPFLAGS) $(PRIME_EVAL_STACK_CPPFLAGS) $(PROC_FORK_SPAWN_CPPFLAGS) $(FNPROF_CPPFLAGS) $(S1_SITES_CPPFLAGS) $(S2_FNS_CPPFLAGS) -include $(BUILD_CONFIG_HEADER)
+ CFLAGS = -O3 -Wall -Werror -std=c11 -pthread
+ DEPFLAGS = -MMD -MP
+ # Libraries a binary does not use are not recorded as its dependencies, with
+@@ -815,6 +825,9 @@ SRC += src/space_dense.c
+ ifeq ($(CETTA_S1_SITES),1)
+ SRC += src/cetta_s1_sites.c
+ endif
++ifeq ($(CETTA_S2_FNS),1)
++SRC += src/cetta_s2_fns.c
++endif
+ SRC += src/space_tuples.c
+ SRC += src/space_skeleton.c
+ SRC += src/term_molecule.c src/native_open_query.c
+diff --git a/src/cetta_s2_fns.c b/src/cetta_s2_fns.c
+new file mode 100644
+index 00000000..f467d3f5
+--- /dev/null
++++ b/src/cetta_s2_fns.c
+@@ -0,0 +1,16 @@
++/* Compiled functions (cettapack S2): the default has none.  A build that
++ * compiles functions replaces this file (cettapack bench/s2/build_s2_cetta.sh
++ * copies cettapack's src/cpk_s2_fns.c here). */
++#include "cetta_s2_fns.h"
++#if CETTA_S2_FNS
++bool cetta_s2_fns_active(void) { return false; }
++bool cetta_s2_fns_claims(SymbolId head) {
++    (void)head;
++    return false;
++}
++int cetta_s2_fns_try(const CettaS2FnCall *call, Atom *call_atom,
++                     Atom **answer) {
++    (void)call; (void)call_atom; (void)answer;
++    return CETTA_S2_FN_DECLINED;
++}
++#endif
+diff --git a/src/cetta_s2_fns.h b/src/cetta_s2_fns.h
+new file mode 100644
+index 00000000..90badf28
+--- /dev/null
++++ b/src/cetta_s2_fns.h
+@@ -0,0 +1,54 @@
++#ifndef CETTA_S2_FNS_H
++#define CETTA_S2_FNS_H
++
++/* Compiled functions (cettapack S2).  Built only with `make CETTA_S2_FNS=1`;
++ * with the default CETTA_S2_FNS=0 nothing here is compiled or called.
++ *
++ * When PeTTa's search machine dispatches a call goal whose operands are
++ * ready (PETTA_GOAL_CALL_READY / _RESOLVED: the operands are values), that
++ * CeTTa's own admission for its relation path would run over the program's
++ * equations (not a Prolog predicate, memo or tabled relation, translator
++ * rule, arrow signature or specializer route), before that path runs, and only if the call's head is a symbol a compiled
++ * function claims (cetta_s2_fns_claims), it offers the call, with the
++ * machine's current bindings applied, to cetta_s2_fns_try.  A compiled
++ * function whose guards hold computes the call's single answer and the
++ * machine unifies it with the goal's expected result, as it does for a value;
++ * otherwise the function declines, having changed nothing, and the machine
++ * runs the call as before (the residual).  The functions themselves live in
++ * src/cetta_s2_fns.c; this file only fixes the interface.  The run-time
++ * switch is $CETTA_S2_FNS: unset or 0 -> nothing is offered (packs off);
++ * 1 -> active; invalid -> every guard forced invalid (every call takes the
++ * residual; for tests). */
++#ifndef CETTA_S2_FNS
++#define CETTA_S2_FNS 0
++#endif
++
++#if CETTA_S2_FNS
++#include <stdbool.h>
++#include <stddef.h>
++#include "atom.h"
++#include "space.h"
++
++typedef struct {
++    /* &self of the running program (definition and builtin guards) */
++    Space *self;
++    /* the arena the answer is built in (the machine's heap) */
++    Arena *arena;
++    void *ctx;
++    /* the space a reference names, or NULL */
++    Space *(*resolve)(void *ctx, Atom *reference);
++} CettaS2FnCall;
++
++enum { CETTA_S2_FN_DECLINED = 0, CETTA_S2_FN_ANSWER = 1 };
++
++/* Is any compiled function active ($CETTA_S2_FNS, read once)? */
++bool cetta_s2_fns_active(void);
++/* Does a compiled function claim calls with this head (cheap; no guards)? */
++bool cetta_s2_fns_claims(SymbolId head);
++/* call: the call atom, operands with the machine's bindings applied.
++ * ANSWER sets *answer (in call->arena); DECLINED leaves it untouched. */
++int cetta_s2_fns_try(const CettaS2FnCall *call, Atom *call_atom,
++                     Atom **answer);
++#endif
++
++#endif
+diff --git a/src/petta_search_machine.c b/src/petta_search_machine.c
+index 3c8135b3..65607dd6 100644
+--- a/src/petta_search_machine.c
++++ b/src/petta_search_machine.c
+@@ -64,6 +64,7 @@
+ #include <assert.h>
+ #include "cetta_fnprof.h"
+ #include "cetta_s1_sites.h"
++#include "cetta_s2_fns.h"
+ #if CETTA_FNPROF
+ #include <pthread.h>
+ #endif
+@@ -39877,6 +39878,85 @@ static void petta_machine_record_transition(
+     }
+ }
+ 
++#if CETTA_S2_FNS
++static Space *petta_s2_fn_resolve(void *context, Atom *reference) {
++    PettaMachineImpl *machine = context;
++    Space *target = machine->host.resolve_space
++        ? machine->host.resolve_space(machine->host.context, machine->space,
++                                      &machine->heap, reference)
++        : NULL;
++    if (!target && reference->kind == ATOM_SYMBOL &&
++        reference->sym_id == g_builtin_syms.self)
++        target = machine->space;
++    return target;
++}
++
++/* cettapack S2: a ready call on a head a compiled function claims is offered
++ * to it only when CeTTa's own admission for the relation path
++ * (petta_machine_try_ready_relation_invocation, below) admits it, i.e. when
++ * CeTTa would run this call over the program's equations at this point (not
++ * a Prolog predicate, memo or tabled relation, translator rule, arrow
++ * signature or specializer route); the compiled function then answers its
++ * value, unified with the goal's expected result as that path does, or
++ * declines.  Declining changes nothing. */
++static bool petta_machine_try_s2_fn(
++    PettaMachineImpl *machine, const PettaGoal *goal, bool *handled) {
++    Atom *call_atom = goal->first;
++    if (!call_atom || !goal->second || call_atom->kind != ATOM_EXPR ||
++        call_atom->expr.len == 0u || call_atom->expr.len > 9u ||
++        call_atom->expr.elems[0]->kind != ATOM_SYMBOL ||
++        !cetta_s2_fns_claims(call_atom->expr.elems[0]->sym_id))
++        return false;
++    if (machine->host.analysis ||
++        machine->host.externalize_equation_choices ||
++        machine->host.admit_branch_capture ||
++        machine->host.prepare_resolved_call ||
++        machine->host.begin_relation_call ||
++        machine->host.record_equation_use ||
++        !machine->host.admit_space_query_values)
++        return false;
++    CettaInvocation invocation;
++    bool partial_head = false;
++    CettaExprLen arity = 0u;
++    if (!petta_machine_value_invocation(call_atom, &invocation,
++                                        &partial_head) ||
++        partial_head || !cetta_invocation_arity(&invocation, &arity) ||
++        arity > 8u ||
++        invocation.head.skeleton->kind != ATOM_SYMBOL)
++        return false;
++    BindingValue values[8];
++    BindingsBuilder *builder = search_context_builder(&machine->search);
++    Bindings *environment = &builder->current;
++    for (CettaExprIndex index = 0u; index < arity; index++) {
++        if (!bindings_resolve_value_preview(
++                environment, cetta_invocation_argument(&invocation, index),
++                &values[index]))
++            return false;
++    }
++    if (machine->host.admit_space_query_values(
++            machine->host.context, machine->space,
++            invocation.head.skeleton->sym_id, environment, values,
++            arity) != PETTA_MACHINE_SPACE_QUERY_ADMITTED)
++        return false;
++    Atom *applied = petta_machine_apply_bindings(machine, environment,
++        &machine->heap, call_atom);
++    if (!applied)
++        return false;
++    CettaS2FnCall call = {
++        .self = machine->space,
++        .arena = &machine->heap,
++        .ctx = machine,
++        .resolve = petta_s2_fn_resolve,
++    };
++    Atom *answer = NULL;
++    if (cetta_s2_fns_try(&call, applied, &answer) != CETTA_S2_FN_ANSWER ||
++        !answer)
++        return false;
++    *handled = true;
++    return petta_machine_unify(machine, answer, goal->second);
++}
++#endif
++
+ static bool petta_machine_dispatch_goal(
+     PettaMachineImpl *machine, PettaGoal goal,
+     PettaMachineStep *failure) {
+@@ -40170,6 +40250,21 @@ static bool petta_machine_dispatch_goal(
+             return dispatched;
+     }
+ 
++#if CETTA_S2_FNS
++    /* A compiled function (cettapack S2, src/cetta_s2_fns.h) is offered a
++     * ready call that the relation path below would run over the program's
++     * equations; it answers its value, unified with the expected result as
++     * that path does, or declines and the call runs as below. */
++    if ((goal.kind == PETTA_GOAL_CALL_READY ||
++         goal.kind == PETTA_GOAL_CALL_READY_RESOLVED) &&
++        cetta_s2_fns_active()) {
++        bool handled = false;
++        bool dispatched = petta_machine_try_s2_fn(machine, &goal, &handled);
++        if (handled)
++            return dispatched;
++    }
++#endif
++
+     if (goal.kind == PETTA_GOAL_CALL_READY ||
+         goal.kind == PETTA_GOAL_CALL_READY_RESOLVED) {
+         CettaInvocation invocation;
+-- 
+2.34.1
+

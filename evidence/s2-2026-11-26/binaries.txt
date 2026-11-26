@@ -1,0 +1,8 @@
+959d1c2d9630aaf384782c64b4b8fe5502a6fba3bc5ee026edb93488442cb4ee build/s2/cetta-fns/cetta
+4b7c08c43e8175d8dfee97a9eb767ec8566c94e8e132ea7bf3139b75aea43117 ../s1-hot-sites/build/s0/cetta-base/cetta
+fns build head: d2fd7c85ed0c3b3ed233f4c06a324fb261d922ed s2 fns: opt-in compiled-function hook at ready-call dispatch in PeTTa's search machine (CETTA_S2_FNS=1)
+fns build args: BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=0 CETTA_S1_SITES=1 CETTA_S2_FNS=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+663788fb10f9d498ded78d91154af4995844be7e22593e549f6d34cd68167b7b  src/cpk_s2_fns.c
+de57c27a0e345aee84286edf3871c8c81af73050dac702395564e3036f2ab367  src/cpk_s2_fns_text.h
+40e8eb4708ef589e277055a0f3012b30d0cc455cdfeec6052bf186bdfed95ac4  src/cpk_s1_sites.c
+50a806add4f531c1486336a11d54e774e86cd4147bb6b9286f255e8f3a914a2d build/s2/cetta-fnsprof/cetta (build head ddc64e7d2cbd, CETTA_FNPROF=1 CETTA_S1_SITES=1 CETTA_S2_FNS=1)

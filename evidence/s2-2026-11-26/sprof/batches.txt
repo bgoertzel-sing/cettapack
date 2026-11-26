@@ -1,0 +1,1 @@
+round=1 order=poff,pon start=2026-11-26T20:00:46Z end=2026-11-26T20:06:22Z load_start=5.22 5.38 5.67 load_end=5.80 5.67 5.71

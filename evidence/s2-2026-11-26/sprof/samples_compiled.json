@@ -1,0 +1,56 @@
+{
+ "w1-examples": {
+  "poff": {
+   "compiled": 16,
+   "compiled_in_search": 12,
+   "fn_rows": 6412,
+   "runs": 11,
+   "samples": 46522,
+   "search": 37416
+  },
+  "pon": {
+   "compiled": 830,
+   "compiled_in_search": 782,
+   "fn_rows": 3085,
+   "runs": 11,
+   "samples": 45776,
+   "search": 36038
+  }
+ },
+ "w2-wmtm": {
+  "poff": {
+   "compiled": 7,
+   "compiled_in_search": 4,
+   "fn_rows": 2167,
+   "runs": 1,
+   "samples": 24777,
+   "search": 18322
+  },
+  "pon": {
+   "compiled": 365,
+   "compiled_in_search": 354,
+   "fn_rows": 1314,
+   "runs": 1,
+   "samples": 26198,
+   "search": 19684
+  }
+ },
+ "w3-benchgen": {
+  "poff": {
+   "compiled": 29,
+   "compiled_in_search": 9,
+   "fn_rows": 4349,
+   "runs": 1,
+   "samples": 83819,
+   "search": 32807
+  },
+  "pon": {
+   "compiled": 478,
+   "compiled_in_search": 335,
+   "fn_rows": 1926,
+   "runs": 1,
+   "samples": 78580,
+   "search": 28930
+  }
+ }
+}

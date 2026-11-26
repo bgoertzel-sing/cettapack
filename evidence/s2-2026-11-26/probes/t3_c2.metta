@@ -1,0 +1,5 @@
+!(import! &self ../petta_chainer)
+!(add-atom &self (: expr-arity (-> Atom Number)))
+!(expr-arity (a b))
+!(remove-atom &self (: expr-arity (-> Atom Number)))
+!(expr-arity (a b))

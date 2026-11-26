@@ -1,0 +1,9 @@
+true
+true
+(proof-output-key (Inheritance (kb1 ctx ())))
+true
+((proof-output-key (Inheritance (kb1 ctx ()))))
+true
+(proof-output-key (Inheritance (kb1 ctx ())))
+true
+()

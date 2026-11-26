@@ -1,0 +1,93 @@
+{
+ "t1_values": {
+  "answered_min": {
+   "tv-confidence": 1,
+   "term-confidence": 1,
+   "premises-expected-confidence": 1,
+   "frontier-pool-potential": 1,
+   "frontier-remaining-score": 1,
+   "make-and-bundle": 1,
+   "candidate-output-key": 1
+  },
+  "declined_call_min": {
+   "term-confidence": 1,
+   "premises-expected-confidence": 1
+  },
+  "reasons": [
+   "case would bind a variable",
+   "CPU",
+   "not a list"
+  ]
+ },
+ "t2_proof_store": {
+  "answered_min": {
+   "proof-output-key-by-id": 2,
+   "proof-output-atom-by-id": 3
+  },
+  "declined_call_min": {
+   "proof-output-key-by-id": 2
+  },
+  "reasons": [
+   "no row",
+   "more than one distinct output"
+  ]
+ },
+ "t3_redefine_self": {
+  "answered_min": {
+   "tv-confidence": 6,
+   "frontier-remaining-score": 2,
+   "make-and-bundle": 2,
+   "frontier-pool-potential": 1
+  },
+  "invalid_min": {
+   "tv-confidence": 3,
+   "frontier-remaining-score": 1,
+   "make-and-bundle": 2,
+   "frontier-pool-potential": 1
+  },
+  "reasons": [
+   "an extra equation of a compiled function",
+   "builtin",
+   "constructor",
+   "type declaration",
+   "differs from the compiled text"
+  ]
+ },
+ "t4_redefine_module": {
+  "answered_min": {
+   "proof-output-key-by-id": 5,
+   "proof-output-atom-by-id": 1,
+   "tv-confidence": 1
+  },
+  "invalid_min": {
+   "proof-output-key-by-id": 2,
+   "proof-output-atom-by-id": 1,
+   "tv-confidence": 1
+  },
+  "reasons": [
+   "an equation of a compiled function in a space the code reads"
+  ]
+ },
+ "t5_proof_data": {
+  "answered_min": {
+   "proof-output-key-by-id": 2
+  },
+  "declined_call_min": {
+   "proof-output-key-by-id": 2
+  },
+  "reasons": [
+   "more than one distinct output",
+   "no row"
+  ]
+ },
+ "t6_types": {
+  "answered_min": {
+   "tv-confidence": 4,
+   "frontier-pool-potential": 1,
+   "make-and-bundle": 1
+  },
+  "declined_call_min": {
+   "proof-output-key-by-id": 2
+  }
+ }
+}
