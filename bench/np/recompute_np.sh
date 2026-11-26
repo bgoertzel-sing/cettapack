@@ -34,7 +34,7 @@ else
   cmp -s $T/breakdown.json $E/do1/breakdown.json && say do1/breakdown.json identical || say do1/breakdown.json DIFFERS
 fi
 # 2. per-run check tables
-for d in do1 check bench bench-aa bench-off; do
+for d in do1 check bench bench-aa bench-offon bench-off; do
   [ -d $E/$d ] || continue
   python3 bench/np/summarize_checks.py $E/$d --check >/dev/null && say $d/checks.md identical || say $d/checks.md DIFFERS
 done
@@ -43,6 +43,7 @@ python3 bench/np/summarize_bagtests.py $E/bagtest --check >/dev/null && say bagt
 # 4. paired tables
 python3 bench/np/summarize_bench.py $E/bench --base on-none --new on-on --check >/dev/null && say bench/summary identical || say bench/summary DIFFERS
 python3 bench/np/summarize_bench.py $E/bench-aa --base on-none --new on-off --check >/dev/null && say bench-aa/summary identical || say bench-aa/summary DIFFERS
+python3 bench/np/summarize_bench.py $E/bench-offon --base on-off --new on-on --check >/dev/null && say bench-offon/summary identical || say bench-offon/summary DIFFERS
 python3 bench/np/summarize_bench.py $E/bench-off --base off-none --new off-on --check >/dev/null && say bench-off/summary identical || say bench-off/summary DIFFERS
 rm -rf $T
 exit $fail

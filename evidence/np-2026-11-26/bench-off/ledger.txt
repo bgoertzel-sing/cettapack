@@ -1,0 +1,2 @@
+batch r=1 order=none on start=2026-11-26T20:17:03Z load_start=3.66 4.78 5.40
+batch r=1 end=2026-11-26T20:21:09Z load_end=3.45 4.07 4.96

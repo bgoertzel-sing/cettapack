@@ -1,0 +1,114 @@
+{
+ "base": "off-none",
+ "new": "off-on",
+ "workloads": {
+  "w1-examples": {
+   "answers_ok": 22,
+   "file_runs": 22,
+   "heaps_new": {
+    "calls": 1658,
+    "declined": 0,
+    "native": 1658
+   },
+   "ratio_user": [
+    1.0534292319547904
+   ],
+   "ratio_wall": [
+    1.0525514089870527
+   ],
+   "rss_mb_base": [
+    153.9140625
+   ],
+   "rss_mb_new": [
+    108.46484375
+   ],
+   "runs": [
+    1
+   ],
+   "user_base": [
+    38.93000000000001
+   ],
+   "user_new": [
+    41.01
+   ],
+   "wall_base": [
+    39.38999999999999
+   ],
+   "wall_new": [
+    41.46
+   ]
+  },
+  "w2-wmtm": {
+   "answers_ok": 2,
+   "file_runs": 2,
+   "heaps_new": {
+    "calls": 1487,
+    "declined": 0,
+    "native": 1487
+   },
+   "ratio_user": [
+    0.9812252964426877
+   ],
+   "ratio_wall": [
+    0.981290004923683
+   ],
+   "rss_mb_base": [
+    110.15234375
+   ],
+   "rss_mb_new": [
+    107.4765625
+   ],
+   "runs": [
+    1
+   ],
+   "user_base": [
+    20.24
+   ],
+   "user_new": [
+    19.86
+   ],
+   "wall_base": [
+    20.31
+   ],
+   "wall_new": [
+    19.93
+   ]
+  },
+  "w3-benchgen": {
+   "answers_ok": 2,
+   "file_runs": 2,
+   "heaps_new": {
+    "calls": 3003,
+    "declined": 0,
+    "native": 3003
+   },
+   "ratio_user": [
+    0.9691686844229217
+   ],
+   "ratio_wall": [
+    0.9676022453889334
+   ],
+   "rss_mb_base": [
+    310.70703125
+   ],
+   "rss_mb_new": [
+    180.82421875
+   ],
+   "runs": [
+    1
+   ],
+   "user_base": [
+    61.95
+   ],
+   "user_new": [
+    60.04
+   ],
+   "wall_base": [
+    62.35
+   ],
+   "wall_new": [
+    60.33
+   ]
+  }
+ }
+}
