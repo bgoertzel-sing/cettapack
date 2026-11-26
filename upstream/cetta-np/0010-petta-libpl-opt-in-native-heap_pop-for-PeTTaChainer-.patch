@@ -1,4 +1,4 @@
-From c7ef44ac67a8d139aed02ca02fbbbab83ae8e872 Mon Sep 17 00:00:00 2001
+From b2ae4f2200a99133cf24a582b83ee8aef79d6eba Mon Sep 17 00:00:00 2001
 From: cettapack <cettapack@localhost>
 Date: Thu, 26 Nov 2026 10:18:33 -0700
 Subject: [PATCH] petta libpl: opt-in native heap_pop for PeTTaChainer
@@ -11,16 +11,16 @@ add_to_heap, get_from_heap and heap_size natively (petta_priority_heap.c);
 PeTTaChainer's heap_pop/2 (heap_helpers.pl: get_from_heap/4 as [P,X,Rest]) is
 an imported Prolog function, so each pop converts the whole heap term to
 Prolog and back. While on, heap_pop(H) is answered by the same
-petta_priority_heap_call as get_from_heap(H,P,X,Rest), packaged as (P X Rest);
+petta_priority_heap_call as get_from_heap(H,P,X,Rest), packaged as (P X Rest) and bound to the result variable or to a result pattern of three distinct variables;
 whatever that declines runs in SWI-Prolog as before. 'check' computes each pop
 both ways, answers SWI's and counts differences ($CETTA_NP_HEAPS_STATS,
 $CETTA_NP_HEAPS_LOG).
 ---
- src/petta_libpl.c | 252 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 252 insertions(+)
+ src/petta_libpl.c | 296 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 296 insertions(+)
 
 diff --git a/src/petta_libpl.c b/src/petta_libpl.c
-index 677d46d0..5060ffeb 100644
+index 677d46d0..99697fb1 100644
 --- a/src/petta_libpl.c
 +++ b/src/petta_libpl.c
 @@ -15,6 +15,7 @@
@@ -51,7 +51,7 @@ index 677d46d0..5060ffeb 100644
      return true;
  }
  
-@@ -4416,6 +4423,208 @@ static bool petta_libpl_run_query(
+@@ -4416,6 +4423,246 @@ static bool petta_libpl_run_query(
      return ok;
  }
  
@@ -220,6 +220,36 @@ index 677d46d0..5060ffeb 100644
 +    fflush(g_np_heaps.log);
 +}
 +
++/* The result positions handled here: a variable, or an expression of
++ * distinct variables that the answer (P X Rest) instantiates (PeTTaChainer's
++ * (let ($key $item $rest) (heap_pop $agenda) ...)).  Its variables and the
++ * values the native answer gives them go to vars/values (at most 3). */
++static bool np_heap_pop_bind(Atom *expected, Atom *value, Atom **vars,
++                             Atom **values, uint32_t *count) {
++    *count = 0u;
++    if (expected->kind == ATOM_VAR) {
++        vars[0] = expected;
++        values[0] = value;
++        *count = 1u;
++        return true;
++    }
++    if (expected->kind != ATOM_EXPR || expected->expr.len != 3u ||
++        value->kind != ATOM_EXPR || value->expr.len != 3u)
++        return false;
++    for (CettaExprLen i = 0; i < 3u; i++) {
++        Atom *v = expected->expr.elems[i];
++        if (!v || v->kind != ATOM_VAR)
++            return false;
++        for (CettaExprLen j = 0; j < i; j++)
++            if (var_id_eq(expected->expr.elems[j]->var_id, v->var_id))
++                return false;
++        vars[i] = v;
++        values[i] = value->expr.elems[i];
++    }
++    *count = 3u;
++    return true;
++}
++
 +/* 1: answered natively; 0: declined (SWI runs it); -1: failed.  In check
 + * mode nothing is answered here: *native_out gets the native value (or
 + * *native_failed) for the comparison after SWI's answer. */
@@ -229,12 +259,22 @@ index 677d46d0..5060ffeb 100644
 +                        Atom **native_out, bool *native_failed) {
 +    *native_out = NULL;
 +    *native_failed = false;
-+    if (op != 0 || !expected || expected->kind != ATOM_VAR ||
-+        (delay && delay->carried) || entry->auto_resolved)
++    if (op != 0 || !expected || (delay && delay->carried) ||
++        entry->auto_resolved)
++        return 0;
++    if (expected->kind != ATOM_VAR &&
++        !(expected->kind == ATOM_EXPR && expected->expr.len == 3u &&
++          expected->expr.elems[0]->kind == ATOM_VAR &&
++          expected->expr.elems[1]->kind == ATOM_VAR &&
++          expected->expr.elems[2]->kind == ATOM_VAR))
 +        return 0;
 +    bool failed = false;
 +    Atom *value = np_heap_pop_value(arena, expression, &failed);
 +    if (!value)
++        return 0;
++    Atom *vars[3], *values[3];
++    uint32_t count = 0u;
++    if (!failed && !np_heap_pop_bind(expected, value, vars, values, &count))
 +        return 0;
 +    if (g_np_heaps_mode == NP_HEAPS_CHECK) {
 +        *native_out = failed ? NULL : value;
@@ -245,9 +285,7 @@ index 677d46d0..5060ffeb 100644
 +        return 1;
 +    Bindings bindings;
 +    bindings_init(&bindings);
-+    Atom *vars[1] = {expected};
-+    Atom *values[1] = {value};
-+    if (!bindings_add_vars(&bindings, vars, values, 1u)) {
++    if (!bindings_add_vars(&bindings, vars, values, count)) {
 +        bindings_free(&bindings);
 +        return 0;
 +    }
@@ -260,7 +298,7 @@ index 677d46d0..5060ffeb 100644
  static bool petta_libpl_registered_call_impl(
      CettaLibPrologRuntime *runtime, Arena *arena,
      Atom *expression, Atom *expected,
-@@ -4475,6 +4684,28 @@ static bool petta_libpl_registered_call_impl(
+@@ -4475,6 +4722,28 @@ static bool petta_libpl_registered_call_impl(
      if (!entry->reference_stdlib)
          petta_libpl_advance_revision(runtime);
  
@@ -289,7 +327,7 @@ index 677d46d0..5060ffeb 100644
      PettaLibplPlrefHandle erased_handle;
      bool releases_handle =
          expression->expr.len == 2u &&
-@@ -4554,6 +4785,27 @@ static bool petta_libpl_registered_call_impl(
+@@ -4554,6 +4823,33 @@ static bool petta_libpl_registered_call_impl(
          ok = false;
      }
      petta_libpl_var_map_free(&variables);
@@ -302,11 +340,17 @@ index 677d46d0..5060ffeb 100644
 +            same = outcomes->len == np_before + 1u &&
 +                   np_atom_same(outcomes->items[np_before].atom, np_native, 0u);
 +        if (same && !np_native_failed) {
-+            /* the answer binds the result variable to the same value */
-+            BindingValue bound = bindings_lookup_value_id(
-+                &outcomes->items[np_before].env, expected->var_id);
-+            same = bound.skeleton &&
-+                   np_atom_same(bound.skeleton, np_native, 0u);
++            /* the answer binds the result position's variables to the
++             * same values */
++            Atom *vars[3], *values[3];
++            uint32_t count = 0u;
++            same = np_heap_pop_bind(expected, np_native, vars, values, &count);
++            for (uint32_t i = 0; same && i < count; i++) {
++                BindingValue bound = bindings_lookup_value_id(
++                    &outcomes->items[np_before].env, vars[i]->var_id);
++                same = bound.skeleton &&
++                       np_atom_same(bound.skeleton, values[i], 0u);
++            }
 +        }
 +        if (!same) {
 +            g_np_heaps.mismatched[np_op]++;

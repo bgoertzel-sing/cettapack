@@ -112,9 +112,25 @@ def main():
     tests["h5_large_ground"] = [("bigg", bigg)]
     tests["h6_random_ground"] = [("g%d" % i, rand_ops(rng, rng.randint(20, 120), rng.choice(["int", "float", "mix"]),
                                                       rng.choice([0.2, 0.4]), GROUND)) for i in range(20)]
+    # pops through a result pattern, as PeTTaChainer's agenda loop does: (let ($key $item $rest) (heap_pop $h) ...)
+    drains = []
+    for i in range(12):
+        n = rng.choice([5, 40, 150, 400])
+        drains.append(("d%d" % i, [("add", num(rng, rng.choice(["int", "float", "mix"])), rng.choice(GROUND))
+                                   for _ in range(n)]))
+    tests["h7_pattern_drain"] = drains
     for name, cases in tests.items():
         with open(os.path.join(a.out, name + ".metta"), "w") as f:
             f.write(common)
+            if name == "h7_pattern_drain":
+                f.write("(= (np-drain $h $acc) (if (== (heap_size $h) 0) $acc\n"
+                        "   (let ($key $item $rest) (heap_pop $h) (np-drain $rest (cons-atom ($key $item) $acc)))))\n")
+                for cname, ops in cases:
+                    binds = ["($h0 (empty_heap))"] + ["($h%d (add_to_heap $h%d %s %s))" % (j + 1, j, op[1], op[2])
+                                                      for j, op in enumerate(ops)]
+                    f.write("!(let* (%s)\n   (np-result %s (np-drained (np-drain $h%d ()))))\n"
+                            % ("\n        ".join(binds), cname, len(ops)))
+                continue
             for cname, ops in cases:
                 f.write(case(cname, ops))
     print(" ".join(sorted(tests)))

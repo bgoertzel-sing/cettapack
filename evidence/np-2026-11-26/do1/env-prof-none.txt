@@ -1,11 +1,11 @@
 tag=prof-none build=prof shim=none cetta=/home/openclaw/research-agent/projects/cettapack/wt/native-primitives/build/np/cetta-prof/cetta foreign=1
-cetta_sha256=21e0139a9d525ef675a16a18ef6bd1b1351962f3e6fb54d3be1a536061476115
-cetta_build_head=a9ba7d7e70361e67d1af59ce3536d83673ff73c1 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
+cetta_sha256=9baecb149214031e7ef3c92e29c0cfc066b2cc743f7aa2d20265d3b1b48937f5
+cetta_build_head=884f8ab6d281cd04d21f6c147c32da52b1f9b2d8 petta libpl: opt-in native heap_pop for PeTTaChainer (cettapack_native_heaps/1)
 cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0005-fnprof-opt-in-PeTTa-function-profiler-CETTA_FNPROF-1.patch 0006-fnprof-C-level-sampler-CETTA_FNPROF_SAMPLE_US-sample.patch 0009-fnprof-Prolog-foreign-call-timing-per-function-and-p.patch 0010-petta-libpl-opt-in-native-heap_pop-for-PeTTaChainer-.patch 
 cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_FNPROF=1 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
 chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
-cettapack_head=f5bac2a638e238f5490003cce546e96b37831dd2 dirty=0
-host=pop-os nproc=8 date=2026-11-26T17:49:36Z load=4.85 5.08 5.22
+cettapack_head=c84234b9af1e263fbcfee94c1fcab684ebd92316 dirty=101
+host=pop-os nproc=8 date=2026-11-26T18:06:07Z load=6.09 6.26 5.81
 file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
 file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
 file np_heaps_check.metta sha256=7911761f25a1afec1aa1bc6d01630e6ef3ef87dfa033e00620a777a5e59295c6

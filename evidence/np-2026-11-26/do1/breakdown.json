@@ -2,220 +2,221 @@
  "w1-examples": {
   "foreign_all": {
    "calls": 56543,
-   "ns": 2274310994
+   "ns": 2470563763
   },
   "foreign_heap": {
    "calls": 1658,
-   "conv": 135257531,
+   "conv": 156117027,
    "heap_calls": 1658,
    "heap_size_max": 133,
    "heap_size_sum": 38069,
-   "ns": 170452243
+   "ns": 193511324
   },
   "rows": {
    "advance-frontier-waiter-heap": {
     "calls": 6989,
     "categories": {
-     "allocation and freeing": 937,
-     "choice points, trail and backtracking": 93,
-     "copying and instantiation": 644,
-     "equation selection and call preparation": 1255,
-     "goal dispatch and evaluation": 1007,
-     "grounded ops and arithmetic": 91,
-     "hashing, interning and term universe": 525,
-     "inside a Prolog call": 592,
-     "matching, unification and fact iteration": 1636,
-     "profiler": 664,
-     "prolog (SWI-Prolog and the foreign boundary)": 23,
-     "space mutation (add/remove atoms)": 27
+     "allocation and freeing": 1027,
+     "choice points, trail and backtracking": 90,
+     "copying and instantiation": 668,
+     "equation selection and call preparation": 1352,
+     "goal dispatch and evaluation": 1154,
+     "grounded ops and arithmetic": 103,
+     "hashing, interning and term universe": 569,
+     "inside a Prolog call": 588,
+     "matching, unification and fact iteration": 1739,
+     "profiler": 747,
+     "prolog (SWI-Prolog and the foreign boundary)": 17,
+     "space mutation (add/remove atoms)": 32
     },
     "foreign": {
      "copy_term": {
       "calls": 6529,
-      "from_term_ns": 181219737,
+      "from_term_ns": 198174341,
       "heap_calls": 0,
       "heap_size_max": 0,
       "heap_size_sum": 0,
-      "ns": 480592306,
-      "to_term_ns": 116510280
+      "ns": 519045500,
+      "to_term_ns": 125880190
      }
     },
     "members": 1,
-    "samples": 7494,
-    "self_ns": 7453650218
+    "samples": 8086,
+    "self_ns": 8095627865
    },
    "commit-proof-candidate-heap": {
     "calls": 1912,
     "categories": {
-     "allocation and freeing": 473,
-     "choice points, trail and backtracking": 32,
-     "copying and instantiation": 224,
-     "equation selection and call preparation": 813,
-     "goal dispatch and evaluation": 613,
-     "grounded ops and arithmetic": 49,
-     "hashing, interning and term universe": 286,
-     "matching, unification and fact iteration": 782,
-     "profiler": 475,
-     "prolog (SWI-Prolog and the foreign boundary)": 15,
+     "allocation and freeing": 529,
+     "choice points, trail and backtracking": 50,
+     "copying and instantiation": 232,
+     "equation selection and call preparation": 869,
+     "goal dispatch and evaluation": 687,
+     "grounded ops and arithmetic": 60,
+     "hashing, interning and term universe": 300,
+     "matching, unification and fact iteration": 843,
+     "profiler": 514,
+     "prolog (SWI-Prolog and the foreign boundary)": 16,
      "space mutation (add/remove atoms)": 30
     },
     "foreign": {},
     "members": 1,
-    "samples": 3792,
-    "self_ns": 3819932795
+    "samples": 4130,
+    "self_ns": 4116422567
    },
    "externalize-compiled-addition": {
     "calls": 269,
     "categories": {
-     "allocation and freeing": 74,
-     "choice points, trail and backtracking": 6,
-     "copying and instantiation": 65,
-     "equation selection and call preparation": 36,
-     "goal dispatch and evaluation": 83,
+     "allocation and freeing": 73,
+     "choice points, trail and backtracking": 3,
+     "copying and instantiation": 91,
+     "equation selection and call preparation": 47,
+     "goal dispatch and evaluation": 85,
      "grounded ops and arithmetic": 8,
-     "hashing, interning and term universe": 35,
-     "matching, unification and fact iteration": 180,
-     "profiler": 5,
-     "prolog (SWI-Prolog and the foreign boundary)": 2
+     "hashing, interning and term universe": 31,
+     "matching, unification and fact iteration": 164,
+     "profiler": 7,
+     "prolog (SWI-Prolog and the foreign boundary)": 3,
+     "space mutation (add/remove atoms)": 2
     },
     "foreign": {},
     "members": 1,
-    "samples": 494,
-    "self_ns": 493213421
+    "samples": 514,
+    "self_ns": 514263286
    },
    "goal-live-proof-ids": {
     "calls": 0,
     "categories": {
-     "equation selection and call preparation": 9,
+     "equation selection and call preparation": 16,
      "matching, unification and fact iteration": 3
     },
     "foreign": {},
     "members": 1,
-    "samples": 12,
-    "self_ns": 13382026
+    "samples": 19,
+    "self_ns": 14032817
    },
    "goal-merged-proof-ids": {
     "calls": 7190,
     "categories": {
      "allocation and freeing": 211,
-     "choice points, trail and backtracking": 14,
-     "copying and instantiation": 68,
-     "equation selection and call preparation": 354,
-     "goal dispatch and evaluation": 272,
-     "grounded ops and arithmetic": 22,
-     "hashing, interning and term universe": 82,
-     "matching, unification and fact iteration": 320,
-     "profiler": 171,
-     "prolog (SWI-Prolog and the foreign boundary)": 1,
-     "space mutation (add/remove atoms)": 11
+     "choice points, trail and backtracking": 20,
+     "copying and instantiation": 78,
+     "equation selection and call preparation": 350,
+     "goal dispatch and evaluation": 300,
+     "grounded ops and arithmetic": 24,
+     "hashing, interning and term universe": 95,
+     "matching, unification and fact iteration": 343,
+     "profiler": 200,
+     "prolog (SWI-Prolog and the foreign boundary)": 5,
+     "space mutation (add/remove atoms)": 6
     },
     "foreign": {},
     "members": 1,
-    "samples": 1526,
-    "self_ns": 1485804922
+    "samples": 1632,
+    "self_ns": 1624154045
    },
    "group: frontier/agenda heap rows (name holds 'heap')": {
     "calls": 55677,
     "categories": {
-     "allocation and freeing": 2836,
-     "choice points, trail and backtracking": 263,
-     "copying and instantiation": 2752,
-     "equation selection and call preparation": 3854,
-     "goal dispatch and evaluation": 3276,
-     "grounded ops and arithmetic": 283,
-     "hashing, interning and term universe": 2088,
-     "inside a Prolog call": 1091,
-     "matching, unification and fact iteration": 5618,
-     "profiler": 1891,
-     "prolog (SWI-Prolog and the foreign boundary)": 213,
-     "space mutation (add/remove atoms)": 170
+     "allocation and freeing": 3100,
+     "choice points, trail and backtracking": 314,
+     "copying and instantiation": 2874,
+     "equation selection and call preparation": 4234,
+     "goal dispatch and evaluation": 3702,
+     "grounded ops and arithmetic": 305,
+     "hashing, interning and term universe": 2187,
+     "inside a Prolog call": 1145,
+     "matching, unification and fact iteration": 6051,
+     "profiler": 2069,
+     "prolog (SWI-Prolog and the foreign boundary)": 211,
+     "space mutation (add/remove atoms)": 203
     },
     "foreign": {
      "callPredicate:*": {
       "calls": 29,
-      "from_term_ns": 13183,
+      "from_term_ns": 12418,
       "heap_calls": 0,
       "heap_size_max": 0,
       "heap_size_sum": 0,
-      "ns": 367669,
-      "to_term_ns": 159515
+      "ns": 409082,
+      "to_term_ns": 169660
      },
      "heap_pop": {
       "calls": 1658,
-      "from_term_ns": 101064164,
+      "from_term_ns": 116935637,
       "heap_calls": 1658,
       "heap_size_max": 133,
       "heap_size_sum": 38069,
-      "ns": 170452243,
-      "to_term_ns": 34193367
+      "ns": 193511324,
+      "to_term_ns": 39181390
      },
      "other": {
       "calls": 12322,
-      "from_term_ns": 300569021,
+      "from_term_ns": 329196951,
       "heap_calls": 0,
       "heap_size_max": 0,
       "heap_size_sum": 0,
-      "ns": 769505555,
-      "to_term_ns": 190647335
+      "ns": 833684564,
+      "to_term_ns": 206061858
      }
     },
     "members": 41,
-    "samples": 24335,
-    "self_ns": 24353568872
+    "samples": 26395,
+    "self_ns": 26405331404
    },
    "group: proof store (rows defined in backward_proof_store.metta)": {
     "calls": 143567,
     "categories": {
-     "allocation and freeing": 1106,
-     "choice points, trail and backtracking": 116,
-     "copying and instantiation": 472,
-     "equation selection and call preparation": 2239,
-     "goal dispatch and evaluation": 1128,
-     "grounded ops and arithmetic": 87,
-     "hashing, interning and term universe": 513,
-     "matching, unification and fact iteration": 1687,
-     "profiler": 747,
-     "prolog (SWI-Prolog and the foreign boundary)": 17,
-     "space mutation (add/remove atoms)": 40
+     "allocation and freeing": 1176,
+     "choice points, trail and backtracking": 111,
+     "copying and instantiation": 536,
+     "equation selection and call preparation": 2292,
+     "goal dispatch and evaluation": 1254,
+     "grounded ops and arithmetic": 97,
+     "hashing, interning and term universe": 519,
+     "matching, unification and fact iteration": 1764,
+     "profiler": 849,
+     "prolog (SWI-Prolog and the foreign boundary)": 22,
+     "space mutation (add/remove atoms)": 45
     },
     "foreign": {},
     "members": 95,
-    "samples": 8152,
-    "self_ns": 8184353866
+    "samples": 8665,
+    "self_ns": 8703316360
    },
    "proof-output-atom-by-id": {
     "calls": 0,
     "categories": {
-     "equation selection and call preparation": 38,
+     "equation selection and call preparation": 30,
      "goal dispatch and evaluation": 1,
-     "matching, unification and fact iteration": 3,
-     "profiler": 2,
+     "matching, unification and fact iteration": 2,
+     "profiler": 3,
      "space mutation (add/remove atoms)": 1
     },
     "foreign": {},
     "members": 1,
-    "samples": 45,
-    "self_ns": 41025760
+    "samples": 37,
+    "self_ns": 41762322
    },
    "proof-output-key-by-id": {
     "calls": 30282,
     "categories": {
-     "allocation and freeing": 325,
-     "choice points, trail and backtracking": 35,
-     "copying and instantiation": 122,
-     "equation selection and call preparation": 520,
-     "goal dispatch and evaluation": 253,
-     "grounded ops and arithmetic": 16,
-     "hashing, interning and term universe": 137,
-     "matching, unification and fact iteration": 401,
-     "profiler": 211,
-     "prolog (SWI-Prolog and the foreign boundary)": 9,
-     "space mutation (add/remove atoms)": 7
+     "allocation and freeing": 330,
+     "choice points, trail and backtracking": 33,
+     "copying and instantiation": 129,
+     "equation selection and call preparation": 536,
+     "goal dispatch and evaluation": 315,
+     "grounded ops and arithmetic": 19,
+     "hashing, interning and term universe": 131,
+     "matching, unification and fact iteration": 430,
+     "profiler": 231,
+     "prolog (SWI-Prolog and the foreign boundary)": 7,
+     "space mutation (add/remove atoms)": 9
     },
     "foreign": {},
     "members": 1,
-    "samples": 2036,
-    "self_ns": 2069135003
+    "samples": 2170,
+    "self_ns": 2177003844
    },
    "proof-stats-by-id": {
     "calls": 0,
@@ -223,829 +224,832 @@
     "foreign": {},
     "members": 1,
     "samples": 0,
-    "self_ns": 279349
+    "self_ns": 306903
    },
    "schedule-goal-heap": {
     "calls": 6479,
     "categories": {
-     "allocation and freeing": 29,
+     "allocation and freeing": 36,
      "choice points, trail and backtracking": 3,
-     "copying and instantiation": 21,
-     "equation selection and call preparation": 41,
-     "goal dispatch and evaluation": 30,
-     "grounded ops and arithmetic": 1,
-     "hashing, interning and term universe": 20,
-     "matching, unification and fact iteration": 76,
-     "profiler": 34,
-     "prolog (SWI-Prolog and the foreign boundary)": 1,
-     "space mutation (add/remove atoms)": 1
+     "copying and instantiation": 18,
+     "equation selection and call preparation": 59,
+     "goal dispatch and evaluation": 52,
+     "grounded ops and arithmetic": 4,
+     "hashing, interning and term universe": 21,
+     "matching, unification and fact iteration": 82,
+     "profiler": 42
     },
     "foreign": {},
     "members": 1,
-    "samples": 257,
-    "self_ns": 276464605
+    "samples": 317,
+    "self_ns": 299989213
    },
    "schedule-goal-row": {
     "calls": 0,
     "categories": {
-     "allocation and freeing": 120,
-     "choice points, trail and backtracking": 13,
-     "copying and instantiation": 103,
-     "equation selection and call preparation": 126,
-     "goal dispatch and evaluation": 153,
-     "grounded ops and arithmetic": 14,
-     "hashing, interning and term universe": 79,
-     "matching, unification and fact iteration": 215,
-     "profiler": 34,
+     "allocation and freeing": 126,
+     "choice points, trail and backtracking": 24,
+     "copying and instantiation": 96,
+     "equation selection and call preparation": 125,
+     "goal dispatch and evaluation": 173,
+     "grounded ops and arithmetic": 12,
+     "hashing, interning and term universe": 77,
+     "matching, unification and fact iteration": 266,
+     "profiler": 46,
      "prolog (SWI-Prolog and the foreign boundary)": 58,
-     "space mutation (add/remove atoms)": 24
+     "space mutation (add/remove atoms)": 7
     },
     "foreign": {},
     "members": 1,
-    "samples": 939,
-    "self_ns": 961647501
+    "samples": 1010,
+    "self_ns": 1037413389
    },
    "search-agenda-heap": {
     "calls": 910,
     "categories": {
-     "allocation and freeing": 88,
-     "choice points, trail and backtracking": 2,
-     "copying and instantiation": 28,
-     "equation selection and call preparation": 35,
-     "goal dispatch and evaluation": 44,
-     "grounded ops and arithmetic": 9,
-     "hashing, interning and term universe": 20,
-     "inside a Prolog call": 178,
-     "matching, unification and fact iteration": 136,
-     "profiler": 4,
-     "prolog (SWI-Prolog and the foreign boundary)": 80,
-     "space mutation (add/remove atoms)": 1
+     "allocation and freeing": 87,
+     "choice points, trail and backtracking": 5,
+     "copying and instantiation": 33,
+     "equation selection and call preparation": 23,
+     "goal dispatch and evaluation": 45,
+     "grounded ops and arithmetic": 10,
+     "hashing, interning and term universe": 23,
+     "inside a Prolog call": 200,
+     "matching, unification and fact iteration": 127,
+     "profiler": 2,
+     "prolog (SWI-Prolog and the foreign boundary)": 81
     },
     "foreign": {
      "heap_pop": {
       "calls": 1658,
-      "from_term_ns": 101064164,
+      "from_term_ns": 116935637,
       "heap_calls": 1658,
       "heap_size_max": 133,
       "heap_size_sum": 38069,
-      "ns": 170452243,
-      "to_term_ns": 34193367
+      "ns": 193511324,
+      "to_term_ns": 39181390
      }
     },
     "members": 1,
-    "samples": 625,
-    "self_ns": 621586940
+    "samples": 636,
+    "self_ns": 668441025
    },
    "spawn-frontier-goal-heap": {
     "calls": 6296,
     "categories": {
-     "allocation and freeing": 382,
-     "choice points, trail and backtracking": 35,
-     "copying and instantiation": 357,
-     "equation selection and call preparation": 405,
-     "goal dispatch and evaluation": 399,
-     "grounded ops and arithmetic": 33,
-     "hashing, interning and term universe": 426,
-     "matching, unification and fact iteration": 737,
-     "profiler": 190,
-     "prolog (SWI-Prolog and the foreign boundary)": 7,
-     "space mutation (add/remove atoms)": 50
+     "allocation and freeing": 366,
+     "choice points, trail and backtracking": 45,
+     "copying and instantiation": 387,
+     "equation selection and call preparation": 475,
+     "goal dispatch and evaluation": 444,
+     "grounded ops and arithmetic": 25,
+     "hashing, interning and term universe": 445,
+     "matching, unification and fact iteration": 851,
+     "profiler": 215,
+     "prolog (SWI-Prolog and the foreign boundary)": 2,
+     "space mutation (add/remove atoms)": 71
     },
     "foreign": {},
     "members": 1,
-    "samples": 3021,
-    "self_ns": 3004685126
+    "samples": 3326,
+    "self_ns": 3273405905
    },
    "spawn-frontier-heap": {
     "calls": 7463,
     "categories": {
-     "allocation and freeing": 327,
-     "choice points, trail and backtracking": 37,
-     "copying and instantiation": 293,
-     "equation selection and call preparation": 477,
-     "goal dispatch and evaluation": 413,
+     "allocation and freeing": 356,
+     "choice points, trail and backtracking": 45,
+     "copying and instantiation": 307,
+     "equation selection and call preparation": 549,
+     "goal dispatch and evaluation": 462,
      "grounded ops and arithmetic": 41,
-     "hashing, interning and term universe": 267,
-     "inside a Prolog call": 280,
-     "matching, unification and fact iteration": 634,
-     "profiler": 212,
-     "prolog (SWI-Prolog and the foreign boundary)": 3,
-     "space mutation (add/remove atoms)": 21
+     "hashing, interning and term universe": 250,
+     "inside a Prolog call": 307,
+     "matching, unification and fact iteration": 711,
+     "profiler": 242,
+     "prolog (SWI-Prolog and the foreign boundary)": 10,
+     "space mutation (add/remove atoms)": 27
     },
     "foreign": {
      "copy_term": {
       "calls": 5331,
-      "from_term_ns": 113861502,
+      "from_term_ns": 124749714,
       "heap_calls": 0,
       "heap_size_max": 0,
       "heap_size_sum": 0,
-      "ns": 273770577,
-      "to_term_ns": 71419557
+      "ns": 297903071,
+      "to_term_ns": 77180482
      }
     },
     "members": 1,
-    "samples": 3005,
-    "self_ns": 3060495218
+    "samples": 3307,
+    "self_ns": 3328440311
    },
    "store-proof-candidate": {
     "calls": 0,
     "categories": {
+     "equation selection and call preparation": 1,
      "matching, unification and fact iteration": 1
     },
     "foreign": {},
     "members": 1,
-    "samples": 1,
-    "self_ns": 3532671
+    "samples": 2,
+    "self_ns": 3943332
    }
   },
-  "samples": 56276,
-  "total_ns": 56377514353
+  "samples": 60510,
+  "total_ns": 60662037643
  },
  "w2-wmtm": {
   "foreign_all": {
    "calls": 40185,
-   "ns": 1826818562
+   "ns": 1656693552
   },
   "foreign_heap": {
    "calls": 1487,
-   "conv": 163117516,
+   "conv": 152336290,
    "heap_calls": 1487,
    "heap_size_max": 75,
    "heap_size_sum": 39948,
-   "ns": 198976512
+   "ns": 184844709
   },
   "rows": {
    "advance-frontier-waiter-heap": {
     "calls": 2073,
     "categories": {
-     "allocation and freeing": 289,
-     "choice points, trail and backtracking": 30,
-     "copying and instantiation": 207,
-     "equation selection and call preparation": 364,
-     "goal dispatch and evaluation": 377,
-     "grounded ops and arithmetic": 24,
-     "hashing, interning and term universe": 184,
-     "inside a Prolog call": 228,
-     "matching, unification and fact iteration": 569,
-     "profiler": 92,
-     "prolog (SWI-Prolog and the foreign boundary)": 9,
-     "space mutation (add/remove atoms)": 13
+     "allocation and freeing": 272,
+     "choice points, trail and backtracking": 19,
+     "copying and instantiation": 187,
+     "equation selection and call preparation": 320,
+     "goal dispatch and evaluation": 319,
+     "grounded ops and arithmetic": 29,
+     "hashing, interning and term universe": 165,
+     "inside a Prolog call": 204,
+     "matching, unification and fact iteration": 501,
+     "profiler": 100,
+     "prolog (SWI-Prolog and the foreign boundary)": 10,
+     "space mutation (add/remove atoms)": 9
     },
     "foreign": {
      "copy_term": {
       "calls": 2018,
-      "from_term_ns": 74951505,
+      "from_term_ns": 64596124,
       "heap_calls": 0,
       "heap_size_max": 0,
       "heap_size_sum": 0,
-      "ns": 192271617,
-      "to_term_ns": 47297224
+      "ns": 164450368,
+      "to_term_ns": 39396903
      }
     },
     "members": 1,
-    "samples": 2386,
-    "self_ns": 2454665461
+    "samples": 2135,
+    "self_ns": 2117574157
    },
    "commit-proof-candidate-heap": {
     "calls": 533,
     "categories": {
-     "allocation and freeing": 137,
-     "choice points, trail and backtracking": 7,
-     "copying and instantiation": 58,
-     "equation selection and call preparation": 172,
-     "goal dispatch and evaluation": 166,
+     "allocation and freeing": 96,
+     "choice points, trail and backtracking": 9,
+     "copying and instantiation": 50,
+     "equation selection and call preparation": 169,
+     "goal dispatch and evaluation": 135,
      "grounded ops and arithmetic": 9,
-     "hashing, interning and term universe": 88,
-     "matching, unification and fact iteration": 233,
-     "profiler": 43,
-     "prolog (SWI-Prolog and the foreign boundary)": 3,
-     "space mutation (add/remove atoms)": 10
+     "hashing, interning and term universe": 61,
+     "matching, unification and fact iteration": 183,
+     "profiler": 55,
+     "prolog (SWI-Prolog and the foreign boundary)": 2,
+     "space mutation (add/remove atoms)": 12
     },
     "foreign": {},
     "members": 1,
-    "samples": 926,
-    "self_ns": 897496529
+    "samples": 781,
+    "self_ns": 758095442
    },
    "externalize-compiled-addition": {
     "calls": 264,
     "categories": {
-     "allocation and freeing": 114,
-     "choice points, trail and backtracking": 2,
+     "allocation and freeing": 145,
+     "choice points, trail and backtracking": 11,
      "copying and instantiation": 122,
-     "equation selection and call preparation": 50,
-     "goal dispatch and evaluation": 106,
-     "grounded ops and arithmetic": 14,
-     "hashing, interning and term universe": 49,
-     "matching, unification and fact iteration": 224,
-     "profiler": 3,
+     "equation selection and call preparation": 74,
+     "goal dispatch and evaluation": 140,
+     "grounded ops and arithmetic": 12,
+     "hashing, interning and term universe": 75,
+     "matching, unification and fact iteration": 296,
+     "profiler": 4,
      "prolog (SWI-Prolog and the foreign boundary)": 3,
      "space mutation (add/remove atoms)": 2
     },
     "foreign": {},
     "members": 1,
-    "samples": 689,
-    "self_ns": 686259808
+    "samples": 884,
+    "self_ns": 889317768
    },
    "goal-live-proof-ids": {
     "calls": 0,
     "categories": {
-     "equation selection and call preparation": 3
+     "equation selection and call preparation": 1,
+     "matching, unification and fact iteration": 1
     },
     "foreign": {},
     "members": 1,
-    "samples": 3,
-    "self_ns": 5347335
+    "samples": 2,
+    "self_ns": 4858054
    },
    "goal-merged-proof-ids": {
     "calls": 6674,
     "categories": {
-     "allocation and freeing": 180,
-     "choice points, trail and backtracking": 28,
-     "copying and instantiation": 61,
-     "equation selection and call preparation": 222,
-     "goal dispatch and evaluation": 231,
-     "grounded ops and arithmetic": 26,
-     "hashing, interning and term universe": 91,
-     "matching, unification and fact iteration": 305,
-     "profiler": 68,
-     "prolog (SWI-Prolog and the foreign boundary)": 4,
-     "space mutation (add/remove atoms)": 5
+     "allocation and freeing": 158,
+     "choice points, trail and backtracking": 17,
+     "copying and instantiation": 68,
+     "equation selection and call preparation": 211,
+     "goal dispatch and evaluation": 207,
+     "grounded ops and arithmetic": 24,
+     "hashing, interning and term universe": 69,
+     "matching, unification and fact iteration": 268,
+     "profiler": 62,
+     "prolog (SWI-Prolog and the foreign boundary)": 6,
+     "space mutation (add/remove atoms)": 10
     },
     "foreign": {},
     "members": 1,
-    "samples": 1221,
-    "self_ns": 1274887289
+    "samples": 1100,
+    "self_ns": 1130406177
    },
    "group: frontier/agenda heap rows (name holds 'heap')": {
     "calls": 29324,
     "categories": {
-     "allocation and freeing": 1218,
-     "choice points, trail and backtracking": 112,
-     "copying and instantiation": 1037,
-     "equation selection and call preparation": 1382,
-     "goal dispatch and evaluation": 1464,
-     "grounded ops and arithmetic": 107,
-     "hashing, interning and term universe": 1064,
-     "inside a Prolog call": 588,
-     "matching, unification and fact iteration": 2542,
-     "profiler": 329,
-     "prolog (SWI-Prolog and the foreign boundary)": 134,
-     "space mutation (add/remove atoms)": 100
+     "allocation and freeing": 1062,
+     "choice points, trail and backtracking": 77,
+     "copying and instantiation": 975,
+     "equation selection and call preparation": 1273,
+     "goal dispatch and evaluation": 1286,
+     "grounded ops and arithmetic": 115,
+     "hashing, interning and term universe": 943,
+     "inside a Prolog call": 506,
+     "matching, unification and fact iteration": 2277,
+     "profiler": 348,
+     "prolog (SWI-Prolog and the foreign boundary)": 130,
+     "space mutation (add/remove atoms)": 93
     },
     "foreign": {
      "heap_pop": {
       "calls": 1487,
-      "from_term_ns": 122090325,
+      "from_term_ns": 115260414,
       "heap_calls": 1487,
       "heap_size_max": 75,
       "heap_size_sum": 39948,
-      "ns": 198976512,
-      "to_term_ns": 41027191
+      "ns": 184844709,
+      "to_term_ns": 37075876
      },
      "other": {
       "calls": 4055,
-      "from_term_ns": 129718429,
+      "from_term_ns": 112350715,
       "heap_calls": 0,
       "heap_size_max": 0,
       "heap_size_sum": 0,
-      "ns": 322648327,
-      "to_term_ns": 80490924
+      "ns": 276727159,
+      "to_term_ns": 67448045
      }
     },
     "members": 33,
-    "samples": 10077,
-    "self_ns": 10191487126
+    "samples": 9085,
+    "self_ns": 9016233526
    },
    "group: proof store (rows defined in backward_proof_store.metta)": {
     "calls": 55772,
     "categories": {
-     "allocation and freeing": 492,
-     "choice points, trail and backtracking": 60,
-     "copying and instantiation": 226,
-     "equation selection and call preparation": 798,
-     "goal dispatch and evaluation": 531,
-     "grounded ops and arithmetic": 44,
-     "hashing, interning and term universe": 235,
-     "matching, unification and fact iteration": 845,
-     "profiler": 197,
-     "prolog (SWI-Prolog and the foreign boundary)": 9,
-     "space mutation (add/remove atoms)": 20
+     "allocation and freeing": 435,
+     "choice points, trail and backtracking": 56,
+     "copying and instantiation": 207,
+     "equation selection and call preparation": 673,
+     "goal dispatch and evaluation": 473,
+     "grounded ops and arithmetic": 45,
+     "hashing, interning and term universe": 213,
+     "matching, unification and fact iteration": 733,
+     "profiler": 180,
+     "prolog (SWI-Prolog and the foreign boundary)": 15,
+     "space mutation (add/remove atoms)": 21
     },
     "foreign": {},
     "members": 84,
-    "samples": 3457,
-    "self_ns": 3529752374
+    "samples": 3051,
+    "self_ns": 3088900891
    },
    "proof-output-atom-by-id": {
     "calls": 0,
     "categories": {
      "equation selection and call preparation": 8,
+     "goal dispatch and evaluation": 1,
      "profiler": 1
     },
     "foreign": {},
     "members": 1,
-    "samples": 9,
-    "self_ns": 10612281
+    "samples": 10,
+    "self_ns": 9360771
    },
    "proof-output-key-by-id": {
     "calls": 7446,
     "categories": {
-     "allocation and freeing": 87,
-     "choice points, trail and backtracking": 10,
-     "copying and instantiation": 38,
-     "equation selection and call preparation": 117,
-     "goal dispatch and evaluation": 71,
-     "grounded ops and arithmetic": 5,
-     "hashing, interning and term universe": 36,
-     "matching, unification and fact iteration": 145,
-     "profiler": 36,
+     "allocation and freeing": 62,
+     "choice points, trail and backtracking": 7,
+     "copying and instantiation": 30,
+     "equation selection and call preparation": 105,
+     "goal dispatch and evaluation": 76,
+     "grounded ops and arithmetic": 8,
+     "hashing, interning and term universe": 28,
+     "matching, unification and fact iteration": 101,
+     "profiler": 31,
      "prolog (SWI-Prolog and the foreign boundary)": 1,
-     "space mutation (add/remove atoms)": 1
+     "space mutation (add/remove atoms)": 3
     },
     "foreign": {},
     "members": 1,
-    "samples": 547,
-    "self_ns": 563609670
+    "samples": 452,
+    "self_ns": 475725704
    },
    "schedule-goal-heap": {
     "calls": 4389,
     "categories": {
-     "allocation and freeing": 24,
-     "choice points, trail and backtracking": 2,
-     "copying and instantiation": 15,
-     "equation selection and call preparation": 40,
-     "goal dispatch and evaluation": 33,
-     "grounded ops and arithmetic": 2,
-     "hashing, interning and term universe": 20,
-     "matching, unification and fact iteration": 67,
-     "profiler": 17,
-     "prolog (SWI-Prolog and the foreign boundary)": 2,
-     "space mutation (add/remove atoms)": 1
+     "allocation and freeing": 17,
+     "copying and instantiation": 12,
+     "equation selection and call preparation": 35,
+     "goal dispatch and evaluation": 27,
+     "grounded ops and arithmetic": 1,
+     "hashing, interning and term universe": 15,
+     "matching, unification and fact iteration": 59,
+     "profiler": 14,
+     "prolog (SWI-Prolog and the foreign boundary)": 1,
+     "space mutation (add/remove atoms)": 3
     },
     "foreign": {},
     "members": 1,
-    "samples": 223,
-    "self_ns": 212773387
+    "samples": 184,
+    "self_ns": 189398281
    },
    "schedule-goal-row": {
     "calls": 0,
     "categories": {
-     "allocation and freeing": 156,
-     "choice points, trail and backtracking": 10,
-     "copying and instantiation": 97,
-     "equation selection and call preparation": 123,
-     "goal dispatch and evaluation": 230,
-     "grounded ops and arithmetic": 23,
-     "hashing, interning and term universe": 106,
-     "matching, unification and fact iteration": 267,
+     "allocation and freeing": 151,
+     "choice points, trail and backtracking": 13,
+     "copying and instantiation": 111,
+     "equation selection and call preparation": 110,
+     "goal dispatch and evaluation": 200,
+     "grounded ops and arithmetic": 21,
+     "hashing, interning and term universe": 92,
+     "matching, unification and fact iteration": 236,
      "profiler": 40,
-     "prolog (SWI-Prolog and the foreign boundary)": 80,
-     "space mutation (add/remove atoms)": 26
-    },
-    "foreign": {},
-    "members": 1,
-    "samples": 1158,
-    "self_ns": 1172914162
-   },
-   "search-agenda-heap": {
-    "calls": 1389,
-    "categories": {
-     "allocation and freeing": 34,
-     "choice points, trail and backtracking": 2,
-     "copying and instantiation": 12,
-     "equation selection and call preparation": 9,
-     "goal dispatch and evaluation": 30,
-     "grounded ops and arithmetic": 2,
-     "hashing, interning and term universe": 10,
-     "inside a Prolog call": 211,
-     "matching, unification and fact iteration": 65,
-     "profiler": 3,
-     "prolog (SWI-Prolog and the foreign boundary)": 87,
-     "space mutation (add/remove atoms)": 3
-    },
-    "foreign": {
-     "heap_pop": {
-      "calls": 1487,
-      "from_term_ns": 122090325,
-      "heap_calls": 1487,
-      "heap_size_max": 75,
-      "heap_size_sum": 39948,
-      "ns": 198976512,
-      "to_term_ns": 41027191
-     }
-    },
-    "members": 1,
-    "samples": 468,
-    "self_ns": 469559951
-   },
-   "spawn-frontier-goal-heap": {
-    "calls": 4256,
-    "categories": {
-     "allocation and freeing": 278,
-     "choice points, trail and backtracking": 24,
-     "copying and instantiation": 329,
-     "equation selection and call preparation": 288,
-     "goal dispatch and evaluation": 337,
-     "grounded ops and arithmetic": 18,
-     "hashing, interning and term universe": 372,
-     "matching, unification and fact iteration": 678,
-     "profiler": 58,
-     "prolog (SWI-Prolog and the foreign boundary)": 5,
-     "space mutation (add/remove atoms)": 45
-    },
-    "foreign": {},
-    "members": 1,
-    "samples": 2432,
-    "self_ns": 2378641956
-   },
-   "spawn-frontier-heap": {
-    "calls": 4436,
-    "categories": {
-     "allocation and freeing": 110,
-     "choice points, trail and backtracking": 11,
-     "copying and instantiation": 113,
-     "equation selection and call preparation": 142,
-     "goal dispatch and evaluation": 154,
-     "grounded ops and arithmetic": 18,
-     "hashing, interning and term universe": 100,
-     "inside a Prolog call": 130,
-     "matching, unification and fact iteration": 287,
-     "profiler": 30,
-     "prolog (SWI-Prolog and the foreign boundary)": 2,
-     "space mutation (add/remove atoms)": 8
-    },
-    "foreign": {
-     "copy_term": {
-      "calls": 1838,
-      "from_term_ns": 52048283,
-      "heap_calls": 0,
-      "heap_size_max": 0,
-      "heap_size_sum": 0,
-      "ns": 123125146,
-      "to_term_ns": 31843583
-     }
-    },
-    "members": 1,
-    "samples": 1105,
-    "self_ns": 1143759859
-   },
-   "store-proof-candidate": {
-    "calls": 0,
-    "categories": {
-     "matching, unification and fact iteration": 1
-    },
-    "foreign": {},
-    "members": 1,
-    "samples": 1,
-    "self_ns": 1021926
-   }
-  },
-  "samples": 32207,
-  "total_ns": 32486416805
- },
- "w3-benchgen": {
-  "foreign_all": {
-   "calls": 80499,
-   "ns": 3869248231
-  },
-  "foreign_heap": {
-   "calls": 3003,
-   "conv": 1216673798,
-   "heap_calls": 3003,
-   "heap_size_max": 200,
-   "heap_size_sum": 360225,
-   "ns": 1309633285
-  },
-  "rows": {
-   "advance-frontier-waiter-heap": {
-    "calls": 2643,
-    "categories": {
-     "allocation and freeing": 406,
-     "choice points, trail and backtracking": 21,
-     "copying and instantiation": 236,
-     "equation selection and call preparation": 524,
-     "goal dispatch and evaluation": 461,
-     "grounded ops and arithmetic": 40,
-     "hashing, interning and term universe": 249,
-     "inside a Prolog call": 265,
-     "matching, unification and fact iteration": 595,
-     "profiler": 774,
-     "prolog (SWI-Prolog and the foreign boundary)": 7,
-     "space mutation (add/remove atoms)": 15
-    },
-    "foreign": {
-     "copy_term": {
-      "calls": 2643,
-      "from_term_ns": 73672720,
-      "heap_calls": 0,
-      "heap_size_max": 0,
-      "heap_size_sum": 0,
-      "ns": 203298663,
-      "to_term_ns": 51016014
-     }
-    },
-    "members": 1,
-    "samples": 3593,
-    "self_ns": 3584951031
-   },
-   "commit-proof-candidate-heap": {
-    "calls": 1088,
-    "categories": {
-     "allocation and freeing": 186,
-     "choice points, trail and backtracking": 12,
-     "copying and instantiation": 84,
-     "equation selection and call preparation": 286,
-     "goal dispatch and evaluation": 240,
-     "grounded ops and arithmetic": 17,
-     "hashing, interning and term universe": 168,
-     "matching, unification and fact iteration": 301,
-     "profiler": 554,
-     "prolog (SWI-Prolog and the foreign boundary)": 3,
-     "space mutation (add/remove atoms)": 20
-    },
-    "foreign": {},
-    "members": 1,
-    "samples": 1871,
-    "self_ns": 1862307611
-   },
-   "externalize-compiled-addition": {
-    "calls": 5196,
-    "categories": {
-     "allocation and freeing": 1222,
-     "choice points, trail and backtracking": 77,
-     "copying and instantiation": 1136,
-     "equation selection and call preparation": 679,
-     "goal dispatch and evaluation": 1365,
-     "grounded ops and arithmetic": 124,
-     "hashing, interning and term universe": 518,
-     "matching, unification and fact iteration": 2409,
-     "profiler": 64,
-     "prolog (SWI-Prolog and the foreign boundary)": 25,
-     "space mutation (add/remove atoms)": 20
-    },
-    "foreign": {},
-    "members": 1,
-    "samples": 7639,
-    "self_ns": 7627983362
-   },
-   "goal-live-proof-ids": {
-    "calls": 0,
-    "categories": {
-     "equation selection and call preparation": 7,
-     "hashing, interning and term universe": 2,
-     "matching, unification and fact iteration": 3
-    },
-    "foreign": {},
-    "members": 1,
-    "samples": 12,
-    "self_ns": 8194661
-   },
-   "goal-merged-proof-ids": {
-    "calls": 7182,
-    "categories": {
-     "allocation and freeing": 197,
-     "choice points, trail and backtracking": 12,
-     "copying and instantiation": 62,
-     "equation selection and call preparation": 235,
-     "goal dispatch and evaluation": 255,
-     "grounded ops and arithmetic": 27,
-     "hashing, interning and term universe": 153,
-     "matching, unification and fact iteration": 332,
-     "profiler": 392,
-     "prolog (SWI-Prolog and the foreign boundary)": 1,
+     "prolog (SWI-Prolog and the foreign boundary)": 75,
      "space mutation (add/remove atoms)": 19
     },
     "foreign": {},
     "members": 1,
-    "samples": 1685,
-    "self_ns": 1668922344
-   },
-   "group: frontier/agenda heap rows (name holds 'heap')": {
-    "calls": 48450,
-    "categories": {
-     "allocation and freeing": 1818,
-     "choice points, trail and backtracking": 129,
-     "copying and instantiation": 1682,
-     "equation selection and call preparation": 2129,
-     "goal dispatch and evaluation": 2038,
-     "grounded ops and arithmetic": 206,
-     "hashing, interning and term universe": 1453,
-     "inside a Prolog call": 1708,
-     "matching, unification and fact iteration": 3249,
-     "other machine": 4,
-     "profiler": 2989,
-     "prolog (SWI-Prolog and the foreign boundary)": 372,
-     "space mutation (add/remove atoms)": 146
-    },
-    "foreign": {
-     "heap_pop": {
-      "calls": 3003,
-      "from_term_ns": 939950138,
-      "heap_calls": 3003,
-      "heap_size_max": 200,
-      "heap_size_sum": 360225,
-      "ns": 1309633285,
-      "to_term_ns": 276723660
-     },
-     "other": {
-      "calls": 5685,
-      "from_term_ns": 129341064,
-      "heap_calls": 0,
-      "heap_size_max": 0,
-      "heap_size_sum": 0,
-      "ns": 344232332,
-      "to_term_ns": 86751124
-     }
-    },
-    "members": 28,
-    "samples": 17923,
-    "self_ns": 18091739716
-   },
-   "group: proof store (rows defined in backward_proof_store.metta)": {
-    "calls": 66383,
-    "categories": {
-     "allocation and freeing": 628,
-     "choice points, trail and backtracking": 37,
-     "copying and instantiation": 368,
-     "equation selection and call preparation": 950,
-     "goal dispatch and evaluation": 567,
-     "grounded ops and arithmetic": 54,
-     "hashing, interning and term universe": 330,
-     "matching, unification and fact iteration": 891,
-     "profiler": 1037,
-     "prolog (SWI-Prolog and the foreign boundary)": 11,
-     "space mutation (add/remove atoms)": 30
-    },
-    "foreign": {},
-    "members": 69,
-    "samples": 4903,
-    "self_ns": 4878713350
-   },
-   "proof-output-atom-by-id": {
-    "calls": 0,
-    "categories": {
-     "equation selection and call preparation": 8,
-     "matching, unification and fact iteration": 1
-    },
-    "foreign": {},
-    "members": 1,
-    "samples": 9,
-    "self_ns": 13170751
-   },
-   "proof-output-key-by-id": {
-    "calls": 5159,
-    "categories": {
-     "allocation and freeing": 102,
-     "choice points, trail and backtracking": 9,
-     "copying and instantiation": 202,
-     "equation selection and call preparation": 95,
-     "goal dispatch and evaluation": 61,
-     "grounded ops and arithmetic": 13,
-     "hashing, interning and term universe": 42,
-     "matching, unification and fact iteration": 113,
-     "profiler": 157,
-     "prolog (SWI-Prolog and the foreign boundary)": 2,
-     "space mutation (add/remove atoms)": 2
-    },
-    "foreign": {},
-    "members": 1,
-    "samples": 798,
-    "self_ns": 755200835
-   },
-   "schedule-goal-heap": {
-    "calls": 5276,
-    "categories": {
-     "allocation and freeing": 32,
-     "choice points, trail and backtracking": 2,
-     "copying and instantiation": 12,
-     "equation selection and call preparation": 34,
-     "goal dispatch and evaluation": 38,
-     "grounded ops and arithmetic": 3,
-     "hashing, interning and term universe": 30,
-     "matching, unification and fact iteration": 76,
-     "profiler": 72,
-     "space mutation (add/remove atoms)": 1
-    },
-    "foreign": {},
-    "members": 1,
-    "samples": 300,
-    "self_ns": 315677931
-   },
-   "schedule-goal-row": {
-    "calls": 0,
-    "categories": {
-     "allocation and freeing": 231,
-     "choice points, trail and backtracking": 19,
-     "copying and instantiation": 139,
-     "equation selection and call preparation": 226,
-     "goal dispatch and evaluation": 308,
-     "grounded ops and arithmetic": 32,
-     "hashing, interning and term universe": 172,
-     "matching, unification and fact iteration": 334,
-     "profiler": 629,
-     "prolog (SWI-Prolog and the foreign boundary)": 148,
-     "space mutation (add/remove atoms)": 26
-    },
-    "foreign": {},
-    "members": 1,
-    "samples": 2264,
-    "self_ns": 2268387672
+    "samples": 1068,
+    "self_ns": 1064406402
    },
    "search-agenda-heap": {
-    "calls": 2995,
+    "calls": 1389,
     "categories": {
-     "allocation and freeing": 117,
-     "choice points, trail and backtracking": 7,
-     "copying and instantiation": 181,
-     "equation selection and call preparation": 45,
-     "goal dispatch and evaluation": 65,
-     "grounded ops and arithmetic": 23,
-     "hashing, interning and term universe": 40,
-     "inside a Prolog call": 1250,
-     "matching, unification and fact iteration": 241,
-     "other machine": 4,
-     "profiler": 2,
-     "prolog (SWI-Prolog and the foreign boundary)": 193,
-     "space mutation (add/remove atoms)": 2
+     "allocation and freeing": 36,
+     "choice points, trail and backtracking": 1,
+     "copying and instantiation": 15,
+     "equation selection and call preparation": 20,
+     "goal dispatch and evaluation": 37,
+     "grounded ops and arithmetic": 5,
+     "hashing, interning and term universe": 8,
+     "inside a Prolog call": 181,
+     "matching, unification and fact iteration": 60,
+     "profiler": 3,
+     "prolog (SWI-Prolog and the foreign boundary)": 82,
+     "space mutation (add/remove atoms)": 1
     },
     "foreign": {
      "heap_pop": {
-      "calls": 3003,
-      "from_term_ns": 939950138,
-      "heap_calls": 3003,
-      "heap_size_max": 200,
-      "heap_size_sum": 360225,
-      "ns": 1309633285,
-      "to_term_ns": 276723660
+      "calls": 1487,
+      "from_term_ns": 115260414,
+      "heap_calls": 1487,
+      "heap_size_max": 75,
+      "heap_size_sum": 39948,
+      "ns": 184844709,
+      "to_term_ns": 37075876
      }
     },
     "members": 1,
-    "samples": 2170,
-    "self_ns": 2173762683
+    "samples": 449,
+    "self_ns": 435272217
    },
    "spawn-frontier-goal-heap": {
-    "calls": 4743,
+    "calls": 4256,
     "categories": {
-     "allocation and freeing": 290,
-     "choice points, trail and backtracking": 20,
-     "copying and instantiation": 256,
-     "equation selection and call preparation": 374,
-     "goal dispatch and evaluation": 308,
-     "grounded ops and arithmetic": 22,
-     "hashing, interning and term universe": 355,
-     "matching, unification and fact iteration": 561,
-     "profiler": 331,
+     "allocation and freeing": 223,
+     "choice points, trail and backtracking": 22,
+     "copying and instantiation": 286,
+     "equation selection and call preparation": 256,
+     "goal dispatch and evaluation": 296,
+     "grounded ops and arithmetic": 19,
+     "hashing, interning and term universe": 339,
+     "matching, unification and fact iteration": 609,
+     "profiler": 61,
      "prolog (SWI-Prolog and the foreign boundary)": 5,
      "space mutation (add/remove atoms)": 38
     },
     "foreign": {},
     "members": 1,
-    "samples": 2560,
-    "self_ns": 2625287582
+    "samples": 2154,
+    "self_ns": 2117130334
    },
    "spawn-frontier-heap": {
-    "calls": 5082,
+    "calls": 4436,
     "categories": {
-     "allocation and freeing": 145,
-     "choice points, trail and backtracking": 9,
-     "copying and instantiation": 166,
-     "equation selection and call preparation": 206,
-     "goal dispatch and evaluation": 198,
-     "grounded ops and arithmetic": 21,
-     "hashing, interning and term universe": 103,
-     "inside a Prolog call": 129,
-     "matching, unification and fact iteration": 313,
-     "profiler": 249,
-     "prolog (SWI-Prolog and the foreign boundary)": 1,
+     "allocation and freeing": 97,
+     "choice points, trail and backtracking": 4,
+     "copying and instantiation": 122,
+     "equation selection and call preparation": 131,
+     "goal dispatch and evaluation": 134,
+     "grounded ops and arithmetic": 20,
+     "hashing, interning and term universe": 87,
+     "inside a Prolog call": 97,
+     "matching, unification and fact iteration": 272,
+     "profiler": 26,
+     "prolog (SWI-Prolog and the foreign boundary)": 2,
      "space mutation (add/remove atoms)": 9
     },
     "foreign": {
      "copy_term": {
-      "calls": 2226,
-      "from_term_ns": 49150827,
+      "calls": 1838,
+      "from_term_ns": 45081336,
       "heap_calls": 0,
       "heap_size_max": 0,
       "heap_size_sum": 0,
-      "ns": 120944723,
-      "to_term_ns": 32396907
+      "ns": 105357309,
+      "to_term_ns": 26786899
      }
     },
     "members": 1,
-    "samples": 1549,
-    "self_ns": 1576791136
+    "samples": 1001,
+    "self_ns": 994914129
    },
    "store-proof-candidate": {
     "calls": 0,
     "categories": {
-     "goal dispatch and evaluation": 1
+     "allocation and freeing": 1,
+     "profiler": 1
+    },
+    "foreign": {},
+    "members": 1,
+    "samples": 2,
+    "self_ns": 902079
+   }
+  },
+  "samples": 29945,
+  "total_ns": 29988964034
+ },
+ "w3-benchgen": {
+  "foreign_all": {
+   "calls": 80499,
+   "ns": 3870493246
+  },
+  "foreign_heap": {
+   "calls": 3003,
+   "conv": 1225968253,
+   "heap_calls": 3003,
+   "heap_size_max": 200,
+   "heap_size_sum": 360225,
+   "ns": 1318192378
+  },
+  "rows": {
+   "advance-frontier-waiter-heap": {
+    "calls": 2643,
+    "categories": {
+     "allocation and freeing": 455,
+     "choice points, trail and backtracking": 22,
+     "copying and instantiation": 216,
+     "equation selection and call preparation": 481,
+     "goal dispatch and evaluation": 447,
+     "grounded ops and arithmetic": 44,
+     "hashing, interning and term universe": 260,
+     "inside a Prolog call": 289,
+     "matching, unification and fact iteration": 700,
+     "profiler": 746,
+     "prolog (SWI-Prolog and the foreign boundary)": 12,
+     "space mutation (add/remove atoms)": 9
+    },
+    "foreign": {
+     "copy_term": {
+      "calls": 2643,
+      "from_term_ns": 76985154,
+      "heap_calls": 0,
+      "heap_size_max": 0,
+      "heap_size_sum": 0,
+      "ns": 207889801,
+      "to_term_ns": 51678258
+     }
+    },
+    "members": 1,
+    "samples": 3681,
+    "self_ns": 3673626716
+   },
+   "commit-proof-candidate-heap": {
+    "calls": 1088,
+    "categories": {
+     "allocation and freeing": 199,
+     "choice points, trail and backtracking": 13,
+     "copying and instantiation": 73,
+     "equation selection and call preparation": 268,
+     "goal dispatch and evaluation": 228,
+     "grounded ops and arithmetic": 14,
+     "hashing, interning and term universe": 190,
+     "matching, unification and fact iteration": 259,
+     "profiler": 510,
+     "prolog (SWI-Prolog and the foreign boundary)": 3,
+     "space mutation (add/remove atoms)": 19
+    },
+    "foreign": {},
+    "members": 1,
+    "samples": 1776,
+    "self_ns": 1782044367
+   },
+   "externalize-compiled-addition": {
+    "calls": 5196,
+    "categories": {
+     "allocation and freeing": 1048,
+     "choice points, trail and backtracking": 60,
+     "copying and instantiation": 979,
+     "equation selection and call preparation": 627,
+     "goal dispatch and evaluation": 1177,
+     "grounded ops and arithmetic": 112,
+     "hashing, interning and term universe": 505,
+     "matching, unification and fact iteration": 2189,
+     "profiler": 57,
+     "prolog (SWI-Prolog and the foreign boundary)": 21,
+     "space mutation (add/remove atoms)": 27
+    },
+    "foreign": {},
+    "members": 1,
+    "samples": 6802,
+    "self_ns": 6817547589
+   },
+   "goal-live-proof-ids": {
+    "calls": 0,
+    "categories": {
+     "equation selection and call preparation": 9,
+     "matching, unification and fact iteration": 1,
+     "profiler": 1
+    },
+    "foreign": {},
+    "members": 1,
+    "samples": 11,
+    "self_ns": 8142212
+   },
+   "goal-merged-proof-ids": {
+    "calls": 7182,
+    "categories": {
+     "allocation and freeing": 194,
+     "choice points, trail and backtracking": 22,
+     "copying and instantiation": 55,
+     "equation selection and call preparation": 243,
+     "goal dispatch and evaluation": 254,
+     "grounded ops and arithmetic": 27,
+     "hashing, interning and term universe": 137,
+     "matching, unification and fact iteration": 348,
+     "profiler": 422,
+     "prolog (SWI-Prolog and the foreign boundary)": 8,
+     "space mutation (add/remove atoms)": 14
+    },
+    "foreign": {},
+    "members": 1,
+    "samples": 1724,
+    "self_ns": 1749006895
+   },
+   "group: frontier/agenda heap rows (name holds 'heap')": {
+    "calls": 48450,
+    "categories": {
+     "allocation and freeing": 1979,
+     "choice points, trail and backtracking": 134,
+     "copying and instantiation": 1709,
+     "equation selection and call preparation": 2030,
+     "goal dispatch and evaluation": 2098,
+     "grounded ops and arithmetic": 208,
+     "hashing, interning and term universe": 1626,
+     "inside a Prolog call": 1744,
+     "matching, unification and fact iteration": 3351,
+     "other machine": 5,
+     "profiler": 2999,
+     "prolog (SWI-Prolog and the foreign boundary)": 402,
+     "space mutation (add/remove atoms)": 159
+    },
+    "foreign": {
+     "heap_pop": {
+      "calls": 3003,
+      "from_term_ns": 943351614,
+      "heap_calls": 3003,
+      "heap_size_max": 200,
+      "heap_size_sum": 360225,
+      "ns": 1318192378,
+      "to_term_ns": 282616639
+     },
+     "other": {
+      "calls": 5685,
+      "from_term_ns": 135546453,
+      "heap_calls": 0,
+      "heap_size_max": 0,
+      "heap_size_sum": 0,
+      "ns": 354398739,
+      "to_term_ns": 89471001
+     }
+    },
+    "members": 28,
+    "samples": 18444,
+    "self_ns": 18467488147
+   },
+   "group: proof store (rows defined in backward_proof_store.metta)": {
+    "calls": 66383,
+    "categories": {
+     "allocation and freeing": 605,
+     "choice points, trail and backtracking": 46,
+     "copying and instantiation": 359,
+     "equation selection and call preparation": 949,
+     "goal dispatch and evaluation": 597,
+     "grounded ops and arithmetic": 60,
+     "hashing, interning and term universe": 308,
+     "matching, unification and fact iteration": 883,
+     "profiler": 1050,
+     "prolog (SWI-Prolog and the foreign boundary)": 19,
+     "space mutation (add/remove atoms)": 25
+    },
+    "foreign": {},
+    "members": 69,
+    "samples": 4901,
+    "self_ns": 4948696557
+   },
+   "proof-output-atom-by-id": {
+    "calls": 0,
+    "categories": {
+     "equation selection and call preparation": 15,
+     "goal dispatch and evaluation": 1,
+     "matching, unification and fact iteration": 1,
+     "profiler": 1
+    },
+    "foreign": {},
+    "members": 1,
+    "samples": 18,
+    "self_ns": 13653304
+   },
+   "proof-output-key-by-id": {
+    "calls": 5159,
+    "categories": {
+     "allocation and freeing": 95,
+     "choice points, trail and backtracking": 7,
+     "copying and instantiation": 185,
+     "equation selection and call preparation": 93,
+     "goal dispatch and evaluation": 47,
+     "grounded ops and arithmetic": 9,
+     "hashing, interning and term universe": 41,
+     "matching, unification and fact iteration": 94,
+     "profiler": 143,
+     "prolog (SWI-Prolog and the foreign boundary)": 4,
+     "space mutation (add/remove atoms)": 2
+    },
+    "foreign": {},
+    "members": 1,
+    "samples": 720,
+    "self_ns": 732185803
+   },
+   "schedule-goal-heap": {
+    "calls": 5276,
+    "categories": {
+     "allocation and freeing": 24,
+     "choice points, trail and backtracking": 7,
+     "copying and instantiation": 13,
+     "equation selection and call preparation": 45,
+     "goal dispatch and evaluation": 36,
+     "grounded ops and arithmetic": 2,
+     "hashing, interning and term universe": 10,
+     "matching, unification and fact iteration": 74,
+     "profiler": 80,
+     "prolog (SWI-Prolog and the foreign boundary)": 1,
+     "space mutation (add/remove atoms)": 1
+    },
+    "foreign": {},
+    "members": 1,
+    "samples": 293,
+    "self_ns": 307422283
+   },
+   "schedule-goal-row": {
+    "calls": 0,
+    "categories": {
+     "allocation and freeing": 232,
+     "choice points, trail and backtracking": 18,
+     "copying and instantiation": 143,
+     "equation selection and call preparation": 244,
+     "goal dispatch and evaluation": 337,
+     "grounded ops and arithmetic": 44,
+     "hashing, interning and term universe": 196,
+     "matching, unification and fact iteration": 383,
+     "profiler": 615,
+     "prolog (SWI-Prolog and the foreign boundary)": 147,
+     "space mutation (add/remove atoms)": 38
+    },
+    "foreign": {},
+    "members": 1,
+    "samples": 2397,
+    "self_ns": 2372647192
+   },
+   "search-agenda-heap": {
+    "calls": 2995,
+    "categories": {
+     "allocation and freeing": 102,
+     "choice points, trail and backtracking": 6,
+     "copying and instantiation": 180,
+     "equation selection and call preparation": 46,
+     "goal dispatch and evaluation": 73,
+     "grounded ops and arithmetic": 17,
+     "hashing, interning and term universe": 35,
+     "inside a Prolog call": 1281,
+     "matching, unification and fact iteration": 226,
+     "other machine": 5,
+     "profiler": 3,
+     "prolog (SWI-Prolog and the foreign boundary)": 195,
+     "space mutation (add/remove atoms)": 3
+    },
+    "foreign": {
+     "heap_pop": {
+      "calls": 3003,
+      "from_term_ns": 943351614,
+      "heap_calls": 3003,
+      "heap_size_max": 200,
+      "heap_size_sum": 360225,
+      "ns": 1318192378,
+      "to_term_ns": 282616639
+     }
+    },
+    "members": 1,
+    "samples": 2172,
+    "self_ns": 2175531721
+   },
+   "spawn-frontier-goal-heap": {
+    "calls": 4743,
+    "categories": {
+     "allocation and freeing": 334,
+     "choice points, trail and backtracking": 25,
+     "copying and instantiation": 266,
+     "equation selection and call preparation": 364,
+     "goal dispatch and evaluation": 356,
+     "grounded ops and arithmetic": 30,
+     "hashing, interning and term universe": 418,
+     "matching, unification and fact iteration": 616,
+     "profiler": 374,
+     "prolog (SWI-Prolog and the foreign boundary)": 4,
+     "space mutation (add/remove atoms)": 49
+    },
+    "foreign": {},
+    "members": 1,
+    "samples": 2836,
+    "self_ns": 2813530933
+   },
+   "spawn-frontier-heap": {
+    "calls": 5082,
+    "categories": {
+     "allocation and freeing": 131,
+     "choice points, trail and backtracking": 9,
+     "copying and instantiation": 188,
+     "equation selection and call preparation": 168,
+     "goal dispatch and evaluation": 206,
+     "grounded ops and arithmetic": 19,
+     "hashing, interning and term universe": 107,
+     "inside a Prolog call": 109,
+     "matching, unification and fact iteration": 331,
+     "profiler": 250,
+     "prolog (SWI-Prolog and the foreign boundary)": 2,
+     "space mutation (add/remove atoms)": 10
+    },
+    "foreign": {
+     "copy_term": {
+      "calls": 2226,
+      "from_term_ns": 51990811,
+      "heap_calls": 0,
+      "heap_size_max": 0,
+      "heap_size_sum": 0,
+      "ns": 126427288,
+      "to_term_ns": 34345811
+     }
+    },
+    "members": 1,
+    "samples": 1530,
+    "self_ns": 1564127724
+   },
+   "store-proof-candidate": {
+    "calls": 0,
+    "categories": {
+     "matching, unification and fact iteration": 1
     },
     "foreign": {},
     "members": 1,
     "samples": 1,
-    "self_ns": 2437735
+    "self_ns": 2235208
    }
   },
-  "samples": 100609,
-  "total_ns": 100833305430
+  "samples": 95606,
+  "total_ns": 95945865945
  }
 }

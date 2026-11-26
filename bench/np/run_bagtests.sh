@@ -9,7 +9,7 @@
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 OUT=${1:?outdir}
-mkdir -p "$OUT"; OUT=$(cd "$OUT" && pwd)
+rm -rf "$OUT"; mkdir -p "$OUT"; OUT=$(cd "$OUT" && pwd)
 BUILD=${BUILD:-on}
 BDIR=${NP_BUILD_DIR:-$ROOT/build/np/cetta-$BUILD}
 SCRATCH=${S0_SCRATCH:-$ROOT/../../scratch}
@@ -29,9 +29,6 @@ TESTS=$(python3 "$ROOT/bench/np/gen_heap_bagtests.py" "$IMG/bagtest" --seed "${S
   for t in $TESTS; do echo "test $t sha256=$(sha256sum "$IMG/bagtest/$t.metta" | cut -d' ' -f1)"; done
 } > "$OUT/env.txt"
 cp "$IMG"/bagtest/*.metta "$OUT/"
-echo "| test | cases | none exit | off = none | on = none | check = none | check: checked / mismatched | on: native / declined | verdict |" > "$OUT/summary.md"
-echo "|---|---|---|---|---|---|---|---|---|" >> "$OUT/summary.md"
-fail=0
 for t in $TESTS; do
   for m in none off on check; do
     args=(--lang petta --profile extended --space-engine native)
@@ -43,23 +40,5 @@ for t in $TESTS; do
     echo $? > "$OUT/$t.$m.exit"
     set -e
   done
-  read -r cases < <(grep -c '^(np-result ' "$OUT/$t.none.stdout" || true)
-  ncases=$(grep -c '^!(let\*' "$IMG/bagtest/$t.metta")
-  same() { cmp -s "$OUT/$t.none.stdout" "$OUT/$t.$1.stdout" && echo yes || echo NO; }
-  stat() { python3 -c 'import json,sys
-d=json.load(open(sys.argv[1]));o=d["ops"]
-print(" / ".join(str(sum(x[k] for x in o)) for k in sys.argv[2:]))' "$OUT/$t.$1.np-heaps.json" "${@:2}" 2>/dev/null || echo MISSING; }
-  ex="$(cat "$OUT/$t.none.exit")/$(cat "$OUT/$t.off.exit")/$(cat "$OUT/$t.on.exit")/$(cat "$OUT/$t.check.exit")"
-  so=$(same off); sn=$(same on); sc=$(same check)
-  ck=$(stat check checked mismatched); nt=$(stat on native declined)
-  v=PASS
-  [ "$ex" = "0/0/0/0" ] || v=FAIL
-  [ "$cases" = "$ncases" ] || v=FAIL
-  [ "$so$sn$sc" = yesyesyes ] || v=FAIL
-  case "$ck" in *" / 0") ;; *) v=FAIL ;; esac
-  case "$nt" in "0 / "*|MISSING) v=FAIL ;; esac
-  [ "$v" = PASS ] || fail=1
-  echo "| $t | $cases of $ncases printed | $ex | $so | $sn | $sc | $ck | $nt | $v |" >> "$OUT/summary.md"
 done
-cat "$OUT/summary.md"
-exit $fail
+python3 "$ROOT/bench/np/summarize_bagtests.py" "$OUT"

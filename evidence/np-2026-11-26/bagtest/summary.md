@@ -6,3 +6,4 @@
 | h4_large_with_vars | 1 of 1 printed | 0/0/0/0 | yes | yes | yes | 10 / 0 | 10 / 1800 | PASS |
 | h5_large_ground | 1 of 1 printed | 0/0/0/0 | yes | yes | yes | 910 / 0 | 910 / 0 | PASS |
 | h6_random_ground | 20 of 20 printed | 0/0/0/0 | yes | yes | yes | 1166 / 0 | 1166 / 0 | PASS |
+| h7_pattern_drain | 12 of 12 printed | 0/0/0/0 | yes | yes | yes | 1390 / 0 | 1390 / 0 | PASS |

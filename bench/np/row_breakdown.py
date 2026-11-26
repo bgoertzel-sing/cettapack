@@ -139,6 +139,14 @@ def main():
               % (len(files), total / 1e9, nsamples, allf["calls"], allf["ns"] / 1e9, pct(allf["ns"], total),
                  heapf["calls"], heapf["ns"] / 1e9, pct(heapf["ns"], total), pct(heapf["conv"], heapf["ns"]),
                  heapf["heap_size_sum"] / heapf["heap_calls"] if heapf["heap_calls"] else 0, heapf["heap_size_max"]))
+        bypred = collections.defaultdict(collections.Counter)
+        for (row, name), c in foreign.items():
+            key = name if not name.startswith("callPredicate:") else name
+            bypred[key].update({k: c[k] for k in ("calls", "ns", "to_term_ns", "from_term_ns")})
+        print("Prolog calls by predicate (all rows): " + "; ".join(
+            "%s %d calls, %.2f s, %.1f%% of the run, conversion %.0f%%" % (
+                n, c["calls"], c["ns"] / 1e9, pct(c["ns"], total), pct(c["to_term_ns"] + c["from_term_ns"], c["ns"]))
+            for n, c in sorted(bypred.items(), key=lambda kv: -kv[1]["ns"])[:5]) + ".\n")
         print("| row | calls | self s | self % of run | ms/call | own Prolog calls (exact): predicate calls, s, % of "
               "row self, conversion share | samples | row samples by native category (%) |")
         print("|---|---|---|---|---|---|---|---|")
