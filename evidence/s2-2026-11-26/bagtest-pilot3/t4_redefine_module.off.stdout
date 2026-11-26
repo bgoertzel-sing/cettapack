@@ -1,0 +1,19 @@
+true
+true
+(proof-output-key (Inheritance (kb1 ctx ())))
+0.9
+true
+(proof-output-key (Inheritance (kb1 ctx ())))
+(Inheritance (kb1 ctx ()) (rule p) (STV 1.0 0.7))
+0.9
+true
+(proof-output-key (Inheritance (kb1 ctx ())))
+(Inheritance (kb1 ctx ()) (rule p) (STV 1.0 0.7))
+true
+(proof-output-key (Inheritance (kb1 ctx ())))
+true
+(proof-output-key (Inheritance (kb1 ctx ())))
+true
+(proof-output-key (Inheritance (kb1 ctx ())))
+true
+(proof-output-key (Inheritance (kb1 ctx ())))

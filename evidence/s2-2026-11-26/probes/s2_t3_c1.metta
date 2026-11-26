@@ -1,0 +1,5 @@
+!(import! &self ../petta_chainer)
+!(add-atom &self (= (and-bundle cpk-g cpk-a) cpk-x))
+!(make-and-bundle g (a))
+!(remove-atom &self (= (and-bundle cpk-g cpk-a) cpk-x))
+!(make-and-bundle g (a))
