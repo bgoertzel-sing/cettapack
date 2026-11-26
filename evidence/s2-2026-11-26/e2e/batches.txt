@@ -1,0 +1,5 @@
+round=1 order=base,off,on lock_asked=2026-11-26T18:25:17Z start=2026-11-26T18:30:00Z end=2026-11-26T18:36:23Z load_start=4.38 4.41 4.84 load_end=4.44 4.26 4.60
+round=2 order=off,on,base lock_asked=2026-11-26T18:36:23Z start=2026-11-26T18:41:14Z end=2026-11-26T18:47:56Z load_start=4.53 4.52 4.63 load_end=4.22 4.27 4.46
+round=3 order=on,base,off lock_asked=2026-11-26T18:47:56Z start=2026-11-26T18:52:54Z end=2026-11-26T18:59:34Z load_start=4.49 4.34 4.43 load_end=4.83 4.68 4.55
+round=4 order=base,off,on lock_asked=2026-11-26T18:59:34Z start=2026-11-26T19:04:17Z end=2026-11-26T19:10:25Z load_start=3.80 4.17 4.37 load_end=3.38 3.81 4.17
+round=5 order=off,on,base lock_asked=2026-11-26T19:10:25Z start=2026-11-26T19:14:38Z end=2026-11-26T19:20:31Z load_start=3.59 3.61 3.99 load_end=3.69 3.47 3.79
