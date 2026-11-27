@@ -65,8 +65,13 @@ def load_run(path, cal):
         out["sites"][s["name"]] = {"phase": s["phase"], "calls": s["calls"], "self_raw": s["self"] / hz,
                                    "self": corr / hz, "incl_raw": s["incl"] / hz}
         out["phases"][s["phase"]] += corr / hz
-    outside = d["total_ticks"] - d["top_incl_ticks"] - top_frames * c_out
+    # Every tick inside a timed frame is the self time of exactly one site, so the time outside all frames is the
+    # total minus the sites' raw self time.  (The report's top_incl_ticks also holds the calibration frames, which run
+    # after the run's last stamp, so it is not used.)
+    inside = sum(s["self"] for s in sites)
+    outside = d["total_ticks"] - inside - top_frames * c_out
     out["phases"]["outside"] += outside / hz
+    out["covered"] = inside / d["total_ticks"]
     out["total_raw"] = d["total_ticks"] / hz
     out["total"] = (d["total_ticks"] - calls * (c_in + c_out)) / hz
     out["frames"] = calls

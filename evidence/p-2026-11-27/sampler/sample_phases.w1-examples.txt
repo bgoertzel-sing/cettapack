@@ -1,0 +1,38 @@
+## w1-examples: sampler phases (188130 samples, 3 runs)
+  alloc         11.2% (11.1-11.2)
+  choice         2.3% ( 2.1- 2.3)
+  copy          10.3% (10.0-10.5)
+  dispatch      26.9% (26.7-27.2)
+  eqsel         23.8% (23.6-24.2)
+  match          8.7% ( 8.7- 9.0)
+  outside        1.2% ( 1.1- 1.3)
+  prepcompile    3.9% ( 3.9- 4.1)
+  prepexec       1.9% ( 1.9- 2.0)
+  prolog         5.2% ( 5.1- 5.2)
+  space          4.6% ( 4.6- 4.6)
+  top functions (innermost timed function), share of samples:
+     9.90% (libc allocator)
+     4.99% prepared_pure_program_cache_has_decline_head
+     4.67% petta_machine_dispatch_solve
+     3.94% bindings_apply_fold
+     3.46% oem_run_body_mode
+     2.44% prepared_pure_compile_pending_heads
+     2.36% bindings_builder_add_id_internal
+     2.35% cetta_open_equation_cursor_open
+     2.20% oem_resolve_in
+     2.13% atom_deep_copy_session_copy
+     2.10% oem_cursor_run
+     1.99% petta_machine_next_local
+     1.75% petta_machine_start_space_query
+     1.71% petta_machine_dispatch_goal
+     1.70% petta_eval_machine_builtin_equations
+     1.69% petta_machine_open_resume
+     1.63% petta_libpl_call
+     1.52% petta_machine_advance_choice
+     1.45% petta_machine_extension_named_arity_using
+     1.41% petta_machine_call_equations
+     1.38% petta_table_safety_scan_relation
+     1.37% petta_eval_relation_admission_entry
+     1.26% petta_specializer_query_value_execution_admission
+     1.23% petta_libpl_registered_call
+     1.22% petta_program_refresh_callability

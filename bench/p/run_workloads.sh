@@ -9,6 +9,8 @@
 #   off    the same sources with the timers compiled out (the reference for overhead)
 #   stats  CeTTa's own runtime counters (ENABLE_RUNTIME_STATS=1, --emit-runtime-stats; counters in NAME.TAG.rN.stderr)
 #   samp   S1's C-level sampler (0005+0006; CETTA_FNPROF_OUT, CETTA_FNPROF_SAMPLES_OUT, 1 ms of CPU per sample)
+# P_TAG=x P_ENV="VAR=1 ..." adds environment settings to every run and tags the files BUILD-x (ablation runs: CeTTa's own
+# reference switches, e.g. CETTA_PREPARED_PURE_REFERENCE=1).
 # Per run: OUTDIR/WORKLOAD/NAME.TAG.rN.{stdout,stderr,time,exit,check}.  The check line (sanity gate, per unit): exit
 # status, stdout sha256, whether it equals S0's recorded base stdout for the same file (the known answers), failed
 # tests (❌), and for ev whether the timer report exists and covers the run (route).
@@ -33,7 +35,8 @@ REF=${P_REF:-$ROOT/evidence/s0-2026-11-24/runs/base}
 BDIR=${P_BUILD_DIR:-$ROOT/build/p/cetta-$BUILD}
 CETTA=$BDIR/cetta
 [ -x "$CETTA" ] || { echo "no $CETTA" >&2; exit 1; }
-TAG=$BUILD
+TAG=$BUILD${P_TAG:+-$P_TAG}
+read -r -a PENV <<< "${P_ENV:-}"
 W1=(deductionrevision flyingraven raveninduction base_rate_acceptance_game_pettachainer direct existential_residual
     machine_failure_inversion raveninduction_implication_pettachainer smokes stationops_fold_inverse toothbrush)
 
@@ -59,7 +62,7 @@ files_for() {
 }
 
 {
-  echo "tag=$TAG build=$BUILD cetta=$CETTA"
+  echo "tag=$TAG build=$BUILD cetta=$CETTA env=${P_ENV:-}"
   echo "cetta_sha256=$(sha256sum "$CETTA" | cut -d' ' -f1)"
   echo "cetta_build_head=$(cat "$BDIR/.p-build-head" 2>/dev/null | head -1)"
   echo "cetta_build_patches=$(cat "$BDIR/.p-build-patches" 2>/dev/null | tr '\n' ' ')"
@@ -76,7 +79,7 @@ for w in "${WORKLOADS[@]}"; do
     n=$(basename "$f" .metta)
     for r in $(seq "$RUN_FIRST" $((RUN_FIRST + RUNS - 1))); do
       t=$n.$TAG.r$r
-      extra=()
+      extra=("${PENV[@]}")
       args=(--lang petta --profile extended --space-engine native)
       case "$BUILD" in
         ev) extra+=(CETTA_EVPROF_OUT="$OUT/$w/$t.evprof.json") ;;
@@ -101,8 +104,9 @@ for w in "${WORKLOADS[@]}"; do
         route=" route=$(python3 -c 'import json,sys
 try:
   d=json.load(open(sys.argv[1])); s=sum(x["self"] for x in d["sites"]); n=sum(x["calls"] for x in d["sites"])
-  ok = d["format"]=="cetta-evprof-v1" and n>0 and d["overflow"]==0 and d["top_incl_ticks"]<=d["total_ticks"]
-  print("ok" if ok else "FAILED", "frames=%d covered=%.3f overflow=%d unwound=%d" % (n, d["top_incl_ticks"]/d["total_ticks"], d["overflow"], d["unwound"]))
+  # time inside frames = the self ticks of the sites (top_incl_ticks also holds the exit-time calibration frames)
+  ok = d["format"]=="cetta-evprof-v1" and n>0 and d["overflow"]==0 and d["unwound"]==0 and s<=d["total_ticks"]
+  print("ok" if ok else "FAILED", "frames=%d covered=%.3f overflow=%d unwound=%d" % (n, s/d["total_ticks"], d["overflow"], d["unwound"]))
 except Exception as e: print("MISSING")' "$OUT/$w/$t.evprof.json")"
       elif [ "$BUILD" = stats ]; then
         route=" route=$(grep -q 'runtime' "$OUT/$w/$t.stderr" && echo ok || echo MISSING)"

@@ -1,0 +1,38 @@
+## w2-wmtm: sampler phases (105066 samples, 3 runs)
+  alloc         11.1% (11.0-11.1)
+  choice         2.4% ( 2.3- 2.4)
+  copy          10.5% (10.4-10.5)
+  dispatch      28.5% (28.3-29.2)
+  eqsel         20.7% (20.2-20.8)
+  match         10.5% (10.4-10.8)
+  outside        0.3% ( 0.3- 0.3)
+  prepcompile    3.2% ( 3.0- 3.3)
+  prepexec       1.6% ( 1.4- 1.6)
+  prolog         5.9% ( 5.8- 5.9)
+  space          5.5% ( 5.4- 5.6)
+  top functions (innermost timed function), share of samples:
+     9.80% (libc allocator)
+     4.95% petta_machine_dispatch_solve
+     3.82% bindings_apply_fold
+     3.31% oem_run_body_mode
+     3.00% bindings_builder_add_id_internal
+     2.74% oem_resolve_in
+     2.73% cetta_open_equation_cursor_open
+     2.66% prepared_pure_program_cache_has_decline_head
+     2.22% atom_deep_copy_session_copy
+     2.17% petta_machine_next_local
+     2.16% prepared_pure_compile_pending_heads
+     2.05% oem_cursor_run
+     1.90% petta_machine_dispatch_goal
+     1.88% petta_machine_open_resume
+     1.79% petta_machine_extension_named_arity_using
+     1.79% petta_machine_advance_choice
+     1.75% petta_machine_start_space_query
+     1.74% petta_eval_machine_builtin_equations
+     1.71% petta_libpl_from_term
+     1.48% petta_libpl_registered_call
+     1.44% petta_libpl_to_term
+     1.33% petta_eval_relation_admission_entry
+     1.32% petta_machine_call_equations
+     1.29% petta_table_safety_scan_relation
+     1.27% petta_specializer_query_value_execution_admission
