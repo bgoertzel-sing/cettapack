@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """cetta-internals P: end-to-end estimates for the ranked evaluator changes (Amdahl over measured shares).
 
-  estimates.py EVPROF.json ABLATIONS.json [--proto PROTO.json] [--md OUT.md] [--json OUT.json]
+  estimates.py EVPROF.json [--matrix MATRIX.json] [--fractions FRACTIONS.json] [--md OUT.md] [--json OUT.json]
 
 EVPROF.json: bench/p/evprof_report.py --json (per workload: each timed function's corrected self share, median over
-runs).  ABLATIONS.json: bench/p/ablation_report.py --json (end-to-end user-time ratios of the zero-code calibration
-runs).  PROTO.json (optional): the same for the prototype build against its base.
+runs).  --matrix: bench/p/ablation_report.py --json of the quiet matrix (end-to-end user-time ratios); a group with
+"measured_config" takes its saving from that configuration's median ratio to the timers-off build (C3: mimalloc).
+--fractions: measured fractions that replace assumed ones (C2 group 0: the prototype's per-function effect).
 
 Each change names the timed functions whose self time it changes (the time it touches, measured) and, per group of
 functions, the fraction of that time it removes (assumed unless a calibration run measured it; every fraction says
@@ -46,22 +47,28 @@ CHANGES = [
     },
     {
         "id": "C2",
-        "name": "Prepared-call path: indexed cache, per-head invalidation, no repeated compile of unchanged heads",
+        "name": "Prepared-call fast path admitted only where it pays (per-head), with an indexed cache (0012) and "
+                "programs kept across unrelated program changes",
         "groups": [
-            {"label": "cache lookups and refusal checks (list walks)", "fraction": 0.85, "basis": "proto",
+            {"label": "the prepared-pure call path: refusal checks and cache walks, compile attempts, prepared "
+                      "execution (saving measured end to end with the path off, CeTTa's own reference switch; an "
+                      "adaptive policy does at least as well where its bookkeeping is cheap)",
+             "fraction": None, "basis": "measured", "measured_config": "ablpp",
              "sites": ["prepared_pure_program_cache_has_decline_head", "prepared_pure_closed_invocation_plan",
-                       "petta_eval_machine_prepared_refused", "prepared_pure_closed_invocation_try"]},
-            {"label": "recompiling programs and refusals after unrelated program changes", "fraction": 0.5,
-             "basis": "assumed",
-             "sites": ["prepared_pure_program_compile_closed_mode", "prepared_pure_compile_pending_heads",
-                       "oem_compile_certificate"]},
+                       "petta_eval_machine_prepared_refused", "prepared_pure_closed_invocation_try",
+                       "prepared_pure_program_compile_closed_mode", "prepared_pure_compile_pending_heads",
+                       "oem_compile_certificate", "petta_eval_machine_execute_prepared_pure_call",
+                       "petta_machine_execute_prepared_query", "petta_machine_execute_prepared_call",
+                       "prepared_pure_program_execute_internal"]},
         ],
     },
     {
         "id": "C3",
-        "name": "Allocation: pooled/arena allocation of per-call machine records (cursors, choices, frames)",
+        "name": "Allocation: a faster general allocator (mimalloc), then pools for per-call machine records",
         "groups": [
-            {"label": "malloc/calloc/realloc/free and arena growth", "fraction": 0.5, "basis": "assumed",
+            {"label": "malloc/calloc/realloc/free and arena growth (saving measured end to end by the mimalloc "
+                      "swap, which also speeds SWI-Prolog's and libc's own allocations)",
+             "fraction": None, "basis": "measured", "measured_config": "mimalloc",
              "sites": ["malloc", "calloc", "realloc", "free", "arena_grow", "petta_answer_choice_release",
                        "petta_choice_release"]},
         ],
@@ -82,6 +89,7 @@ CHANGES = [
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("evprof")
+    ap.add_argument("--matrix", help="bench/p/ablation_report.py --json of the matrix (for measured changes)")
     ap.add_argument("--fractions", help="JSON {change id: {group index: fraction}} overriding the defaults "
                                         "(e.g. calibrated by a measurement)")
     ap.add_argument("--md")
@@ -89,6 +97,7 @@ def main():
     a = ap.parse_args()
     ev = json.load(open(a.evprof))
     over = json.load(open(a.fractions)) if a.fractions else {}
+    matrix = json.load(open(a.matrix)) if a.matrix else {}
     res = {"changes": [], "combined": {}}
     seen = set()
     lines = ["| change | group | basis | fraction removed | " +
@@ -108,12 +117,21 @@ def main():
             for w in WORKLOADS:
                 sites = ev["workloads"][w]["sites"]
                 t = sum(sites[s]["self_share"] for s in g["sites"] if s in sites)
+                if g.get("measured_config"):
+                    # saved = 1 - (configuration's user time / base user time), median over paired runs
+                    saved = max(0.0, 1.0 - matrix[g["measured_config"]]["workloads"][w]["median"])
+                    f_w = saved / t if t else 0.0
+                else:
+                    saved, f_w = t * frac, frac
                 gres["touched"][w] = t
-                gres["saved"][w] = t * frac
+                gres["saved"][w] = saved
                 cres["touched"][w] = cres["touched"].get(w, 0.0) + t
-                cres["saved"][w] = cres["saved"].get(w, 0.0) + t * frac
-                cells.append("%.1f%% / %.1f%%" % (100 * t, 100 * t * frac))
-            lines.append("| %s | %s | %s | %.2f | %s |" % (ch["id"], g["label"], basis, frac, " | ".join(cells)))
+                cres["saved"][w] = cres["saved"].get(w, 0.0) + saved
+                cells.append("%.1f%% / %.1f%%%s" % (100 * t, 100 * saved,
+                                                     " (f=%.2f)" % f_w if g.get("measured_config") else ""))
+            lines.append("| %s | %s | %s | %s | %s |" % (ch["id"], g["label"], basis,
+                                                         "%.2f" % frac if frac is not None else "measured",
+                                                         " | ".join(cells)))
             cres["groups"].append(gres)
         for w in WORKLOADS:
             cres["speedup"][w] = 1.0 / (1.0 - cres["saved"][w])

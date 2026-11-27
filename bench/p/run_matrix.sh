@@ -11,6 +11,7 @@
 #   ablpp     off build, CETTA_PREPARED_PURE_REFERENCE=1 (prepared-pure call path refuses every call)  TAG off-ablpp
 #   abloe     off build, CETTA_OPEN_EQUATIONS_REFERENCE=1 (no open-equation machine)          TAG off-abloe
 #   mimalloc  off build, LD_PRELOAD=$MIMALLOC (every malloc/free of the process to mimalloc)  TAG off-mimalloc
+#   ppmi      off build, CETTA_PREPARED_PURE_REFERENCE=1 and LD_PRELOAD=$MIMALLOC together (C2 floor + C3) TAG off-ppmi
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 OUT=${1:?outdir}
@@ -29,6 +30,7 @@ run_config() {
     ablpp) BUILD=off P_TAG=ablpp P_ENV="CETTA_PREPARED_PURE_REFERENCE=1" RUN_FIRST=$r RUNS=1 "$ROOT/bench/p/run_workloads.sh" "$OUT/$c" ;;
     abloe) BUILD=off P_TAG=abloe P_ENV="CETTA_OPEN_EQUATIONS_REFERENCE=1" RUN_FIRST=$r RUNS=1 "$ROOT/bench/p/run_workloads.sh" "$OUT/$c" ;;
     mimalloc) BUILD=off P_TAG=mimalloc P_ENV="LD_PRELOAD=${MIMALLOC:?set MIMALLOC}" RUN_FIRST=$r RUNS=1 "$ROOT/bench/p/run_workloads.sh" "$OUT/$c" ;;
+    ppmi) BUILD=off P_TAG=ppmi P_ENV="CETTA_PREPARED_PURE_REFERENCE=1 LD_PRELOAD=${MIMALLOC:?set MIMALLOC}" RUN_FIRST=$r RUNS=1 "$ROOT/bench/p/run_workloads.sh" "$OUT/$c" ;;
     *) echo "unknown config $c" >&2; exit 2 ;;
   esac
 }

@@ -6,90 +6,85 @@ Shares of the overhead-corrected run time, summed over each workload's files; me
 
 | | w1-examples | w2-wmtm | w3-benchgen |
 |---|---|---|---|
-| files x runs | 11 x 3 | 1 x 3 | 1 x 2 |
-| timed frames per run (M) | 330.6 | 177.8 | 625.3 |
-| c_in / c_out per frame (ticks, median over files) | 24.2 / 25.9 | 25.7 / 27.7 | 22.0 / 23.4 |
-| timers-on wall / timers-off wall, raw | 1.124 (0.917-1.176) | 0.969 (0.962-1.152) | 0.912 (0.801-1.024) |
-| timers-on wall corrected / timers-off wall (residual) | 1.000 (0.804-1.039) | 0.878 (0.858-0.996) | 0.797 (0.701-0.893) |
-| timers-on user / timers-off user | 1.129 (0.931-1.181) | 0.974 (0.972-1.159) | 0.914 (0.804-1.025) |
+| files x runs | 11 x 3 | 1 x 3 | 1 x 3 |
+| timed frames per run (M) | 330.8 | 176.9 | 625.9 |
+| c_in / c_out per frame (ticks, median over files) | 20.7 / 22.3 | 19.5 / 22.3 | 22.1 / 23.8 |
+| timers-on wall / timers-off wall, raw | 1.208 (1.190-1.271) | 1.335 (1.161-1.431) | 1.286 (1.244-1.335) |
+| timers-on wall corrected / timers-off wall (residual) | 1.066 (1.049-1.132) | 1.201 (1.032-1.281) | 1.114 (1.087-1.157) |
+| timers-on user / timers-off user | 1.211 (1.194-1.277) | 1.335 (1.162-1.433) | 1.286 (1.246-1.335) |
 | frames left by non-local exits (unwound) | 0 | 0 | 0 |
 
 ## The order's phases (grouped)
 
 | phase | w1-examples | w2-wmtm | w3-benchgen |
 |---|---|---|---|
-| equation lookup and selection | 28.1% (28.0%-28.3%) | 23.8% (23.6%-24.0%) | 23.6% (23.5%-23.7%) |
-| unification and matching | 9.1% (8.9%-9.2%) | 11.1% (10.9%-11.3%) | 13.8% (13.7%-13.9%) |
-| dispatch | 32.3% (32.2%-32.3%) | 33.3% (33.1%-33.6%) | 32.4% (32.4%-32.4%) |
-| term allocation and copying | 19.5% (19.5%-19.8%) | 19.6% (19.4%-19.8%) | 20.2% (20.2%-20.2%) |
-| space access | 4.8% (4.7%-4.9%) | 5.8% (5.7%-5.9%) | 5.0% (5.0%-5.0%) |
-| Prolog (foreign calls) | 4.9% (4.9%-5.0%) | 6.0% (5.9%-6.0%) | 4.3% (4.3%-4.3%) |
-| outside | 1.1% (1.1%-1.3%) | 0.4% (0.3%-0.5%) | 0.7% (0.7%-0.7%) |
+| equation lookup and selection | 28.4% (28.2%-28.4%) | 23.9% (23.8%-24.0%) | 23.6% (23.5%-23.6%) |
+| unification and matching | 9.2% (9.2%-9.3%) | 11.2% (11.2%-11.2%) | 13.8% (13.8%-13.8%) |
+| dispatch | 32.1% (32.0%-32.2%) | 33.2% (33.1%-33.3%) | 32.5% (32.2%-32.6%) |
+| term allocation and copying | 19.6% (19.5%-19.7%) | 19.7% (19.6%-19.8%) | 20.2% (20.2%-20.5%) |
+| space access | 4.7% (4.6%-4.7%) | 5.7% (5.6%-5.8%) | 4.9% (4.9%-5.0%) |
+| Prolog (foreign calls) | 4.9% (4.9%-5.0%) | 5.9% (5.9%-6.1%) | 4.3% (4.2%-4.3%) |
+| outside | 1.1% (1.1%-1.2%) | 0.3% (0.3%-0.3%) | 0.7% (0.6%-0.7%) |
 
 ## Phases
 
 | phase | w1-examples | w2-wmtm | w3-benchgen |
 |---|---|---|---|
-| dispatch (goal dispatch and evaluation loop (incl. open-equation machine)) | 27.8% (27.7%-28.0%) | 29.1% (28.9%-29.5%) | 28.4% (28.3%-28.4%) |
-| choice (choice points, backtracking, answer collection) | 2.4% (2.3%-2.4%) | 2.6% (2.5%-2.7%) | 2.4% (2.4%-2.5%) |
-| eqsel (equation lookup and selection, call preparation, admission checks) | 24.0% (23.9%-24.2%) | 20.6% (20.4%-20.8%) | 17.4% (17.3%-17.4%) |
-| prepcompile (prepared-program compilation (call preparation that builds code)) | 4.1% (4.0%-4.2%) | 3.2% (3.2%-3.3%) | 6.2% (6.2%-6.3%) |
-| prepexec (running prepared programs and prepared queries) | 2.1% (2.1%-2.1%) | 1.6% (1.6%-1.6%) | 1.6% (1.6%-1.6%) |
-| match (unification and matching, bindings) | 9.1% (8.9%-9.2%) | 11.1% (10.9%-11.3%) | 13.8% (13.7%-13.9%) |
-| copy (term copying and instantiation) | 10.4% (10.0%-10.7%) | 10.8% (10.2%-10.8%) | 11.1% (11.1%-11.1%) |
-| alloc (allocation and freeing (malloc/calloc/realloc/free, arena growth)) | 9.2% (9.1%-9.5%) | 9.0% (8.8%-9.3%) | 9.2% (9.1%-9.2%) |
-| space (space access (space queries, equation cursors, add/remove)) | 4.8% (4.7%-4.9%) | 5.8% (5.7%-5.9%) | 5.0% (5.0%-5.0%) |
-| prolog (SWI-Prolog calls and term conversion) | 4.9% (4.9%-5.0%) | 6.0% (5.9%-6.0%) | 4.3% (4.3%-4.3%) |
-| outside (outside every timed function (loading, parsing, top level)) | 1.1% (1.1%-1.3%) | 0.4% (0.3%-0.5%) | 0.7% (0.7%-0.7%) |
+| dispatch (goal dispatch and evaluation loop (incl. open-equation machine)) | 27.6% (27.6%-27.7%) | 29.0% (28.9%-29.0%) | 28.5% (28.2%-28.5%) |
+| choice (choice points, backtracking, answer collection) | 2.4% (2.4%-2.4%) | 2.6% (2.6%-2.7%) | 2.5% (2.4%-2.5%) |
+| eqsel (equation lookup and selection, call preparation, admission checks) | 24.2% (24.2%-24.3%) | 20.7% (20.6%-20.8%) | 17.3% (17.3%-17.4%) |
+| prepcompile (prepared-program compilation (call preparation that builds code)) | 4.1% (4.0%-4.1%) | 3.2% (3.2%-3.2%) | 6.2% (6.2%-6.3%) |
+| prepexec (running prepared programs and prepared queries) | 2.0% (2.0%-2.1%) | 1.6% (1.6%-1.6%) | 1.6% (1.6%-1.6%) |
+| match (unification and matching, bindings) | 9.2% (9.2%-9.3%) | 11.2% (11.2%-11.2%) | 13.8% (13.8%-13.8%) |
+| copy (term copying and instantiation) | 10.6% (10.6%-10.7%) | 10.8% (10.7%-10.8%) | 11.1% (11.1%-11.2%) |
+| alloc (allocation and freeing (malloc/calloc/realloc/free, arena growth)) | 8.9% (8.9%-9.1%) | 8.9% (8.9%-9.0%) | 9.1% (9.0%-9.3%) |
+| space (space access (space queries, equation cursors, add/remove)) | 4.7% (4.6%-4.7%) | 5.7% (5.6%-5.8%) | 4.9% (4.9%-5.0%) |
+| prolog (SWI-Prolog calls and term conversion) | 4.9% (4.9%-5.0%) | 5.9% (5.9%-6.1%) | 4.3% (4.2%-4.3%) |
+| outside (outside every timed function (loading, parsing, top level)) | 1.1% (1.1%-1.2%) | 0.3% (0.3%-0.3%) | 0.7% (0.6%-0.7%) |
 
-Corrected run time per workload (s, median over runs): w1-examples 47.4, w2-wmtm 28.6, w3-benchgen 70.2
+Corrected run time per workload (s, median over runs): w1-examples 39.0, w2-wmtm 22.9, w3-benchgen 66.6
 
 ## Top timed functions by corrected self time (share of the workload's corrected total)
 
 | function | phase | w1-examples self | calls/run | w2-wmtm self | calls/run | w3-benchgen self | calls/run |
 |---|---|---|---|---|---|---|---|
-| petta_machine_dispatch_solve | dispatch | 4.80% | 2.97M | 4.97% | 1.67M | 5.17% | 6.11M |
-| bindings_apply_fold | copy | 4.15% | 2.36M | 4.27% | 1.5M | 4.17% | 5.7M |
-| oem_run_body_mode | dispatch | 3.99% | 2.63M | 3.62% | 1.33M | 3.49% | 3.74M |
-| prepared_pure_program_cache_has_decline_head | eqsel | 5.01% | 5.37M | 2.61% | 2.33M | 2.06% | 6.96M |
-| bindings_builder_add_id_internal | match | 2.58% | 3.1M | 3.24% | 1.82M | 2.77% | 6.96M |
-| prepared_pure_compile_pending_heads | prepcompile | 2.49% | 0.156M | 2.20% | 0.0645M | 4.45% | 0.438M |
-| oem_resolve_in | match | 2.23% | 7.51M | 2.88% | 4.27M | 2.59% | 13.1M |
-| cetta_open_equation_cursor_open | eqsel | 2.45% | 1.31M | 2.69% | 0.646M | 2.12% | 1.94M |
-| petta_machine_dispatch_goal | dispatch | 2.16% | 6.57M | 2.33% | 3.63M | 2.70% | 12.7M |
-| atom_deep_copy_session_copy | copy | 2.15% | 1.93M | 2.18% | 1.25M | 2.47% | 3.55M |
-| free | alloc | 2.06% | 66.7M | 2.23% | 36.8M | 2.24% | 114M |
-| malloc | alloc | 2.09% | 37M | 2.24% | 22.1M | 2.25% | 64.5M |
-| petta_machine_next_local | dispatch | 1.83% | 0.123M | 2.16% | 0.0852M | 2.01% | 0.167M |
-| oem_cursor_run | dispatch | 1.91% | 2.1M | 1.92% | 1.06M | 2.24% | 3.26M |
-| petta_machine_start_space_query | space | 2.05% | 1.77M | 2.00% | 0.89M | 1.91% | 2.51M |
-| petta_machine_open_resume | dispatch | 1.75% | 0.772M | 1.88% | 0.407M | 1.92% | 1.27M |
-| petta_machine_advance_choice | choice | 1.48% | 0.476M | 1.83% | 0.325M | 1.89% | 1.14M |
-| calloc | alloc | 1.83% | 7.7M | 1.62% | 3.63M | 1.57% | 11.3M |
-| petta_eval_open_program_lookup_locked | eqsel | 2.02% | 3.87M | 1.66% | 1.88M | 1.07% | 5.24M |
-| petta_eval_machine_builtin_equations | eqsel | 1.55% | 11.8M | 1.59% | 6.42M | 1.79% | 21.6M |
-| petta_libpl_from_term | prolog | 1.20% | 0.0529M | 1.74% | 0.0329M | 1.46% | 0.0773M |
-| petta_machine_extension_named_arity_using | dispatch | 1.32% | 3.9M | 1.67% | 2.04M | 1.35% | 6.58M |
-| realloc | alloc | 1.51% | 23.3M | 1.36% | 11.8M | 1.44% | 40.5M |
-| petta_machine_start_open_term_answers | dispatch | 1.42% | 1.29M | 1.43% | 0.63M | 1.27% | 1.91M |
-| petta_libpl_call | prolog | 1.45% | 0.0567M | 1.26% | 0.0402M | 0.91% | 0.0805M |
-| petta_libpl_registered_call | prolog | 1.21% | 0.0399M | 1.52% | 0.0255M | 0.91% | 0.0515M |
-| petta_table_safety_scan_relation | eqsel | 1.38% | 0.76M | 1.32% | 0.375M | 0.92% | 0.907M |
-| petta_machine_call_equations | dispatch | 1.31% | 1.78M | 1.24% | 0.894M | 1.02% | 2.52M |
-| prepared_pure_program_compile_closed_mode | prepcompile | 1.11% | 0.156M | 0.92% | 0.0645M | 1.76% | 0.438M |
-| petta_libpl_to_term | prolog | 1.06% | 3.04M | 1.45% | 2.29M | 1.01% | 5.73M |
-| petta_specializer_query_value_execution_admission | eqsel | 1.22% | 1.78M | 1.27% | 0.893M | 1.04% | 2.52M |
-| petta_eval_relation_admission_entry | eqsel | 1.23% | 2.54M | 1.20% | 1.34M | 0.98% | 3.62M |
-| petta_program_candidate_snapshot_lease_profiled | eqsel | 1.19% | 2.6M | 1.09% | 1.26M | 0.97% | 3.95M |
-| petta_answer_choice_release | alloc | 1.13% | 2.04M | 1.09% | 0.873M | 1.12% | 2.5M |
-| term_universe_copy_atom_impl | copy | 1.00% | 4.06M | 0.96% | 1.88M | 1.09% | 6.41M |
-| petta_machine_unify_resolved_values | match | 0.83% | 2.23M | 0.98% | 1.29M | 1.16% | 12.9M |
-| oem_host_with_continuation | dispatch | 0.93% | 1.35M | 0.98% | 0.691M | 0.98% | 2.22M |
-| oem_instantiate | copy | 0.93% | 8.11M | 0.89% | 4.19M | 0.96% | 15.2M |
-| petta_machine_equation_slot_match | match | 0.86% | 0.0743M | 1.18% | 0.0563M | 0.63% | 0.0837M |
-| space_admit_atom_impl | space | 0.81% | 0.0316M | 1.09% | 0.0212M | 0.81% | 0.0518M |
-| match_decoded_atoms_worklist | match | 0.70% | 2.75M | 0.81% | 1.59M | 1.29% | 20.8M |
-| petta_eval_machine_classify_host | dispatch | 0.90% | 2.05M | 0.88% | 1.09M | 0.89% | 3.53M |
-| petta_fresh_variable | copy | 0.83% | 0.979M | 0.90% | 0.596M | 0.98% | 2.68M |
-| space_equation_cursor_member_next | space | 0.95% | 1.54M | 0.81% | 0.619M | 0.81% | 2.11M |
-| petta_specializer_prepare_call | eqsel | 0.82% | 0.203M | 0.84% | 0.121M | 0.82% | 0.372M |
+| petta_machine_dispatch_solve | dispatch | 4.82% | 2.97M | 4.93% | 1.67M | 5.26% | 6.11M |
+| bindings_apply_fold | copy | 4.34% | 2.36M | 4.24% | 1.5M | 4.25% | 5.7M |
+| oem_run_body_mode | dispatch | 3.92% | 2.63M | 3.68% | 1.33M | 3.47% | 3.74M |
+| prepared_pure_program_cache_has_decline_head | eqsel | 5.24% | 5.37M | 2.74% | 2.33M | 2.08% | 6.96M |
+| prepared_pure_compile_pending_heads | prepcompile | 2.50% | 0.156M | 2.19% | 0.0645M | 4.45% | 0.438M |
+| bindings_builder_add_id_internal | match | 2.63% | 3.1M | 3.29% | 1.82M | 2.79% | 6.96M |
+| oem_resolve_in | match | 2.27% | 7.51M | 2.86% | 4.27M | 2.61% | 13.1M |
+| cetta_open_equation_cursor_open | eqsel | 2.49% | 1.31M | 2.75% | 0.646M | 2.12% | 1.94M |
+| petta_machine_dispatch_goal | dispatch | 2.19% | 6.57M | 2.32% | 3.63M | 2.72% | 12.7M |
+| atom_deep_copy_session_copy | copy | 2.16% | 1.93M | 2.20% | 1.25M | 2.45% | 3.55M |
+| malloc | alloc | 2.02% | 37.1M | 2.14% | 21.7M | 2.24% | 64.7M |
+| free | alloc | 1.92% | 66.9M | 2.14% | 36.4M | 2.22% | 114M |
+| oem_cursor_run | dispatch | 1.86% | 2.1M | 1.90% | 1.06M | 2.24% | 3.26M |
+| petta_machine_start_space_query | space | 2.04% | 1.77M | 2.02% | 0.89M | 1.89% | 2.51M |
+| petta_machine_next_local | dispatch | 1.79% | 0.123M | 2.10% | 0.0852M | 2.01% | 0.167M |
+| petta_machine_open_resume | dispatch | 1.75% | 0.772M | 1.87% | 0.407M | 1.93% | 1.27M |
+| petta_machine_advance_choice | choice | 1.49% | 0.476M | 1.83% | 0.325M | 1.91% | 1.14M |
+| calloc | alloc | 1.81% | 7.72M | 1.57% | 3.59M | 1.59% | 11.4M |
+| petta_eval_machine_builtin_equations | eqsel | 1.56% | 11.8M | 1.60% | 6.42M | 1.81% | 21.6M |
+| petta_eval_open_program_lookup_locked | eqsel | 2.06% | 3.87M | 1.65% | 1.88M | 1.09% | 5.24M |
+| petta_libpl_from_term | prolog | 1.21% | 0.0529M | 1.75% | 0.0329M | 1.44% | 0.0773M |
+| realloc | alloc | 1.46% | 23.3M | 1.36% | 11.8M | 1.42% | 40.5M |
+| petta_machine_start_open_term_answers | dispatch | 1.46% | 1.29M | 1.44% | 0.63M | 1.27% | 1.91M |
+| petta_machine_extension_named_arity_using | dispatch | 1.28% | 3.9M | 1.55% | 2.04M | 1.31% | 6.58M |
+| prepared_pure_program_compile_closed_mode | prepcompile | 1.13% | 0.156M | 0.93% | 0.0645M | 1.75% | 0.438M |
+| petta_libpl_registered_call | prolog | 1.24% | 0.0399M | 1.56% | 0.0255M | 0.92% | 0.0515M |
+| petta_libpl_call | prolog | 1.44% | 0.0567M | 1.22% | 0.0402M | 0.89% | 0.0805M |
+| petta_specializer_query_value_execution_admission | eqsel | 1.23% | 1.78M | 1.25% | 0.893M | 1.04% | 2.52M |
+| petta_table_safety_scan_relation | eqsel | 1.30% | 0.76M | 1.30% | 0.375M | 0.90% | 0.907M |
+| petta_libpl_to_term | prolog | 1.04% | 3.04M | 1.43% | 2.29M | 1.01% | 5.73M |
+| petta_machine_call_equations | dispatch | 1.24% | 1.78M | 1.20% | 0.894M | 1.03% | 2.52M |
+| petta_answer_choice_release | alloc | 1.19% | 2.04M | 1.11% | 0.873M | 1.10% | 2.5M |
+| petta_eval_relation_admission_entry | eqsel | 1.17% | 2.54M | 1.11% | 1.34M | 0.97% | 3.62M |
+| petta_program_candidate_snapshot_lease_profiled | eqsel | 1.16% | 2.6M | 1.10% | 1.26M | 0.96% | 3.95M |
+| term_universe_copy_atom_impl | copy | 1.00% | 4.06M | 0.97% | 1.88M | 1.08% | 6.4M |
+| petta_machine_unify_resolved_values | match | 0.84% | 2.23M | 0.98% | 1.29M | 1.17% | 12.9M |
+| oem_host_with_continuation | dispatch | 0.97% | 1.35M | 1.02% | 0.691M | 0.97% | 2.22M |
+| match_decoded_atoms_worklist | match | 0.71% | 2.75M | 0.83% | 1.59M | 1.30% | 20.8M |
+| petta_fresh_variable | copy | 0.85% | 0.979M | 0.90% | 0.596M | 1.00% | 2.68M |
+| oem_instantiate | copy | 0.90% | 8.11M | 0.87% | 4.19M | 0.94% | 15.2M |

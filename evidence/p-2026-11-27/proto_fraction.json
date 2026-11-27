@@ -1,0 +1,14 @@
+{
+ "functions": [
+  "prepared_pure_program_cache_has_decline_head",
+  "prepared_pure_closed_invocation_plan",
+  "petta_eval_machine_prepared_refused",
+  "prepared_pure_closed_invocation_try"
+ ],
+ "fraction_removed": {
+  "w1-examples": 0.7317912739481489,
+  "w2-wmtm": 0.6344691449756126,
+  "w3-benchgen": 0.5410331844577067
+ },
+ "min": 0.5410331844577067
+}
