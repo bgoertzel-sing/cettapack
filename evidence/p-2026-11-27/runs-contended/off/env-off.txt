@@ -1,0 +1,30 @@
+tag=off build=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/p-profile/build/p/cetta-off/cetta env=
+cetta_sha256=47792ccce4257ae028b58e4b995c870601ea9b4f459349c59b56fe0d1f16e2cb
+cetta_build_head=f9293ab9e1c9d533915aeb9bd60879431b0a6b89 evprof: opt-in evaluator phase timers (CETTA_EVPROF=1), off by default
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0011-evprof-opt-in-evaluator-phase-timers-CETTA_EVPROF-1-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_EVPROF=0 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=fbd88f92bc5b00bdfb1ce8a25f4bdb514dbb99de dirty=1
+host=pop-os nproc=8 date=2026-11-27T12:48:43Z load=4.94 7.15 7.53
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+tag=off build=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/p-profile/build/p/cetta-off/cetta env=
+cetta_sha256=47792ccce4257ae028b58e4b995c870601ea9b4f459349c59b56fe0d1f16e2cb
+cetta_build_head=f9293ab9e1c9d533915aeb9bd60879431b0a6b89 evprof: opt-in evaluator phase timers (CETTA_EVPROF=1), off by default
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0011-evprof-opt-in-evaluator-phase-timers-CETTA_EVPROF-1-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_EVPROF=0 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=fbd88f92bc5b00bdfb1ce8a25f4bdb514dbb99de dirty=1
+host=pop-os nproc=8 date=2026-11-27T12:56:41Z load=4.79 5.50 6.58
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef
+tag=off build=off cetta=/home/openclaw/research-agent/projects/cettapack/wt/p-profile/build/p/cetta-off/cetta env=
+cetta_sha256=47792ccce4257ae028b58e4b995c870601ea9b4f459349c59b56fe0d1f16e2cb
+cetta_build_head=f9293ab9e1c9d533915aeb9bd60879431b0a6b89 evprof: opt-in evaluator phase timers (CETTA_EVPROF=1), off by default
+cetta_build_patches=0001-embedding-in-process-native-borrowing-for-compiled-k.patch 0002-mork-bridge-bulk-prefix-lookup-mork_space_prefix_val.patch 0003-eval-match-rows-direct-entry-to-the-conjunction-matcher.patch 0004-match-rows-row-hooks-compiled-code-inside-the-matcher.patch 0011-evprof-opt-in-evaluator-phase-timers-CETTA_EVPROF-1-.patch 
+cetta_build_args=BUILD=mork CC=gcc ENABLE_LIB_PROLOG=1 CETTA_EVPROF=0 PACK_RELATIVE_RELOCS= GMP_CFLAGS=-I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include -I/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/include/x86_64-linux-gnu -Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-error=array-bounds -Wno-error=stringop-overread -Wno-error=restrict GMP_LDFLAGS=-L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib/x86_64-linux-gnu -L/home/openclaw/research-agent/projects/cettapack/scratch/deps/root/usr/lib -lgmp
+chainer_rev=b0e24f9b9d7106ccabf51917f1703abf3ab8c570 petta_rev=e038e4dbb587e48fdb9d14990966108d38fde0b3
+cettapack_head=fbd88f92bc5b00bdfb1ce8a25f4bdb514dbb99de dirty=1
+host=pop-os nproc=8 date=2026-11-27T12:59:41Z load=9.73 6.74 6.82
+file s0_w2_wmtm.metta sha256=ec4a904c2cbbfc0b3ee67c2c27b0b15cf57e2792157a307f1683508460db8f9d
+file s0_w3_benchgen.metta sha256=8fca85cd00b7430e6e05f8bab23934e1f6a58bc0c8fb1bf9386796f21fbc94ef

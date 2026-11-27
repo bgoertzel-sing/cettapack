@@ -1,0 +1,2432 @@
+{
+ "cal": "median",
+ "workloads": {
+  "w1-examples": {
+   "alloc_bytes": 62327569264,
+   "group_shares": {
+    "Prolog (foreign calls)": [
+     0.04920351549142742,
+     0.04915239946609126,
+     0.050247198200876225
+    ],
+    "dispatch": [
+     0.3227771635424824,
+     0.3221506461981882,
+     0.3233047987090549
+    ],
+    "equation lookup and selection": [
+     0.28262063008603966,
+     0.2801078857074569,
+     0.280639227308166
+    ],
+    "outside": [
+     0.011178444629766164,
+     0.011348805831412507,
+     0.013239300283250056
+    ],
+    "space access": [
+     0.04765638436868251,
+     0.04715328546618905,
+     0.04901145502578213
+    ],
+    "term allocation and copying": [
+     0.19545752351301524,
+     0.19844907372713078,
+     0.19500734505056502
+    ],
+    "unification and matching": [
+     0.09110633836858655,
+     0.09163790360353141,
+     0.08855067542230592
+    ]
+   },
+   "overhead": {
+    "c_in": 24.213,
+    "c_out": 25.913,
+    "corrected": [],
+    "frames_median": 330557855,
+    "raw": [],
+    "user": []
+   },
+   "phase_shares": {
+    "alloc": [
+     0.0913639439584609,
+     0.09155363425323694,
+     0.09463773095828616
+    ],
+    "choice": [
+     0.024105578853839273,
+     0.0242196257488501,
+     0.023088712236879298
+    ],
+    "copy": [
+     0.10409357955455434,
+     0.10689543947389384,
+     0.10036961409227885
+    ],
+    "dispatch": [
+     0.2778977043576239,
+     0.27738866343589097,
+     0.2795474223169865
+    ],
+    "eqsel": [
+     0.24160325816776998,
+     0.2398208834863916,
+     0.23885404187627307
+    ],
+    "match": [
+     0.09110633836858655,
+     0.09163790360353141,
+     0.08855067542230592
+    ],
+    "outside": [
+     0.011178444629766164,
+     0.011348805831412507,
+     0.013239300283250056
+    ],
+    "prepcompile": [
+     0.041017371918269666,
+     0.04028700222106534,
+     0.041785185431892906
+    ],
+    "prepexec": [
+     0.020773880331019234,
+     0.020542357013447064,
+     0.020668664155189073
+    ],
+    "prolog": [
+     0.04920351549142742,
+     0.04915239946609126,
+     0.050247198200876225
+    ],
+    "space": [
+     0.04765638436868251,
+     0.04715328546618905,
+     0.04901145502578213
+    ]
+   },
+   "runs": [
+    "1",
+    "2",
+    "3"
+   ],
+   "sites": {
+    "arena_grow": {
+     "calls": 6839360,
+     "incl_raw_share": 0.010096672950067463,
+     "phase": "alloc",
+     "self_share": 0.0030362788332280446
+    },
+    "atom_deep_copy_session_copy": {
+     "calls": 1927039,
+     "incl_raw_share": 0.020510239334819443,
+     "phase": "copy",
+     "self_share": 0.02152891931463693
+    },
+    "bindings_apply_fold": {
+     "calls": 2362571,
+     "incl_raw_share": 0.03779155213197432,
+     "phase": "copy",
+     "self_share": 0.04153438160459492
+    },
+    "bindings_apply_value": {
+     "calls": 9487991,
+     "incl_raw_share": 0.04504057763499041,
+     "phase": "copy",
+     "self_share": 0.005937048847979508
+    },
+    "bindings_builder_add_id_internal": {
+     "calls": 3100767,
+     "incl_raw_share": 0.028895121600537116,
+     "phase": "match",
+     "self_share": 0.025831712174971152
+    },
+    "bindings_project_reachable": {
+     "calls": 113669,
+     "incl_raw_share": 0.006614263511147955,
+     "phase": "copy",
+     "self_share": 0.006334554311059481
+    },
+    "calloc": {
+     "calls": 7699528,
+     "incl_raw_share": 0.017368029229532556,
+     "phase": "alloc",
+     "self_share": 0.0182559273967116
+    },
+    "cetta_instantiate_frame_terms": {
+     "calls": 141796,
+     "incl_raw_share": 0.01075142652381744,
+     "phase": "copy",
+     "self_share": 0.0006909355077710246
+    },
+    "cetta_open_equation_cursor_open": {
+     "calls": 1310924,
+     "incl_raw_share": 0.04099529834037449,
+     "phase": "eqsel",
+     "self_share": 0.024501391172263555
+    },
+    "cetta_open_equation_program_host_reads_current": {
+     "calls": 158575,
+     "incl_raw_share": 0.021439828763795188,
+     "phase": "eqsel",
+     "self_share": 0.0004851068611694679
+    },
+    "eval_apply_space_addition": {
+     "calls": 29616,
+     "incl_raw_share": 0.007227591796818046,
+     "phase": "space",
+     "self_share": 0.00032913994431160867
+    },
+    "eval_apply_space_removal": {
+     "calls": 16292,
+     "incl_raw_share": 0.004881171001489741,
+     "phase": "space",
+     "self_share": 0.0008894860010138326
+    },
+    "eval_space_mutation_contract_kind": {
+     "calls": 31281,
+     "incl_raw_share": 0.011407739824805058,
+     "phase": "eqsel",
+     "self_share": 0.0006848310681519692
+    },
+    "free": {
+     "calls": 66748932,
+     "incl_raw_share": 0.02881980248081088,
+     "phase": "alloc",
+     "self_share": 0.020598222012481942
+    },
+    "get_annotated_types": {
+     "calls": 756219,
+     "incl_raw_share": 0.016854077402855903,
+     "phase": "eqsel",
+     "self_share": 0.000786875210854542
+    },
+    "malloc": {
+     "calls": 36995785,
+     "incl_raw_share": 0.024189512415382915,
+     "phase": "alloc",
+     "self_share": 0.020900362637030007
+    },
+    "match_binding_values_builder": {
+     "calls": 2746625,
+     "incl_raw_share": 0.03589535583693989,
+     "phase": "match",
+     "self_share": 0.0005443468781142343
+    },
+    "match_decoded_atoms_worklist": {
+     "calls": 2748424,
+     "incl_raw_share": 0.034449270075689736,
+     "phase": "match",
+     "self_share": 0.0070256093369358424
+    },
+    "oem_compile_certificate": {
+     "calls": 9258,
+     "incl_raw_share": 0.007762622047616123,
+     "phase": "prepcompile",
+     "self_share": 0.0049871750866482805
+    },
+    "oem_cursor_run": {
+     "calls": 2101655,
+     "incl_raw_share": 0.11712282062171124,
+     "phase": "dispatch",
+     "self_share": 0.019121097437463735
+    },
+    "oem_host_query": {
+     "calls": 2232788,
+     "incl_raw_share": 0.021445562085965188,
+     "phase": "match",
+     "self_share": 0.0036541082958031364
+    },
+    "oem_host_with_continuation": {
+     "calls": 1351074,
+     "incl_raw_share": 0.028794026888274347,
+     "phase": "dispatch",
+     "self_share": 0.009306185834572203
+    },
+    "oem_instantiate": {
+     "calls": 8106124,
+     "incl_raw_share": 0.010489287829925737,
+     "phase": "copy",
+     "self_share": 0.009322103123584061
+    },
+    "oem_resolve_in": {
+     "calls": 7512644,
+     "incl_raw_share": 0.023069264563273618,
+     "phase": "match",
+     "self_share": 0.022321385449563233
+    },
+    "oem_run_body_mode": {
+     "calls": 2634319,
+     "incl_raw_share": 0.09588231312854986,
+     "phase": "dispatch",
+     "self_share": 0.03988689751070928
+    },
+    "petta_answer_choice_release": {
+     "calls": 2040095,
+     "incl_raw_share": 0.02773500812290938,
+     "phase": "alloc",
+     "self_share": 0.011278775869105317
+    },
+    "petta_choice_pop": {
+     "calls": 951580,
+     "incl_raw_share": 0.021329637943991824,
+     "phase": "choice",
+     "self_share": 0.00033608595637561766
+    },
+    "petta_choice_release": {
+     "calls": 1307148,
+     "incl_raw_share": 0.021647406089729062,
+     "phase": "alloc",
+     "self_share": 0.0022107516724045513
+    },
+    "petta_choice_retire_exhausted": {
+     "calls": 367114,
+     "incl_raw_share": 0.009847764112599005,
+     "phase": "choice",
+     "self_share": 0.0003845070009672218
+    },
+    "petta_copy_binding_atoms": {
+     "calls": 441,
+     "incl_raw_share": 0.002653562771415628,
+     "phase": "copy",
+     "self_share": 0.00031167437585593
+    },
+    "petta_eval_machine_admit_space_query_values": {
+     "calls": 1782574,
+     "incl_raw_share": 0.035889939061972624,
+     "phase": "match",
+     "self_share": 0.0009852698353428155
+    },
+    "petta_eval_machine_builtin_equations": {
+     "calls": 11750106,
+     "incl_raw_share": 0.019772606005300612,
+     "phase": "eqsel",
+     "self_share": 0.015461783894823906
+    },
+    "petta_eval_machine_candidate_snapshot_lease": {
+     "calls": 1515617,
+     "incl_raw_share": 0.013036046335633631,
+     "phase": "eqsel",
+     "self_share": 0.00038749303405808777
+    },
+    "petta_eval_machine_classify_host": {
+     "calls": 2050627,
+     "incl_raw_share": 0.008263340604279919,
+     "phase": "dispatch",
+     "self_share": 0.008960039287548861
+    },
+    "petta_eval_machine_evaluate_host": {
+     "calls": 31306,
+     "incl_raw_share": 0.011597319393750864,
+     "phase": "dispatch",
+     "self_share": 0.00019774642245470707
+    },
+    "petta_eval_machine_execute_prepared_pure_call": {
+     "calls": 1236535,
+     "incl_raw_share": 0.07788103583762748,
+     "phase": "prepexec",
+     "self_share": 0.0005752571722156619
+    },
+    "petta_eval_machine_extension_call": {
+     "calls": 63586,
+     "incl_raw_share": 0.048832887475520656,
+     "phase": "dispatch",
+     "self_share": 0.0017762349734525983
+    },
+    "petta_eval_machine_open_answer_cursor": {
+     "calls": 746655,
+     "incl_raw_share": 0.02755129072733553,
+     "phase": "eqsel",
+     "self_share": 0.002709900354604664
+    },
+    "petta_eval_machine_open_relation_cursor": {
+     "calls": 1312416,
+     "incl_raw_share": 0.05855000806439969,
+     "phase": "eqsel",
+     "self_share": 0.0029592123541495844
+    },
+    "petta_eval_machine_open_relation_declined": {
+     "calls": 1515076,
+     "incl_raw_share": 0.03572214355652678,
+     "phase": "eqsel",
+     "self_share": 0.002046490921752744
+    },
+    "petta_eval_machine_prepared_refused": {
+     "calls": 1767555,
+     "incl_raw_share": 0.02320984645565511,
+     "phase": "eqsel",
+     "self_share": 0.0019403762855090614
+    },
+    "petta_eval_machine_space_query_admission_policy": {
+     "calls": 1797781,
+     "incl_raw_share": 0.011033255079677725,
+     "phase": "eqsel",
+     "self_share": 0.0002635277416650275
+    },
+    "petta_eval_machine_tabled_relation_admissible": {
+     "calls": 1487738,
+     "incl_raw_share": 0.030544709610964133,
+     "phase": "eqsel",
+     "self_share": 0.0006942650857654705
+    },
+    "petta_eval_open_foreign_reads_current": {
+     "calls": 161803,
+     "incl_raw_share": 0.02183043831753556,
+     "phase": "eqsel",
+     "self_share": 0.00037808063381109414
+    },
+    "petta_eval_open_program_acquire": {
+     "calls": 2827531,
+     "incl_raw_share": 0.04786086971742074,
+     "phase": "eqsel",
+     "self_share": 0.00336161196539572
+    },
+    "petta_eval_open_program_lookup_locked": {
+     "calls": 3866822,
+     "incl_raw_share": 0.04798734462163257,
+     "phase": "eqsel",
+     "self_share": 0.02020588493250395
+    },
+    "petta_eval_open_relation_admitted": {
+     "calls": 252950,
+     "incl_raw_share": 0.014811064922994286,
+     "phase": "eqsel",
+     "self_share": 0.001417588400482909
+    },
+    "petta_eval_relation_admission_entry": {
+     "calls": 2536305,
+     "incl_raw_share": 0.013906200125876974,
+     "phase": "eqsel",
+     "self_share": 0.012257248940919258
+    },
+    "petta_fresh_variable": {
+     "calls": 978929,
+     "incl_raw_share": 0.008991872280942531,
+     "phase": "copy",
+     "self_share": 0.00826351769006565
+    },
+    "petta_libpl_call": {
+     "calls": 56675,
+     "incl_raw_share": 0.04654461480883059,
+     "phase": "prolog",
+     "self_share": 0.014493893655051436
+    },
+    "petta_libpl_from_term": {
+     "calls": 52934,
+     "incl_raw_share": 0.011371061892772316,
+     "phase": "prolog",
+     "self_share": 0.011964206639409313
+    },
+    "petta_libpl_registered_call": {
+     "calls": 39883,
+     "incl_raw_share": 0.029690819282965537,
+     "phase": "prolog",
+     "self_share": 0.012124446457571431
+    },
+    "petta_libpl_to_term": {
+     "calls": 3036405,
+     "incl_raw_share": 0.010434949865592428,
+     "phase": "prolog",
+     "self_share": 0.010575045985062731
+    },
+    "petta_machine_advance_choice": {
+     "calls": 475544,
+     "incl_raw_share": 0.038637872779746694,
+     "phase": "choice",
+     "self_share": 0.01475454258317765
+    },
+    "petta_machine_backtrack": {
+     "calls": 121696,
+     "incl_raw_share": 0.006481665679398885,
+     "phase": "choice",
+     "self_share": 9.12775379175253e-05
+    },
+    "petta_machine_builtin_equations_mode": {
+     "calls": 9398073,
+     "incl_raw_share": 0.019265834292075477,
+     "phase": "eqsel",
+     "self_share": 0.0012724480047277198
+    },
+    "petta_machine_call_equations": {
+     "calls": 1784701,
+     "incl_raw_share": 0.024591248054106955,
+     "phase": "dispatch",
+     "self_share": 0.013122953042111151
+    },
+    "petta_machine_collect_choice_bindings": {
+     "calls": 566,
+     "incl_raw_share": 0.00915996393605661,
+     "phase": "choice",
+     "self_share": 0.007545932619572747
+    },
+    "petta_machine_collect_choice_heap": {
+     "calls": 441,
+     "incl_raw_share": 0.011034051079830917,
+     "phase": "choice",
+     "self_share": 0.000528661202103182
+    },
+    "petta_machine_cons_equation_match": {
+     "calls": 51520,
+     "incl_raw_share": 0.013187986123083986,
+     "phase": "match",
+     "self_share": 0.004107334428060823
+    },
+    "petta_machine_dispatch_activation_solve": {
+     "calls": 188645,
+     "incl_raw_share": 0.01848819092166318,
+     "phase": "dispatch",
+     "self_share": 0.0067539635453071
+    },
+    "petta_machine_dispatch_goal": {
+     "calls": 6565033,
+     "incl_raw_share": 0.9326133225768947,
+     "phase": "dispatch",
+     "self_share": 0.021627150603055666
+    },
+    "petta_machine_dispatch_solve": {
+     "calls": 2966028,
+     "incl_raw_share": 0.1570602595332326,
+     "phase": "dispatch",
+     "self_share": 0.04803274507252075
+    },
+    "petta_machine_equation_slot_match": {
+     "calls": 74292,
+     "incl_raw_share": 0.00814535872920552,
+     "phase": "match",
+     "self_share": 0.008648860222980507
+    },
+    "petta_machine_execute_prepared_call": {
+     "calls": 305921,
+     "incl_raw_share": 0.01889708111358386,
+     "phase": "prepexec",
+     "self_share": 0.0006377064219378658
+    },
+    "petta_machine_execute_prepared_query": {
+     "calls": 1034269,
+     "incl_raw_share": 0.0695062055220751,
+     "phase": "prepexec",
+     "self_share": 0.0028964237201392126
+    },
+    "petta_machine_extension_named_arity_using": {
+     "calls": 3904868,
+     "incl_raw_share": 0.012236945529887702,
+     "phase": "dispatch",
+     "self_share": 0.013161790526227164
+    },
+    "petta_machine_list_query": {
+     "calls": 1773159,
+     "incl_raw_share": 0.010478411232785161,
+     "phase": "dispatch",
+     "self_share": 0.006348815777196759
+    },
+    "petta_machine_maybe_collect": {
+     "calls": 6587015,
+     "incl_raw_share": 0.01895960602060727,
+     "phase": "dispatch",
+     "self_share": 0.00440614425311815
+    },
+    "petta_machine_named_arity": {
+     "calls": 1909930,
+     "incl_raw_share": 0.015867629874548556,
+     "phase": "dispatch",
+     "self_share": 0.0013432720099775576
+    },
+    "petta_machine_named_partial_decision": {
+     "calls": 1935412,
+     "incl_raw_share": 0.017086192946385404,
+     "phase": "dispatch",
+     "self_share": 0.0006115457477065791
+    },
+    "petta_machine_next_local": {
+     "calls": 122852,
+     "incl_raw_share": 0.9856894597663988,
+     "phase": "dispatch",
+     "self_share": 0.018284078205404113
+    },
+    "petta_machine_open_host": {
+     "calls": 1331240,
+     "incl_raw_share": 0.018671317162852707,
+     "phase": "dispatch",
+     "self_share": 0.0074009231249595455
+    },
+    "petta_machine_open_resume": {
+     "calls": 771898,
+     "incl_raw_share": 0.07930405872538648,
+     "phase": "dispatch",
+     "self_share": 0.01747905273718785
+    },
+    "petta_machine_resume_choice": {
+     "calls": 147842,
+     "incl_raw_share": 0.007830038859584474,
+     "phase": "choice",
+     "self_share": 0.0004020503103186153
+    },
+    "petta_machine_source_named_arity": {
+     "calls": 2136061,
+     "incl_raw_share": 0.009837884825630706,
+     "phase": "dispatch",
+     "self_share": 0.0033972476881969408
+    },
+    "petta_machine_start_answer_producer": {
+     "calls": 749758,
+     "incl_raw_share": 0.03890746149483862,
+     "phase": "dispatch",
+     "self_share": 0.006822006654694582
+    },
+    "petta_machine_start_collapse": {
+     "calls": 40408,
+     "incl_raw_share": 0.009419406980284192,
+     "phase": "dispatch",
+     "self_share": 0.003844411051094417
+    },
+    "petta_machine_start_equation_choice": {
+     "calls": 195169,
+     "incl_raw_share": 0.07277306100742513,
+     "phase": "eqsel",
+     "self_share": 0.00018341247160039617
+    },
+    "petta_machine_start_open_answers": {
+     "calls": 1382854,
+     "incl_raw_share": 0.2044921399152822,
+     "phase": "dispatch",
+     "self_share": 0.005450359560418421
+    },
+    "petta_machine_start_open_term_answers": {
+     "calls": 1292223,
+     "incl_raw_share": 0.19068826317519447,
+     "phase": "dispatch",
+     "self_share": 0.014217974667694084
+    },
+    "petta_machine_start_ready_match_mode": {
+     "calls": 14975,
+     "incl_raw_share": 0.007314381102621784,
+     "phase": "match",
+     "self_share": 0.0015884801603845652
+    },
+    "petta_machine_start_space_query": {
+     "calls": 1773373,
+     "incl_raw_share": 0.4964864045485037,
+     "phase": "space",
+     "self_share": 0.020452199079875045
+    },
+    "petta_machine_try_extension_call": {
+     "calls": 63586,
+     "incl_raw_share": 0.05079620196393168,
+     "phase": "dispatch",
+     "self_share": 0.0003617676431693621
+    },
+    "petta_machine_try_ready_relation_invocation": {
+     "calls": 1808237,
+     "incl_raw_share": 0.46503114667379186,
+     "phase": "eqsel",
+     "self_share": 0.003703852446247625
+    },
+    "petta_machine_unify": {
+     "calls": 1799768,
+     "incl_raw_share": 0.029441717148599996,
+     "phase": "match",
+     "self_share": 0.00036949395221281173
+    },
+    "petta_machine_unify_resolved_values": {
+     "calls": 2228674,
+     "incl_raw_share": 0.034941281019955805,
+     "phase": "match",
+     "self_share": 0.008333912336005075
+    },
+    "petta_machine_unify_values": {
+     "calls": 1866478,
+     "incl_raw_share": 0.02914697443498858,
+     "phase": "match",
+     "self_share": 0.0017116849184284867
+    },
+    "petta_match_decision_select_candidates": {
+     "calls": 1487738,
+     "incl_raw_share": 0.007870512469051932,
+     "phase": "eqsel",
+     "self_share": 0.0069081649784167
+    },
+    "petta_match_source_call": {
+     "calls": 140263,
+     "incl_raw_share": 0.020489837935303044,
+     "phase": "match",
+     "self_share": 0.0010734175241007685
+    },
+    "petta_open_answer_unify": {
+     "calls": 727866,
+     "incl_raw_share": 0.012963338648095173,
+     "phase": "match",
+     "self_share": 0.002233236826423595
+    },
+    "petta_program_candidate_snapshot_lease_profiled": {
+     "calls": 2600417,
+     "incl_raw_share": 0.021166830049789028,
+     "phase": "eqsel",
+     "self_share": 0.011874726957073053
+    },
+    "petta_program_head_is_intrinsic": {
+     "calls": 6499288,
+     "incl_raw_share": 0.008520417712068355,
+     "phase": "eqsel",
+     "self_share": 0.008502745842376177
+    },
+    "petta_program_refresh_callability": {
+     "calls": 2600417,
+     "incl_raw_share": 0.008751274042954407,
+     "phase": "eqsel",
+     "self_share": 0.00910542935400452
+    },
+    "petta_program_relation_table_safe": {
+     "calls": 1554876,
+     "incl_raw_share": 0.029596717658562928,
+     "phase": "eqsel",
+     "self_share": 0.005440671230155912
+    },
+    "petta_push_evaluated_expression_planned": {
+     "calls": 562774,
+     "incl_raw_share": 0.013064484041256347,
+     "phase": "dispatch",
+     "self_share": 0.00017908236181903248
+    },
+    "petta_push_evaluated_expression_range_planned": {
+     "calls": 726335,
+     "incl_raw_share": 0.014278074312156394,
+     "phase": "dispatch",
+     "self_share": 0.005661789949876144
+    },
+    "petta_relation_specialization_relevance": {
+     "calls": 70509,
+     "incl_raw_share": 0.012069882954756016,
+     "phase": "eqsel",
+     "self_share": 0.006675587965320845
+    },
+    "petta_semantics_match_cons_constraint_mode": {
+     "calls": 263119,
+     "incl_raw_share": 0.013343255408102484,
+     "phase": "match",
+     "self_share": 0.0023290763213946425
+    },
+    "petta_space_remove_pattern_all": {
+     "calls": 16292,
+     "incl_raw_share": 0.004082041816162252,
+     "phase": "space",
+     "self_share": 0.0038778632281712476
+    },
+    "petta_specializer_prepare_call": {
+     "calls": 203433,
+     "incl_raw_share": 0.03174578525281782,
+     "phase": "eqsel",
+     "self_share": 0.008216503904668972
+    },
+    "petta_specializer_query_value_execution_admission": {
+     "calls": 1781637,
+     "incl_raw_share": 0.023285941651905107,
+     "phase": "eqsel",
+     "self_share": 0.01220837981706967
+    },
+    "petta_table_safety_scan_relation": {
+     "calls": 760153,
+     "incl_raw_share": 0.02407571119453283,
+     "phase": "eqsel",
+     "self_share": 0.013807760127748833
+    },
+    "prepared_pure_closed_invocation_plan": {
+     "calls": 1356051,
+     "incl_raw_share": 0.022407950397930657,
+     "phase": "eqsel",
+     "self_share": 0.004637370745491435
+    },
+    "prepared_pure_closed_invocation_try": {
+     "calls": 1237532,
+     "incl_raw_share": 0.07783541473309076,
+     "phase": "prepexec",
+     "self_share": 0.00798835012284031
+    },
+    "prepared_pure_compile_pending_heads": {
+     "calls": 156081,
+     "incl_raw_share": 0.033972908885782485,
+     "phase": "prepcompile",
+     "self_share": 0.024907811260591196
+    },
+    "prepared_pure_program_cache_has_decline_head": {
+     "calls": 5366285,
+     "incl_raw_share": 0.04694445090376438,
+     "phase": "eqsel",
+     "self_share": 0.050082810497043294
+    },
+    "prepared_pure_program_compile_closed_mode": {
+     "calls": 156102,
+     "incl_raw_share": 0.04973323977879219,
+     "phase": "prepcompile",
+     "self_share": 0.01107038986411133
+    },
+    "prepared_pure_program_execute_internal": {
+     "calls": 384577,
+     "incl_raw_share": 0.007800860234220501,
+     "phase": "prepexec",
+     "self_share": 0.008575738137558303
+    },
+    "realloc": {
+     "calls": 23289303,
+     "incl_raw_share": 0.016885384535227817,
+     "phase": "alloc",
+     "self_share": 0.015083625537499425
+    },
+    "space_admit_atom_impl": {
+     "calls": 31601,
+     "incl_raw_share": 0.0072726163865204484,
+     "phase": "space",
+     "self_share": 0.008122410487918287
+    },
+    "space_equation_cursor_member_next": {
+     "calls": 1541298,
+     "incl_raw_share": 0.008616063115496843,
+     "phase": "space",
+     "self_share": 0.009480975494153264
+    },
+    "space_equation_cursor_next": {
+     "calls": 1541298,
+     "incl_raw_share": 0.009752271845048479,
+     "phase": "space",
+     "self_share": 0.0006863735149874948
+    },
+    "space_member_annotated_types": {
+     "calls": 756219,
+     "incl_raw_share": 0.015868782796193664,
+     "phase": "space",
+     "self_share": 0.0038179366182517363
+    },
+    "space_query_effect_for_head_analyzed": {
+     "calls": 1187946,
+     "incl_raw_share": 0.009881915579250014,
+     "phase": "eqsel",
+     "self_share": 0.008004393906748225
+    },
+    "term_universe_copy_atom_impl": {
+     "calls": 4058293,
+     "incl_raw_share": 0.011904205529004765,
+     "phase": "copy",
+     "self_share": 0.010031066940765774
+    }
+   },
+   "total_s": 47.39284600914294
+  },
+  "w2-wmtm": {
+   "alloc_bytes": 31648024089,
+   "group_shares": {
+    "Prolog (foreign calls)": [
+     0.0596982021087305,
+     0.06038663563866506,
+     0.05938821213179067
+    ],
+    "dispatch": [
+     0.33067192974830656,
+     0.333002920158902,
+     0.3361491212142694
+    ],
+    "equation lookup and selection": [
+     0.24004603403201646,
+     0.23594669054257084,
+     0.23828129232267262
+    ],
+    "outside": [
+     0.0035639671369509423,
+     0.004740069822744448,
+     0.0033743598655705982
+    ],
+    "space access": [
+     0.05773969079865049,
+     0.0572231142512308,
+     0.05929758169230742
+    ],
+    "term allocation and copying": [
+     0.19562593243727006,
+     0.19820040057395033,
+     0.19448445908530917
+    ],
+    "unification and matching": [
+     0.11265424373807506,
+     0.11050016901193639,
+     0.10902497368808019
+    ]
+   },
+   "overhead": {
+    "c_in": 25.695,
+    "c_out": 27.664,
+    "corrected": [],
+    "frames_median": 177844862,
+    "raw": [],
+    "user": []
+   },
+   "phase_shares": {
+    "alloc": [
+     0.08765684720355771,
+     0.09009579233671912,
+     0.09258779455934132
+    ],
+    "choice": [
+     0.026405964602409737,
+     0.026742926092508765,
+     0.025499151663412566
+    ],
+    "copy": [
+     0.10796908523371236,
+     0.10810460823723121,
+     0.10189666452596785
+    ],
+    "dispatch": [
+     0.2887449449927169,
+     0.29056807059641326,
+     0.29470330227262537
+    ],
+    "eqsel": [
+     0.2075370545707125,
+     0.2039225462147369,
+     0.2061886231542723
+    ],
+    "match": [
+     0.11265424373807506,
+     0.11050016901193639,
+     0.10902497368808019
+    ],
+    "outside": [
+     0.0035639671369509423,
+     0.004740069822744448,
+     0.0033743598655705982
+    ],
+    "prepcompile": [
+     0.032508979461303954,
+     0.03202414432783395,
+     0.03209266916840034
+    ],
+    "prepexec": [
+     0.015521020153179887,
+     0.015691923469979975,
+     0.015946667278231397
+    ],
+    "prolog": [
+     0.0596982021087305,
+     0.06038663563866506,
+     0.05938821213179067
+    ],
+    "space": [
+     0.05773969079865049,
+     0.0572231142512308,
+     0.05929758169230742
+    ]
+   },
+   "runs": [
+    "1",
+    "2",
+    "3"
+   ],
+   "sites": {
+    "arena_grow": {
+     "calls": 3787476,
+     "incl_raw_share": 0.01003926624232054,
+     "phase": "alloc",
+     "self_share": 0.003177669500152615
+    },
+    "atom_deep_copy_session_copy": {
+     "calls": 1247516,
+     "incl_raw_share": 0.02108902031437265,
+     "phase": "copy",
+     "self_share": 0.02180312613005891
+    },
+    "bindings_apply_fold": {
+     "calls": 1498021,
+     "incl_raw_share": 0.037679280994883026,
+     "phase": "copy",
+     "self_share": 0.0426595846676474
+    },
+    "bindings_apply_value": {
+     "calls": 5250751,
+     "incl_raw_share": 0.04568421924479678,
+     "phase": "copy",
+     "self_share": 0.006628564655371403
+    },
+    "bindings_builder_add_id_internal": {
+     "calls": 1821677,
+     "incl_raw_share": 0.037712434240971884,
+     "phase": "match",
+     "self_share": 0.032413149720985426
+    },
+    "bindings_project_reachable": {
+     "calls": 83256,
+     "incl_raw_share": 0.008495151418510963,
+     "phase": "copy",
+     "self_share": 0.00792594157629667
+    },
+    "calloc": {
+     "calls": 3629847,
+     "incl_raw_share": 0.01523292511787331,
+     "phase": "alloc",
+     "self_share": 0.016240598026757768
+    },
+    "cetta_instantiate_frame_terms": {
+     "calls": 101650,
+     "incl_raw_share": 0.014045192293029663,
+     "phase": "copy",
+     "self_share": 0.0009193399805824952
+    },
+    "cetta_open_equation_cursor_open": {
+     "calls": 645970,
+     "incl_raw_share": 0.04276654748187716,
+     "phase": "eqsel",
+     "self_share": 0.02694988415429516
+    },
+    "cetta_open_equation_program_host_reads_current": {
+     "calls": 100986,
+     "incl_raw_share": 0.025404662990303077,
+     "phase": "eqsel",
+     "self_share": 0.0006481384864877578
+    },
+    "eval_apply_space_addition": {
+     "calls": 20856,
+     "incl_raw_share": 0.010217276644387058,
+     "phase": "space",
+     "self_share": 0.00044692668948247675
+    },
+    "eval_apply_space_removal": {
+     "calls": 18054,
+     "incl_raw_share": 0.015018265147315163,
+     "phase": "space",
+     "self_share": 0.0022975019016856974
+    },
+    "eval_space_mutation_contract_kind": {
+     "calls": 32628,
+     "incl_raw_share": 0.02520976383295522,
+     "phase": "eqsel",
+     "self_share": 0.0010964645733695213
+    },
+    "free": {
+     "calls": 36813136,
+     "incl_raw_share": 0.02955088638871812,
+     "phase": "alloc",
+     "self_share": 0.02225316701184103
+    },
+    "get_annotated_types": {
+     "calls": 337551,
+     "incl_raw_share": 0.01590931382079136,
+     "phase": "eqsel",
+     "self_share": 0.0007785712833053261
+    },
+    "malloc": {
+     "calls": 22087140,
+     "incl_raw_share": 0.025543490582250018,
+     "phase": "alloc",
+     "self_share": 0.022411919368697113
+    },
+    "match_binding_values_builder": {
+     "calls": 1591902,
+     "incl_raw_share": 0.04556225788252374,
+     "phase": "match",
+     "self_share": 0.0005781415785989843
+    },
+    "match_decoded_atoms_worklist": {
+     "calls": 1593207,
+     "incl_raw_share": 0.04399987560418737,
+     "phase": "match",
+     "self_share": 0.00813071597382363
+    },
+    "oem_compile_certificate": {
+     "calls": 899,
+     "incl_raw_share": 0.0016763422668929025,
+     "phase": "prepcompile",
+     "self_share": 0.0011075939407890493
+    },
+    "oem_cursor_run": {
+     "calls": 1064903,
+     "incl_raw_share": 0.11724202874262805,
+     "phase": "dispatch",
+     "self_share": 0.019230205126065485
+    },
+    "oem_host_query": {
+     "calls": 1341850,
+     "incl_raw_share": 0.0245524415841077,
+     "phase": "match",
+     "self_share": 0.00447207034018328
+    },
+    "oem_host_with_continuation": {
+     "calls": 691293,
+     "incl_raw_share": 0.03179317706765927,
+     "phase": "dispatch",
+     "self_share": 0.009802974149893538
+    },
+    "oem_instantiate": {
+     "calls": 4186696,
+     "incl_raw_share": 0.009868688354312278,
+     "phase": "copy",
+     "self_share": 0.00887381457697542
+    },
+    "oem_resolve_in": {
+     "calls": 4265285,
+     "incl_raw_share": 0.028741504663648793,
+     "phase": "match",
+     "self_share": 0.028799854914923356
+    },
+    "oem_run_body_mode": {
+     "calls": 1327655,
+     "incl_raw_share": 0.09630645805271876,
+     "phase": "dispatch",
+     "self_share": 0.0362417809598878
+    },
+    "petta_answer_choice_release": {
+     "calls": 873012,
+     "incl_raw_share": 0.025508668358688497,
+     "phase": "alloc",
+     "self_share": 0.010877389414632803
+    },
+    "petta_choice_pop": {
+     "calls": 481649,
+     "incl_raw_share": 0.0204901908714587,
+     "phase": "choice",
+     "self_share": 0.0002973508066138409
+    },
+    "petta_choice_release": {
+     "calls": 704892,
+     "incl_raw_share": 0.02102151963235824,
+     "phase": "alloc",
+     "self_share": 0.0028859769703722966
+    },
+    "petta_choice_retire_exhausted": {
+     "calls": 199233,
+     "incl_raw_share": 0.009602740624785507,
+     "phase": "choice",
+     "self_share": 0.0003531481068867161
+    },
+    "petta_copy_binding_atoms": {
+     "calls": 404,
+     "incl_raw_share": 0.0015445567062292226,
+     "phase": "copy",
+     "self_share": 0.0002786939184643901
+    },
+    "petta_eval_machine_admit_space_query_values": {
+     "calls": 893726,
+     "incl_raw_share": 0.03597172861021975,
+     "phase": "match",
+     "self_share": 0.0009485158999463886
+    },
+    "petta_eval_machine_builtin_equations": {
+     "calls": 6419139,
+     "incl_raw_share": 0.019951382347360994,
+     "phase": "eqsel",
+     "self_share": 0.015931379434663426
+    },
+    "petta_eval_machine_candidate_snapshot_lease": {
+     "calls": 749890,
+     "incl_raw_share": 0.011847759933771055,
+     "phase": "eqsel",
+     "self_share": 0.0003979121534129501
+    },
+    "petta_eval_machine_classify_host": {
+     "calls": 1087386,
+     "incl_raw_share": 0.008185490156171753,
+     "phase": "dispatch",
+     "self_share": 0.008806060174344611
+    },
+    "petta_eval_machine_evaluate_host": {
+     "calls": 32628,
+     "incl_raw_share": 0.02545156855761125,
+     "phase": "dispatch",
+     "self_share": 0.0002490818188759712
+    },
+    "petta_eval_machine_execute_prepared_pure_call": {
+     "calls": 510003,
+     "incl_raw_share": 0.05959747571746079,
+     "phase": "prepexec",
+     "self_share": 0.0004856433886677061
+    },
+    "petta_eval_machine_extension_call": {
+     "calls": 45879,
+     "incl_raw_share": 0.060044862211225146,
+     "phase": "dispatch",
+     "self_share": 0.002195245152513754
+    },
+    "petta_eval_machine_open_answer_cursor": {
+     "calls": 242216,
+     "incl_raw_share": 0.01866731121368149,
+     "phase": "eqsel",
+     "self_share": 0.0014637729475171111
+    },
+    "petta_eval_machine_open_relation_cursor": {
+     "calls": 646118,
+     "incl_raw_share": 0.05287209635928006,
+     "phase": "eqsel",
+     "self_share": 0.0027816818136562047
+    },
+    "petta_eval_machine_open_relation_declined": {
+     "calls": 755421,
+     "incl_raw_share": 0.038386709341109305,
+     "phase": "eqsel",
+     "self_share": 0.0019476580723188789
+    },
+    "petta_eval_machine_prepared_refused": {
+     "calls": 880301,
+     "incl_raw_share": 0.01215944812516899,
+     "phase": "eqsel",
+     "self_share": 0.0015013875606849994
+    },
+    "petta_eval_machine_space_query_admission_policy": {
+     "calls": 906952,
+     "incl_raw_share": 0.009976411670271173,
+     "phase": "eqsel",
+     "self_share": 0.00024282401918098706
+    },
+    "petta_eval_machine_tabled_relation_admissible": {
+     "calls": 741683,
+     "incl_raw_share": 0.02776431922764143,
+     "phase": "eqsel",
+     "self_share": 0.0006661241157690811
+    },
+    "petta_eval_open_foreign_reads_current": {
+     "calls": 101339,
+     "incl_raw_share": 0.02586511399827241,
+     "phase": "eqsel",
+     "self_share": 0.00044639248803290135
+    },
+    "petta_eval_open_program_acquire": {
+     "calls": 1401554,
+     "incl_raw_share": 0.04319943937472413,
+     "phase": "eqsel",
+     "self_share": 0.003075117506165662
+    },
+    "petta_eval_open_program_lookup_locked": {
+     "calls": 1884158,
+     "incl_raw_share": 0.04267938124506057,
+     "phase": "eqsel",
+     "self_share": 0.016600629959718182
+    },
+    "petta_eval_open_relation_admitted": {
+     "calls": 142828,
+     "incl_raw_share": 0.016390961352860042,
+     "phase": "eqsel",
+     "self_share": 0.001615482286086377
+    },
+    "petta_eval_relation_admission_entry": {
+     "calls": 1335309,
+     "incl_raw_share": 0.013376904545388445,
+     "phase": "eqsel",
+     "self_share": 0.011964620164612963
+    },
+    "petta_fresh_variable": {
+     "calls": 596363,
+     "incl_raw_share": 0.010040181374891533,
+     "phase": "copy",
+     "self_share": 0.008973085562379572
+    },
+    "petta_libpl_call": {
+     "calls": 40197,
+     "incl_raw_share": 0.057008543744122224,
+     "phase": "prolog",
+     "self_share": 0.012591978760817085
+    },
+    "petta_libpl_from_term": {
+     "calls": 32855,
+     "incl_raw_share": 0.016740744460334685,
+     "phase": "prolog",
+     "self_share": 0.017445622557305415
+    },
+    "petta_libpl_registered_call": {
+     "calls": 25530,
+     "incl_raw_share": 0.04051482106266589,
+     "phase": "prolog",
+     "self_share": 0.015181750763985619
+    },
+    "petta_libpl_to_term": {
+     "calls": 2293851,
+     "incl_raw_share": 0.014325669571608635,
+     "phase": "prolog",
+     "self_share": 0.014509849325158874
+    },
+    "petta_machine_advance_choice": {
+     "calls": 324735,
+     "incl_raw_share": 0.04739985034400291,
+     "phase": "choice",
+     "self_share": 0.018252869388226307
+    },
+    "petta_machine_backtrack": {
+     "calls": 92472,
+     "incl_raw_share": 0.010922933524747871,
+     "phase": "choice",
+     "self_share": 0.00012930474374292473
+    },
+    "petta_machine_builtin_equations_mode": {
+     "calls": 5151388,
+     "incl_raw_share": 0.01949836647489582,
+     "phase": "eqsel",
+     "self_share": 0.0014429570090168293
+    },
+    "petta_machine_call_equations": {
+     "calls": 894264,
+     "incl_raw_share": 0.023433460347437533,
+     "phase": "dispatch",
+     "self_share": 0.012370792455993347
+    },
+    "petta_machine_collect_choice_bindings": {
+     "calls": 427,
+     "incl_raw_share": 0.007984581259044546,
+     "phase": "choice",
+     "self_share": 0.006109489667211221
+    },
+    "petta_machine_collect_choice_heap": {
+     "calls": 404,
+     "incl_raw_share": 0.010951065567336545,
+     "phase": "choice",
+     "self_share": 0.000571882719813583
+    },
+    "petta_machine_cons_equation_match": {
+     "calls": 25847,
+     "incl_raw_share": 0.014338158101069722,
+     "phase": "match",
+     "self_share": 0.0035988763200626547
+    },
+    "petta_machine_dispatch_activation_solve": {
+     "calls": 152411,
+     "incl_raw_share": 0.02478604966724673,
+     "phase": "dispatch",
+     "self_share": 0.011018409841997711
+    },
+    "petta_machine_dispatch_goal": {
+     "calls": 3633769,
+     "incl_raw_share": 0.9280644867831332,
+     "phase": "dispatch",
+     "self_share": 0.02326165934025565
+    },
+    "petta_machine_dispatch_solve": {
+     "calls": 1666220,
+     "incl_raw_share": 0.16042435604817887,
+     "phase": "dispatch",
+     "self_share": 0.049701603375825805
+    },
+    "petta_machine_equation_slot_match": {
+     "calls": 56341,
+     "incl_raw_share": 0.01091176739963286,
+     "phase": "match",
+     "self_share": 0.011809195494874098
+    },
+    "petta_machine_execute_prepared_call": {
+     "calls": 151748,
+     "incl_raw_share": 0.013706809497854787,
+     "phase": "prepexec",
+     "self_share": 0.0006610820957959072
+    },
+    "petta_machine_execute_prepared_query": {
+     "calls": 389622,
+     "incl_raw_share": 0.052322831312388976,
+     "phase": "prepexec",
+     "self_share": 0.002129995947444777
+    },
+    "petta_machine_extension_named_arity_using": {
+     "calls": 2035014,
+     "incl_raw_share": 0.015010608249080213,
+     "phase": "dispatch",
+     "self_share": 0.01669418882550096
+    },
+    "petta_machine_list_query": {
+     "calls": 890384,
+     "incl_raw_share": 0.010580627885510152,
+     "phase": "dispatch",
+     "self_share": 0.00801565220018558
+    },
+    "petta_machine_maybe_collect": {
+     "calls": 3646939,
+     "incl_raw_share": 0.016795785563961923,
+     "phase": "dispatch",
+     "self_share": 0.004831794434428522
+    },
+    "petta_machine_named_arity": {
+     "calls": 991749,
+     "incl_raw_share": 0.015543386305870398,
+     "phase": "dispatch",
+     "self_share": 0.0013602805706984518
+    },
+    "petta_machine_named_partial_decision": {
+     "calls": 1005333,
+     "incl_raw_share": 0.016725369451618195,
+     "phase": "dispatch",
+     "self_share": 0.0005544181945470772
+    },
+    "petta_machine_next_local": {
+     "calls": 85203,
+     "incl_raw_share": 0.9942099155480911,
+     "phase": "dispatch",
+     "self_share": 0.021590658608849254
+    },
+    "petta_machine_open_host": {
+     "calls": 675448,
+     "incl_raw_share": 0.017159460643335463,
+     "phase": "dispatch",
+     "self_share": 0.006566140785283068
+    },
+    "petta_machine_open_resume": {
+     "calls": 406836,
+     "incl_raw_share": 0.08229921302494286,
+     "phase": "dispatch",
+     "self_share": 0.018825032266976717
+    },
+    "petta_machine_resume_choice": {
+     "calls": 124073,
+     "incl_raw_share": 0.011801934232949035,
+     "phase": "choice",
+     "self_share": 0.00042929062191975406
+    },
+    "petta_machine_source_named_arity": {
+     "calls": 1181012,
+     "incl_raw_share": 0.008437590912254761,
+     "phase": "dispatch",
+     "self_share": 0.003317108085645164
+    },
+    "petta_machine_start_answer_producer": {
+     "calls": 245452,
+     "incl_raw_share": 0.02568623052555451,
+     "phase": "dispatch",
+     "self_share": 0.004194833526746475
+    },
+    "petta_machine_start_collapse": {
+     "calls": 29565,
+     "incl_raw_share": 0.01345982639344798,
+     "phase": "dispatch",
+     "self_share": 0.005652555451999657
+    },
+    "petta_machine_start_equation_choice": {
+     "calls": 118021,
+     "incl_raw_share": 0.07910284158987427,
+     "phase": "eqsel",
+     "self_share": 0.0001996900015834674
+    },
+    "petta_machine_start_open_answers": {
+     "calls": 683668,
+     "incl_raw_share": 0.19451964934885582,
+     "phase": "dispatch",
+     "self_share": 0.006012129640385495
+    },
+    "petta_machine_start_open_term_answers": {
+     "calls": 630025,
+     "incl_raw_share": 0.17959790008312101,
+     "phase": "dispatch",
+     "self_share": 0.014282438695713526
+    },
+    "petta_machine_start_ready_match_mode": {
+     "calls": 11338,
+     "incl_raw_share": 0.00789255812697851,
+     "phase": "match",
+     "self_share": 0.002245397779546771
+    },
+    "petta_machine_start_space_query": {
+     "calls": 890394,
+     "incl_raw_share": 0.44643749279851075,
+     "phase": "space",
+     "self_share": 0.019993543038888614
+    },
+    "petta_machine_try_extension_call": {
+     "calls": 45879,
+     "incl_raw_share": 0.0625005958780273,
+     "phase": "dispatch",
+     "self_share": 0.00045742956305375914
+    },
+    "petta_machine_try_ready_relation_invocation": {
+     "calls": 907443,
+     "incl_raw_share": 0.40613238106790217,
+     "phase": "eqsel",
+     "self_share": 0.0035563203798529854
+    },
+    "petta_machine_unify": {
+     "calls": 1036275,
+     "incl_raw_share": 0.03432017766370663,
+     "phase": "match",
+     "self_share": 0.00036641942072421105
+    },
+    "petta_machine_unify_resolved_values": {
+     "calls": 1294385,
+     "incl_raw_share": 0.03961934791050229,
+     "phase": "match",
+     "self_share": 0.00976639130597161
+    },
+    "petta_machine_unify_values": {
+     "calls": 1078572,
+     "incl_raw_share": 0.03414188492153747,
+     "phase": "match",
+     "self_share": 0.001930796977329054
+    },
+    "petta_match_decision_select_candidates": {
+     "calls": 741683,
+     "incl_raw_share": 0.008757669965667247,
+     "phase": "eqsel",
+     "self_share": 0.00756958994779265
+    },
+    "petta_match_source_call": {
+     "calls": 100948,
+     "incl_raw_share": 0.030628289266907575,
+     "phase": "match",
+     "self_share": 0.001542591573906064
+    },
+    "petta_open_answer_unify": {
+     "calls": 359785,
+     "incl_raw_share": 0.012947324882541173,
+     "phase": "match",
+     "self_share": 0.0021176964258239474
+    },
+    "petta_program_candidate_snapshot_lease_profiled": {
+     "calls": 1264479,
+     "incl_raw_share": 0.018023993483610154,
+     "phase": "eqsel",
+     "self_share": 0.010910693582106609
+    },
+    "petta_program_head_is_intrinsic": {
+     "calls": 3216048,
+     "incl_raw_share": 0.008180497899831449,
+     "phase": "eqsel",
+     "self_share": 0.008413541415138186
+    },
+    "petta_program_refresh_callability": {
+     "calls": 1264479,
+     "incl_raw_share": 0.007272781073960396,
+     "phase": "eqsel",
+     "self_share": 0.00785079503118461
+    },
+    "petta_program_relation_table_safe": {
+     "calls": 793938,
+     "incl_raw_share": 0.026982569148736407,
+     "phase": "eqsel",
+     "self_share": 0.005146168961530318
+    },
+    "petta_push_evaluated_expression_planned": {
+     "calls": 330000,
+     "incl_raw_share": 0.014873185126866582,
+     "phase": "dispatch",
+     "self_share": 0.0001786867607628674
+    },
+    "petta_push_evaluated_expression_range_planned": {
+     "calls": 466079,
+     "incl_raw_share": 0.01667359595175825,
+     "phase": "dispatch",
+     "self_share": 0.006208217726753439
+    },
+    "petta_relation_specialization_relevance": {
+     "calls": 38855,
+     "incl_raw_share": 0.012401120673230062,
+     "phase": "eqsel",
+     "self_share": 0.006849943040072479
+    },
+    "petta_semantics_match_cons_constraint_mode": {
+     "calls": 174350,
+     "incl_raw_share": 0.018014619056996816,
+     "phase": "match",
+     "self_share": 0.002640037801437745
+    },
+    "petta_space_remove_pattern_all": {
+     "calls": 18054,
+     "incl_raw_share": 0.012959546110605761,
+     "phase": "space",
+     "self_share": 0.011942904044792157
+    },
+    "petta_specializer_prepare_call": {
+     "calls": 120665,
+     "incl_raw_share": 0.04283863188683902,
+     "phase": "eqsel",
+     "self_share": 0.008432744508372125
+    },
+    "petta_specializer_query_value_execution_admission": {
+     "calls": 893038,
+     "incl_raw_share": 0.02399892692056662,
+     "phase": "eqsel",
+     "self_share": 0.0126602503444492
+    },
+    "petta_table_safety_scan_relation": {
+     "calls": 374714,
+     "incl_raw_share": 0.021843945179219813,
+     "phase": "eqsel",
+     "self_share": 0.013150666639150084
+    },
+    "prepared_pure_closed_invocation_plan": {
+     "calls": 571183,
+     "incl_raw_share": 0.011903062437323085,
+     "phase": "eqsel",
+     "self_share": 0.003914854015147885
+    },
+    "prepared_pure_closed_invocation_try": {
+     "calls": 510227,
+     "incl_raw_share": 0.05912712109968021,
+     "phase": "prepexec",
+     "self_share": 0.006234032711912319
+    },
+    "prepared_pure_compile_pending_heads": {
+     "calls": 64502,
+     "incl_raw_share": 0.02984974824470841,
+     "phase": "prepcompile",
+     "self_share": 0.021964524887147452
+    },
+    "prepared_pure_program_cache_has_decline_head": {
+     "calls": 2333485,
+     "incl_raw_share": 0.024625862761441773,
+     "phase": "eqsel",
+     "self_share": 0.02607875681382754
+    },
+    "prepared_pure_program_compile_closed_mode": {
+     "calls": 64504,
+     "incl_raw_share": 0.042536257482173837,
+     "phase": "prepcompile",
+     "self_share": 0.009162775853264193
+    },
+    "prepared_pure_program_execute_internal": {
+     "calls": 176813,
+     "incl_raw_share": 0.005677597833142041,
+     "phase": "prepexec",
+     "self_share": 0.006278130407495878
+    },
+    "realloc": {
+     "calls": 11820788,
+     "incl_raw_share": 0.015480276927618705,
+     "phase": "alloc",
+     "self_share": 0.013588373965659501
+    },
+    "space_admit_atom_impl": {
+     "calls": 21201,
+     "incl_raw_share": 0.009913611544741607,
+     "phase": "space",
+     "self_share": 0.010876198775557192
+    },
+    "space_equation_cursor_member_next": {
+     "calls": 618830,
+     "incl_raw_share": 0.007355990145497371,
+     "phase": "space",
+     "self_share": 0.008092505231462396
+    },
+    "space_equation_cursor_next": {
+     "calls": 618830,
+     "incl_raw_share": 0.008294733168000815,
+     "phase": "space",
+     "self_share": 0.0005483888076051874
+    },
+    "space_member_annotated_types": {
+     "calls": 337551,
+     "incl_raw_share": 0.015001379801564116,
+     "phase": "space",
+     "self_share": 0.003619708200018023
+    },
+    "space_query_effect_for_head_analyzed": {
+     "calls": 530069,
+     "incl_raw_share": 0.003994434375014521,
+     "phase": "eqsel",
+     "self_share": 0.0034920096477027984
+    },
+    "term_universe_copy_atom_impl": {
+     "calls": 1879180,
+     "incl_raw_share": 0.0113277517343361,
+     "phase": "copy",
+     "self_share": 0.009586984171679634
+    }
+   },
+   "total_s": 28.567028882480557
+  },
+  "w3-benchgen": {
+   "alloc_bytes": 119694364064,
+   "group_shares": {
+    "Prolog (foreign calls)": [
+     0.04274162082378428,
+     0.04281798428805666,
+     0.04197521929129283
+    ],
+    "dispatch": [
+     0.32382695482083784,
+     0.3241039668527662,
+     0.32945226176119674
+    ],
+    "equation lookup and selection": [
+     0.23547018607897127,
+     0.2368534671777636,
+     0.22993534899254092
+    ],
+    "outside": [
+     0.006729576667274029,
+     0.0074040161205845235,
+     0.006346497084619111
+    ],
+    "space access": [
+     0.049545712636393485,
+     0.04996569991565656,
+     0.05080878984638416
+    ],
+    "term allocation and copying": [
+     0.2023581479346437,
+     0.20233533001065962,
+     0.20345349384386804
+    ],
+    "unification and matching": [
+     0.1393278010380953,
+     0.13651953563451294,
+     0.13802838918009833
+    ]
+   },
+   "overhead": {
+    "c_in": 22.356,
+    "c_out": 23.536,
+    "corrected": [],
+    "frames_median": 624586285,
+    "raw": [],
+    "user": []
+   },
+   "phase_shares": {
+    "alloc": [
+     0.09149052403355414,
+     0.09157428161845677,
+     0.0945071785219827
+    ],
+    "choice": [
+     0.02463145096155071,
+     0.024213273995308857,
+     0.02517139462794846
+    ],
+    "copy": [
+     0.11086762390108959,
+     0.11076104839220287,
+     0.10894631532188534
+    ],
+    "dispatch": [
+     0.28335514874692874,
+     0.283830007913496,
+     0.288274518824426
+    ],
+    "eqsel": [
+     0.17327058725775696,
+     0.17434321110848816,
+     0.16861942534819205
+    ],
+    "match": [
+     0.1393278010380953,
+     0.13651953563451294,
+     0.13802838918009833
+    ],
+    "outside": [
+     0.006729576667274029,
+     0.0074040161205845235,
+     0.006346497084619111
+    ],
+    "prepcompile": [
+     0.06219959882121429,
+     0.06251025606927547,
+     0.061315923644348895
+    ],
+    "prepexec": [
+     0.01584035511235838,
+     0.01606068494396131,
+     0.016006348308822294
+    ],
+    "prolog": [
+     0.04274162082378428,
+     0.04281798428805666,
+     0.04197521929129283
+    ],
+    "space": [
+     0.049545712636393485,
+     0.04996569991565656,
+     0.05080878984638416
+    ]
+   },
+   "runs": [
+    "1",
+    "2",
+    "3"
+   ],
+   "sites": {
+    "arena_grow": {
+     "calls": 11072694,
+     "incl_raw_share": 0.01048608335960831,
+     "phase": "alloc",
+     "self_share": 0.0032174118397340253
+    },
+    "atom_deep_copy_session_copy": {
+     "calls": 3549012,
+     "incl_raw_share": 0.023273250692921004,
+     "phase": "copy",
+     "self_share": 0.024637261939273566
+    },
+    "bindings_apply_fold": {
+     "calls": 5695808,
+     "incl_raw_share": 0.03725159360884047,
+     "phase": "copy",
+     "self_share": 0.041570425594133854
+    },
+    "bindings_apply_value": {
+     "calls": 17510920,
+     "incl_raw_share": 0.04568774055430738,
+     "phase": "copy",
+     "self_share": 0.007052709026744542
+    },
+    "bindings_builder_add_id_internal": {
+     "calls": 6964115,
+     "incl_raw_share": 0.029789279296442407,
+     "phase": "match",
+     "self_share": 0.027535048893287884
+    },
+    "bindings_project_reachable": {
+     "calls": 194540,
+     "incl_raw_share": 0.006269979797873013,
+     "phase": "copy",
+     "self_share": 0.006135376849663674
+    },
+    "calloc": {
+     "calls": 11298833,
+     "incl_raw_share": 0.014797509974560565,
+     "phase": "alloc",
+     "self_share": 0.01576540501660738
+    },
+    "cetta_instantiate_frame_terms": {
+     "calls": 319019,
+     "incl_raw_share": 0.009867362193677901,
+     "phase": "copy",
+     "self_share": 0.0008219452616181106
+    },
+    "cetta_open_equation_cursor_open": {
+     "calls": 1935999,
+     "incl_raw_share": 0.034395594956572205,
+     "phase": "eqsel",
+     "self_share": 0.020973540820059106
+    },
+    "cetta_open_equation_program_host_reads_current": {
+     "calls": 242558,
+     "incl_raw_share": 0.02153423142137538,
+     "phase": "eqsel",
+     "self_share": 0.0005292228960821414
+    },
+    "eval_apply_space_addition": {
+     "calls": 51717,
+     "incl_raw_share": 0.00733415129095393,
+     "phase": "space",
+     "self_share": 0.0003617987169101164
+    },
+    "eval_apply_space_removal": {
+     "calls": 24235,
+     "incl_raw_share": 0.008379836917947968,
+     "phase": "space",
+     "self_share": 0.0008894877473777745
+    },
+    "eval_space_mutation_contract_kind": {
+     "calls": 49864,
+     "incl_raw_share": 0.014363359160276779,
+     "phase": "eqsel",
+     "self_share": 0.001031290931421198
+    },
+    "free": {
+     "calls": 113753227,
+     "incl_raw_share": 0.030717436662325858,
+     "phase": "alloc",
+     "self_share": 0.022406455491782544
+    },
+    "get_annotated_types": {
+     "calls": 971074,
+     "incl_raw_share": 0.017209823050071592,
+     "phase": "eqsel",
+     "self_share": 0.0009277195576710356
+    },
+    "malloc": {
+     "calls": 64181508,
+     "incl_raw_share": 0.026086707264955076,
+     "phase": "alloc",
+     "self_share": 0.022643208068268115
+    },
+    "match_binding_values_builder": {
+     "calls": 20756242,
+     "incl_raw_share": 0.05005295931470967,
+     "phase": "match",
+     "self_share": 0.0029435097164393765
+    },
+    "match_decoded_atoms_worklist": {
+     "calls": 20771479,
+     "incl_raw_share": 0.04307208825418608,
+     "phase": "match",
+     "self_share": 0.013128353878378872
+    },
+    "oem_compile_certificate": {
+     "calls": 715,
+     "incl_raw_share": 0.000385482121327193,
+     "phase": "prepcompile",
+     "self_share": 0.00025956755499613265
+    },
+    "oem_cursor_run": {
+     "calls": 3258930,
+     "incl_raw_share": 0.11618843083005742,
+     "phase": "dispatch",
+     "self_share": 0.022540398843783435
+    },
+    "oem_host_query": {
+     "calls": 3360511,
+     "incl_raw_share": 0.020733155377306262,
+     "phase": "match",
+     "self_share": 0.0035238800559301256
+    },
+    "oem_host_with_continuation": {
+     "calls": 2216014,
+     "incl_raw_share": 0.030753987056825253,
+     "phase": "dispatch",
+     "self_share": 0.009773402439588373
+    },
+    "oem_instantiate": {
+     "calls": 15195046,
+     "incl_raw_share": 0.01086454758987396,
+     "phase": "copy",
+     "self_share": 0.009782174125767812
+    },
+    "oem_resolve_in": {
+     "calls": 13064708,
+     "incl_raw_share": 0.025909084824464128,
+     "phase": "match",
+     "self_share": 0.02589842895491872
+    },
+    "oem_run_body_mode": {
+     "calls": 3735253,
+     "incl_raw_share": 0.09215418883535326,
+     "phase": "dispatch",
+     "self_share": 0.03506128187273496
+    },
+    "petta_answer_choice_release": {
+     "calls": 2500129,
+     "incl_raw_share": 0.024857463583452682,
+     "phase": "alloc",
+     "self_share": 0.011076522434459057
+    },
+    "petta_choice_pop": {
+     "calls": 1660023,
+     "incl_raw_share": 0.02013951520970129,
+     "phase": "choice",
+     "self_share": 0.00034238951263613863
+    },
+    "petta_choice_release": {
+     "calls": 2104606,
+     "incl_raw_share": 0.020198802416988806,
+     "phase": "alloc",
+     "self_share": 0.0020757259170246715
+    },
+    "petta_choice_retire_exhausted": {
+     "calls": 971039,
+     "incl_raw_share": 0.007736067999964964,
+     "phase": "choice",
+     "self_share": 0.00039773067354842374
+    },
+    "petta_copy_binding_atoms": {
+     "calls": 119,
+     "incl_raw_share": 0.007989908232791623,
+     "phase": "copy",
+     "self_share": 0.00016841949585412558
+    },
+    "petta_eval_machine_admit_space_query_values": {
+     "calls": 2523504,
+     "incl_raw_share": 0.02404070991097753,
+     "phase": "match",
+     "self_share": 0.0008884918995875337
+    },
+    "petta_eval_machine_builtin_equations": {
+     "calls": 21565132,
+     "incl_raw_share": 0.021644919017562617,
+     "phase": "eqsel",
+     "self_share": 0.01792513719301376
+    },
+    "petta_eval_machine_candidate_snapshot_lease": {
+     "calls": 2157748,
+     "incl_raw_share": 0.00965948857942685,
+     "phase": "eqsel",
+     "self_share": 0.0003866582968695449
+    },
+    "petta_eval_machine_classify_host": {
+     "calls": 3527177,
+     "incl_raw_share": 0.008180831528211871,
+     "phase": "dispatch",
+     "self_share": 0.008945891462061312
+    },
+    "petta_eval_machine_evaluate_host": {
+     "calls": 49864,
+     "incl_raw_share": 0.014495636871760522,
+     "phase": "dispatch",
+     "self_share": 0.00013822737761292088
+    },
+    "petta_eval_machine_execute_prepared_pure_call": {
+     "calls": 1345929,
+     "incl_raw_share": 0.0859642401849175,
+     "phase": "prepexec",
+     "self_share": 0.0005225661274006786
+    },
+    "petta_eval_machine_extension_call": {
+     "calls": 90072,
+     "incl_raw_share": 0.042053276941298644,
+     "phase": "dispatch",
+     "self_share": 0.0013898561225254417
+    },
+    "petta_eval_machine_open_answer_cursor": {
+     "calls": 584793,
+     "incl_raw_share": 0.030624662273845235,
+     "phase": "eqsel",
+     "self_share": 0.0014929385594011878
+    },
+    "petta_eval_machine_open_relation_cursor": {
+     "calls": 1936119,
+     "incl_raw_share": 0.04177295159153082,
+     "phase": "eqsel",
+     "self_share": 0.002762903138197538
+    },
+    "petta_eval_machine_open_relation_declined": {
+     "calls": 2172956,
+     "incl_raw_share": 0.031516604701369334,
+     "phase": "eqsel",
+     "self_share": 0.0018689705657611354
+    },
+    "petta_eval_machine_prepared_refused": {
+     "calls": 2487649,
+     "incl_raw_share": 0.00926200577061405,
+     "phase": "eqsel",
+     "self_share": 0.0012768426042254586
+    },
+    "petta_eval_machine_space_query_admission_policy": {
+     "calls": 2539637,
+     "incl_raw_share": 0.008421669073856438,
+     "phase": "eqsel",
+     "self_share": 0.00027056722555364346
+    },
+    "petta_eval_machine_tabled_relation_admissible": {
+     "calls": 2146322,
+     "incl_raw_share": 0.019893093394851284,
+     "phase": "eqsel",
+     "self_share": 0.0005863289785897643
+    },
+    "petta_eval_open_foreign_reads_current": {
+     "calls": 242793,
+     "incl_raw_share": 0.021887062705708827,
+     "phase": "eqsel",
+     "self_share": 0.00033483676380212423
+    },
+    "petta_eval_open_program_acquire": {
+     "calls": 4109078,
+     "incl_raw_share": 0.03381561233424589,
+     "phase": "eqsel",
+     "self_share": 0.0029542782829140943
+    },
+    "petta_eval_open_program_lookup_locked": {
+     "calls": 5241378,
+     "incl_raw_share": 0.0321797555192066,
+     "phase": "eqsel",
+     "self_share": 0.010731213443487238
+    },
+    "petta_eval_open_relation_admitted": {
+     "calls": 368352,
+     "incl_raw_share": 0.014327017009593147,
+     "phase": "eqsel",
+     "self_share": 0.0013188722539060759
+    },
+    "petta_eval_relation_admission_entry": {
+     "calls": 3623400,
+     "incl_raw_share": 0.01122185768824668,
+     "phase": "eqsel",
+     "self_share": 0.009902255396009044
+    },
+    "petta_fresh_variable": {
+     "calls": 2683259,
+     "incl_raw_share": 0.010016693175917512,
+     "phase": "copy",
+     "self_share": 0.009935010814541217
+    },
+    "petta_libpl_call": {
+     "calls": 80511,
+     "incl_raw_share": 0.04056793159896175,
+     "phase": "prolog",
+     "self_share": 0.008918342819935783
+    },
+    "petta_libpl_from_term": {
+     "calls": 77255,
+     "incl_raw_share": 0.014024609100283667,
+     "phase": "prolog",
+     "self_share": 0.014538598959770612
+    },
+    "petta_libpl_registered_call": {
+     "calls": 51550,
+     "incl_raw_share": 0.02925446896970293,
+     "phase": "prolog",
+     "self_share": 0.009146602212368222
+    },
+    "petta_libpl_to_term": {
+     "calls": 5732856,
+     "incl_raw_share": 0.010065419766559294,
+     "phase": "prolog",
+     "self_share": 0.01007728185855828
+    },
+    "petta_machine_advance_choice": {
+     "calls": 1140937,
+     "incl_raw_share": 0.0946371091382301,
+     "phase": "choice",
+     "self_share": 0.019106570536770645
+    },
+    "petta_machine_backtrack": {
+     "calls": 448307,
+     "incl_raw_share": 0.014411838005592061,
+     "phase": "choice",
+     "self_share": 0.00015212689596010143
+    },
+    "petta_machine_builtin_equations_mode": {
+     "calls": 17493133,
+     "incl_raw_share": 0.020621088975289952,
+     "phase": "eqsel",
+     "self_share": 0.0016626242561675576
+    },
+    "petta_machine_call_equations": {
+     "calls": 2523280,
+     "incl_raw_share": 0.02021242007983468,
+     "phase": "dispatch",
+     "self_share": 0.010365008772010324
+    },
+    "petta_machine_collect_choice_bindings": {
+     "calls": 197,
+     "incl_raw_share": 0.004713728988215166,
+     "phase": "choice",
+     "self_share": 0.0037898635121235524
+    },
+    "petta_machine_collect_choice_heap": {
+     "calls": 119,
+     "incl_raw_share": 0.010349654050714387,
+     "phase": "choice",
+     "self_share": 0.00022268594729746413
+    },
+    "petta_machine_cons_equation_match": {
+     "calls": 97310,
+     "incl_raw_share": 0.01375416629846867,
+     "phase": "match",
+     "self_share": 0.004951125863161019
+    },
+    "petta_machine_dispatch_activation_solve": {
+     "calls": 197298,
+     "incl_raw_share": 0.010761886390920954,
+     "phase": "dispatch",
+     "self_share": 0.004547076831023253
+    },
+    "petta_machine_dispatch_goal": {
+     "calls": 12663827,
+     "incl_raw_share": 0.9287479228676724,
+     "phase": "dispatch",
+     "self_share": 0.027093247792207797
+    },
+    "petta_machine_dispatch_solve": {
+     "calls": 6111523,
+     "incl_raw_share": 0.21806048369583714,
+     "phase": "dispatch",
+     "self_share": 0.05194939003490105
+    },
+    "petta_machine_equation_slot_match": {
+     "calls": 83735,
+     "incl_raw_share": 0.005788252290772045,
+     "phase": "match",
+     "self_share": 0.006318110599368472
+    },
+    "petta_machine_execute_prepared_call": {
+     "calls": 634146,
+     "incl_raw_share": 0.03736454659550386,
+     "phase": "prepexec",
+     "self_share": 0.0007672471956444243
+    },
+    "petta_machine_execute_prepared_query": {
+     "calls": 975187,
+     "incl_raw_share": 0.07184415071873393,
+     "phase": "prepexec",
+     "self_share": 0.001637270978234992
+    },
+    "petta_machine_extension_named_arity_using": {
+     "calls": 6580018,
+     "incl_raw_share": 0.012525435393346948,
+     "phase": "dispatch",
+     "self_share": 0.013577995495245024
+    },
+    "petta_machine_list_query": {
+     "calls": 2505388,
+     "incl_raw_share": 0.008817406801143256,
+     "phase": "dispatch",
+     "self_share": 0.004232369132993323
+    },
+    "petta_machine_maybe_collect": {
+     "calls": 12688400,
+     "incl_raw_share": 0.019037196410971322,
+     "phase": "dispatch",
+     "self_share": 0.005047937825367039
+    },
+    "petta_machine_named_arity": {
+     "calls": 3187364,
+     "incl_raw_share": 0.0183344351106171,
+     "phase": "dispatch",
+     "self_share": 0.0014011120926593448
+    },
+    "petta_machine_named_partial_decision": {
+     "calls": 3213994,
+     "incl_raw_share": 0.01948523492727905,
+     "phase": "dispatch",
+     "self_share": 0.0006157460356187121
+    },
+    "petta_machine_next_local": {
+     "calls": 166931,
+     "incl_raw_share": 0.9903730248150994,
+     "phase": "dispatch",
+     "self_share": 0.020200972483455107
+    },
+    "petta_machine_open_host": {
+     "calls": 2188790,
+     "incl_raw_share": 0.018984636129369094,
+     "phase": "dispatch",
+     "self_share": 0.006984025717902322
+    },
+    "petta_machine_open_resume": {
+     "calls": 1272293,
+     "incl_raw_share": 0.09226080886480222,
+     "phase": "dispatch",
+     "self_share": 0.019242869924586313
+    },
+    "petta_machine_resume_choice": {
+     "calls": 776558,
+     "incl_raw_share": 0.07111789120266435,
+     "phase": "choice",
+     "self_share": 0.0005748065823636943
+    },
+    "petta_machine_source_named_arity": {
+     "calls": 4619206,
+     "incl_raw_share": 0.012523135072282145,
+     "phase": "dispatch",
+     "self_share": 0.004419410915857794
+    },
+    "petta_machine_start_answer_producer": {
+     "calls": 594354,
+     "incl_raw_share": 0.036504184763787556,
+     "phase": "dispatch",
+     "self_share": 0.003698718710860622
+    },
+    "petta_machine_start_collapse": {
+     "calls": 59513,
+     "incl_raw_share": 0.0086582022810292,
+     "phase": "dispatch",
+     "self_share": 0.003818337659868812
+    },
+    "petta_machine_start_equation_choice": {
+     "calls": 354465,
+     "incl_raw_share": 0.06921459059432651,
+     "phase": "eqsel",
+     "self_share": 0.00019667556710549556
+    },
+    "petta_machine_start_open_answers": {
+     "calls": 1976929,
+     "incl_raw_share": 0.16647516224690917,
+     "phase": "dispatch",
+     "self_share": 0.008708253531220973
+    },
+    "petta_machine_start_open_term_answers": {
+     "calls": 1906414,
+     "incl_raw_share": 0.1529610383435356,
+     "phase": "dispatch",
+     "self_share": 0.012662258111319432
+    },
+    "petta_machine_start_ready_match_mode": {
+     "calls": 27419,
+     "incl_raw_share": 0.06259446519503861,
+     "phase": "match",
+     "self_share": 0.002432070835727849
+    },
+    "petta_machine_start_space_query": {
+     "calls": 2505398,
+     "incl_raw_share": 0.41295905621290474,
+     "phase": "space",
+     "self_share": 0.01899928604130706
+    },
+    "petta_machine_try_extension_call": {
+     "calls": 90072,
+     "incl_raw_share": 0.043484652788358384,
+     "phase": "dispatch",
+     "self_share": 0.00030199428920726825
+    },
+    "petta_machine_try_ready_relation_invocation": {
+     "calls": 2550667,
+     "incl_raw_share": 0.37366571396671155,
+     "phase": "eqsel",
+     "self_share": 0.0031904345063291776
+    },
+    "petta_machine_unify": {
+     "calls": 11781695,
+     "incl_raw_share": 0.08806807614574945,
+     "phase": "match",
+     "self_share": 0.01150181900165803
+    },
+    "petta_machine_unify_resolved_values": {
+     "calls": 12930911,
+     "incl_raw_share": 0.07888668247791082,
+     "phase": "match",
+     "self_share": 0.01175887923094295
+    },
+    "petta_machine_unify_values": {
+     "calls": 11983869,
+     "incl_raw_share": 0.07678270219301796,
+     "phase": "match",
+     "self_share": 0.003252391332651947
+    },
+    "petta_match_decision_select_candidates": {
+     "calls": 2146322,
+     "incl_raw_share": 0.006545460672411689,
+     "phase": "eqsel",
+     "self_share": 0.005801569004979611
+    },
+    "petta_match_source_call": {
+     "calls": 311354,
+     "incl_raw_share": 0.021271097697673904,
+     "phase": "match",
+     "self_share": 0.0013064546805494493
+    },
+    "petta_open_answer_unify": {
+     "calls": 993946,
+     "incl_raw_share": 0.010884079194013319,
+     "phase": "match",
+     "self_share": 0.0019677382008794157
+    },
+    "petta_program_candidate_snapshot_lease_profiled": {
+     "calls": 3948874,
+     "incl_raw_share": 0.015352303879981351,
+     "phase": "eqsel",
+     "self_share": 0.00959391310534203
+    },
+    "petta_program_head_is_intrinsic": {
+     "calls": 9848614,
+     "incl_raw_share": 0.007352040840169036,
+     "phase": "eqsel",
+     "self_share": 0.007305057033103889
+    },
+    "petta_program_refresh_callability": {
+     "calls": 3948874,
+     "incl_raw_share": 0.006135683630310968,
+     "phase": "eqsel",
+     "self_share": 0.00655244760482339
+    },
+    "petta_program_relation_table_safe": {
+     "calls": 2221206,
+     "incl_raw_share": 0.019070736828369253,
+     "phase": "eqsel",
+     "self_share": 0.004850520014333638
+    },
+    "petta_push_evaluated_expression_planned": {
+     "calls": 1627527,
+     "incl_raw_share": 0.019716151525735304,
+     "phase": "dispatch",
+     "self_share": 0.0002349486721850142
+    },
+    "petta_push_evaluated_expression_range_planned": {
+     "calls": 2213494,
+     "incl_raw_share": 0.021766258970389793,
+     "phase": "dispatch",
+     "self_share": 0.007749938604812565
+    },
+    "petta_relation_specialization_relevance": {
+     "calls": 54760,
+     "incl_raw_share": 0.004646311920239558,
+     "phase": "eqsel",
+     "self_share": 0.0026851667292555055
+    },
+    "petta_semantics_match_cons_constraint_mode": {
+     "calls": 8466353,
+     "incl_raw_share": 0.05157676608634432,
+     "phase": "match",
+     "self_share": 0.020873454504207904
+    },
+    "petta_space_remove_pattern_all": {
+     "calls": 24235,
+     "incl_raw_share": 0.00759507765820282,
+     "phase": "space",
+     "self_share": 0.007937596043885763
+    },
+    "petta_specializer_prepare_call": {
+     "calls": 371704,
+     "incl_raw_share": 0.03285334300045696,
+     "phase": "eqsel",
+     "self_share": 0.00806494609784255
+    },
+    "petta_specializer_query_value_execution_admission": {
+     "calls": 2522637,
+     "incl_raw_share": 0.014100109244262351,
+     "phase": "eqsel",
+     "self_share": 0.010407725773278472
+    },
+    "petta_table_safety_scan_relation": {
+     "calls": 907055,
+     "incl_raw_share": 0.014301181222868801,
+     "phase": "eqsel",
+     "self_share": 0.009105941433087801
+    },
+    "prepared_pure_closed_invocation_plan": {
+     "calls": 1556473,
+     "incl_raw_share": 0.00994940138219783,
+     "phase": "eqsel",
+     "self_share": 0.004229410732169634
+    },
+    "prepared_pure_closed_invocation_try": {
+     "calls": 1351170,
+     "incl_raw_share": 0.08534642670930127,
+     "phase": "prepexec",
+     "self_share": 0.006297837644254568
+    },
+    "prepared_pure_compile_pending_heads": {
+     "calls": 437790,
+     "incl_raw_share": 0.05902420978284418,
+     "phase": "prepcompile",
+     "self_share": 0.0443773982762557
+    },
+    "prepared_pure_program_cache_has_decline_head": {
+     "calls": 6959419,
+     "incl_raw_share": 0.020009037068184885,
+     "phase": "eqsel",
+     "self_share": 0.020476655334696937
+    },
+    "prepared_pure_program_compile_closed_mode": {
+     "calls": 437791,
+     "incl_raw_share": 0.08343005549845191,
+     "phase": "prepcompile",
+     "self_share": 0.01756263298996246
+    },
+    "prepared_pure_program_execute_internal": {
+     "calls": 453124,
+     "incl_raw_share": 0.006290842512333653,
+     "phase": "prepexec",
+     "self_share": 0.006714748110956134
+    },
+    "realloc": {
+     "calls": 40464027,
+     "incl_raw_share": 0.016527018680875555,
+     "phase": "alloc",
+     "self_share": 0.014427002869613797
+    },
+    "space_admit_atom_impl": {
+     "calls": 51787,
+     "incl_raw_share": 0.007033947194837735,
+     "phase": "space",
+     "self_share": 0.008172700764582758
+    },
+    "space_equation_cursor_member_next": {
+     "calls": 2066107,
+     "incl_raw_share": 0.0072898002143869985,
+     "phase": "space",
+     "self_share": 0.008171568434534565
+    },
+    "space_equation_cursor_next": {
+     "calls": 2066107,
+     "incl_raw_share": 0.008450405173897531,
+     "phase": "space",
+     "self_share": 0.0008544028798132714
+    },
+    "space_member_annotated_types": {
+     "calls": 971074,
+     "incl_raw_share": 0.016202651576760804,
+     "phase": "space",
+     "self_share": 0.004378932810164709
+    },
+    "space_query_effect_for_head_analyzed": {
+     "calls": 2673016,
+     "incl_raw_share": 0.003215909898440692,
+     "phase": "eqsel",
+     "self_share": 0.003245310347490466
+    },
+    "term_universe_copy_atom_impl": {
+     "calls": 6400530,
+     "incl_raw_share": 0.012097377608013491,
+     "phase": "copy",
+     "self_share": 0.0108228334452061
+    }
+   },
+   "total_s": 71.709129982192
+  }
+ }
+}

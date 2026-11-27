@@ -1,0 +1,162 @@
+{
+ "changes": [
+  {
+   "id": "C1",
+   "name": "Call-preparation decisions cached per call site and invalidated per head",
+   "groups": [
+    {
+     "label": "per-call admission, safety and dispatch-mode checks (validation of 5-10 revision fields, table-safety scans, specializer admission, arity lookups through Prolog)",
+     "fraction": 0.6,
+     "basis": "assumed",
+     "touched": {
+      "w1-examples": 0.17101318031496818,
+      "w2-wmtm": 0.16065721654922124,
+      "w3-benchgen": 0.14336489401961122
+     },
+     "saved": {
+      "w1-examples": 0.1026079081889809,
+      "w2-wmtm": 0.09639432992953274,
+      "w3-benchgen": 0.08601893641176674
+     }
+    }
+   ],
+   "saved": {
+    "w1-examples": 0.1026079081889809,
+    "w2-wmtm": 0.09639432992953274,
+    "w3-benchgen": 0.08601893641176674
+   },
+   "speedup": {
+    "w1-examples": 1.1143401074349883,
+    "w2-wmtm": 1.1066774292396986,
+    "w3-benchgen": 1.0941145717768612
+   },
+   "touched": {
+    "w1-examples": 0.17101318031496818,
+    "w2-wmtm": 0.16065721654922124,
+    "w3-benchgen": 0.14336489401961122
+   }
+  },
+  {
+   "id": "C2",
+   "name": "Prepared-call fast path admitted only where it pays (per-head), with an indexed cache (0012) and programs kept across unrelated program changes",
+   "groups": [
+    {
+     "label": "the prepared-pure call path: refusal checks and cache walks, compile attempts, prepared execution (saving measured end to end with the path off, CeTTa's own reference switch; an adaptive policy does at least as well where its bookkeeping is cheap)",
+     "fraction": null,
+     "basis": "measured",
+     "touched": {
+      "w1-examples": 0.12555965507348285,
+      "w2-wmtm": 0.08754909536052315,
+      "w3-benchgen": 0.11031739534299881
+     },
+     "saved": {
+      "w1-examples": 0.10288408208541322,
+      "w2-wmtm": 0.08173562058526751,
+      "w3-benchgen": 0.10671798460461857
+     }
+    }
+   ],
+   "saved": {
+    "w1-examples": 0.10288408208541322,
+    "w2-wmtm": 0.08173562058526751,
+    "w3-benchgen": 0.10671798460461857
+   },
+   "speedup": {
+    "w1-examples": 1.1146831530139103,
+    "w2-wmtm": 1.0890109890109891,
+    "w3-benchgen": 1.119467293380337
+   },
+   "touched": {
+    "w1-examples": 0.12555965507348285,
+    "w2-wmtm": 0.08754909536052315,
+    "w3-benchgen": 0.11031739534299881
+   }
+  },
+  {
+   "id": "C3",
+   "name": "Allocation: a faster general allocator (mimalloc), then pools for per-call machine records",
+   "groups": [
+    {
+     "label": "malloc/calloc/realloc/free and arena growth (saving measured end to end by the mimalloc swap, which also speeds SWI-Prolog's and libc's own allocations)",
+     "fraction": null,
+     "basis": "measured",
+     "touched": {
+      "w1-examples": 0.07600677976349923,
+      "w2-wmtm": 0.05244876827989657,
+      "w3-benchgen": 0.0733136775979131
+     },
+     "saved": {
+      "w1-examples": 0.08464888405008186,
+      "w2-wmtm": 0.09687184661957626,
+      "w3-benchgen": 0.07697678477919356
+     }
+    }
+   ],
+   "saved": {
+    "w1-examples": 0.08464888405008186,
+    "w2-wmtm": 0.09687184661957626,
+    "w3-benchgen": 0.07697678477919356
+   },
+   "speedup": {
+    "w1-examples": 1.0924769550996136,
+    "w2-wmtm": 1.1072625698324023,
+    "w3-benchgen": 1.0833963691376702
+   },
+   "touched": {
+    "w1-examples": 0.07600677976349923,
+    "w2-wmtm": 0.05244876827989657,
+    "w3-benchgen": 0.0733136775979131
+   }
+  },
+  {
+   "id": "C4",
+   "name": "Copying: share ground and settled subterms instead of re-instantiating them",
+   "groups": [
+    {
+     "label": "bindings application, deep copies, frame instantiation",
+     "fraction": 0.35,
+     "basis": "assumed",
+     "touched": {
+      "w1-examples": 0.11049799044635095,
+      "w2-wmtm": 0.11675022252291606,
+      "w3-benchgen": 0.11758835887107656
+     },
+     "saved": {
+      "w1-examples": 0.03867429665622283,
+      "w2-wmtm": 0.04086257788302062,
+      "w3-benchgen": 0.0411559256048768
+     }
+    }
+   ],
+   "saved": {
+    "w1-examples": 0.03867429665622283,
+    "w2-wmtm": 0.04086257788302062,
+    "w3-benchgen": 0.0411559256048768
+   },
+   "speedup": {
+    "w1-examples": 1.040230170192789,
+    "w2-wmtm": 1.0426034653020106,
+    "w3-benchgen": 1.0429224382815732
+   },
+   "touched": {
+    "w1-examples": 0.11049799044635095,
+    "w2-wmtm": 0.11675022252291606,
+    "w3-benchgen": 0.11758835887107656
+   }
+  }
+ ],
+ "combined": {
+  "w1-examples": {
+   "saved": 0.32881517098069885,
+   "speedup": 1.4899025674658732
+  },
+  "w2-wmtm": {
+   "saved": 0.3158643750173971,
+   "speedup": 1.4616984753943039
+  },
+  "w3-benchgen": {
+   "saved": 0.31086963140045565,
+   "speedup": 1.4511042403082701
+  }
+ }
+}

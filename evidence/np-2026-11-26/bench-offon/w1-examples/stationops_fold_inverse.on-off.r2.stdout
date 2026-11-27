@@ -1,0 +1,16 @@
+is true, should true. ✅ 
+is true, should true. ✅ 
+is true, should true. ✅ 
+true
+(: (stationOpsKb MAIN Nil) candidates (CandidateModules ((WeightedCandidate pump 5 0.02) (WeightedCandidate valve 3 0.1) (WeightedCandidate motor 2 0.05))) (STV 1.0 1.0))
+(: (stationOpsKb MAIN Nil) observed (ObservedTotalLoss 5) (STV 1.0 1.0))
+(rules (((: (stationOpsKb $V0 $V1) $V2 (CandidateModules $V3) $V4) (: (stationOpsKb $V0 $V1) $V5 (ObservedTotalLoss $V6) $V7) (CPU AndFormula ($V4 $V7) $V8) (CPU WeightedSubsetPosteriorDP ($V3 $V6) $V9) (CPU AndFormula ($V8 (STV 1.0 1.0)) $V10) (CPU CTVModusPonensFormula ($V10 (CTV (STV 1.0 1.0) (STV 0.0 1.0))) $V11)) |- (: (stationOpsKb $V0 $V1) (by diagnose (conjunction $V2 $V5 cpu)) (FaultPosterior $V9) $V11)))
+(rules (((: (stationOpsKb MAIN Nil) $V0 (CandidateModules $V1) $V2) (: (stationOpsKb MAIN Nil) $V3 (ObservedTotalLoss $V4) $V5) (CPU AndFormula ($V2 $V5) $V6) (: (stationOpsKb MAIN Nil) $V7 (Compute WeightedSubsetPosteriorDP ($V1 $V4) -> $V8) $V9) (CPU AndFormula ($V6 $V9) $V10)) |- (: (stationOpsKb MAIN Nil) (conjunction $V0 $V3 $V7) (And (CandidateModules $V1) (ObservedTotalLoss $V4) (Compute WeightedSubsetPosteriorDP ($V1 $V4) -> $V8)) $V10)))
+(: (stationOpsKb MAIN Nil) pumpModule (Module pump) (STV 1.0 1.0))
+(: (stationOpsKb MAIN Nil) valveModule (Module valve) (STV 1.0 1.0))
+(: (stationOpsKb MAIN Nil) motorModule (Module motor) (STV 1.0 1.0))
+(rules (((: (stationOpsKb $V0 $V1) $V2 (FaultPosterior $V3) $V4) (: (stationOpsKb $V0 $V1) $V5 (Module $V6) $V7) (CPU AndFormula ($V4 $V7) $V8) (CPU WeightedSubsetPosteriorMarginal ($V3 $V6) $V9) (CPU AndFormula ($V8 (STV 1.0 1.0)) $V10) (CPU CTVModusPonensFormula ($V10 (CTV (STV 1.0 1.0) (STV 0.0 1.0))) $V11)) |- (: (stationOpsKb $V0 $V1) (by projectModuleProbability (conjunction $V2 $V5 cpu)) (FaultProbability $V6 $V9) $V11)))
+(rules (((: (stationOpsKb MAIN Nil) $V0 (FaultPosterior $V1) $V2) (: (stationOpsKb MAIN Nil) $V3 (Module $V4) $V5) (CPU AndFormula ($V2 $V5) $V6) (: (stationOpsKb MAIN Nil) $V7 (Compute WeightedSubsetPosteriorMarginal ($V1 $V4) -> $V8) $V9) (CPU AndFormula ($V6 $V9) $V10)) |- (: (stationOpsKb MAIN Nil) (conjunction $V0 $V3 $V7) (And (FaultPosterior $V1) (Module $V4) (Compute WeightedSubsetPosteriorMarginal ($V1 $V4) -> $V8)) $V10)))
+true
+true
+true

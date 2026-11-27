@@ -1,0 +1,13 @@
+prof-none w1-examples deductionrevision.prof-none.r1 exit=0 stdout=c5078e19cdbbccd05fedb4c7a31a6349c217b9dca01f0d92a7a271377d11a2e5 answers_vs_s0_base=same failed_tests=0 time=3.75 3.70 0.04 78964
+prof-none w1-examples flyingraven.prof-none.r1 exit=0 stdout=2420a82fea6aa6d61be38a2e0a29d47260b4a27f6b4cd743f0ebb4ae33d56160 answers_vs_s0_base=same failed_tests=0 time=11.39 11.30 0.07 99916
+prof-none w1-examples raveninduction.prof-none.r1 exit=0 stdout=8b17248ff50beec39e183dd5efe435705e9a76cbf5eac29a7006d4a3a311b146 answers_vs_s0_base=same failed_tests=0 time=3.81 3.77 0.04 83284
+prof-none w1-examples base_rate_acceptance_game_pettachainer.prof-none.r1 exit=0 stdout=f9e1cdf1741d98490ac88d5e0302471d94db3234f52f7cfc68eef8dc90507951 answers_vs_s0_base=same failed_tests=0 time=8.86 8.79 0.07 83316
+prof-none w1-examples direct.prof-none.r1 exit=0 stdout=201ed30af1cf6616c2e6f6d4d0adf3221680543aa8fc5f5e5f5bdbe996647257 answers_vs_s0_base=same failed_tests=0 time=0.92 0.90 0.02 63364
+prof-none w1-examples existential_residual.prof-none.r1 exit=0 stdout=82330b49b18aebc5f48c6319655426cc133ce3561c8cb9d13aa7d6b048f59282 answers_vs_s0_base=same failed_tests=0 time=1.96 1.92 0.03 66252
+prof-none w1-examples machine_failure_inversion.prof-none.r1 exit=0 stdout=b145f5899e05b9e46cb796cd2bac5807743c37c7b81d1b9a56fc88b97f3a7bd4 answers_vs_s0_base=same failed_tests=0 time=1.28 1.24 0.03 62672
+prof-none w1-examples raveninduction_implication_pettachainer.prof-none.r1 exit=0 stdout=534470cde8a4df1c94c85ae624636412c784cc0fdec8a2969102648373d3cb40 answers_vs_s0_base=same failed_tests=0 time=1.59 1.55 0.04 63620
+prof-none w1-examples smokes.prof-none.r1 exit=0 stdout=462684581537a04615fa99479ea3591a9de59aa0a8e1485a0170846aa93d929f answers_vs_s0_base=same failed_tests=0 time=25.18 24.90 0.23 175860
+prof-none w1-examples stationops_fold_inverse.prof-none.r1 exit=0 stdout=944379f750b54576162cbdd24c3c9f8296a5340115f28655a36bfa42c70194ff answers_vs_s0_base=same failed_tests=0 time=0.93 0.89 0.03 59368
+prof-none w1-examples toothbrush.prof-none.r1 exit=0 stdout=3b700bed64e05c0ec3dab27f52d18bf23ca8f6f48d68a1fc9dbd63aa08b1b6af answers_vs_s0_base=same failed_tests=0 time=2.25 2.20 0.05 68472
+prof-none w2-wmtm s0_w2_wmtm.prof-none.r1 exit=0 stdout=bbda4ea366d139f096bf2004b33d03a90d614e67efe75916db1ba6cd4fd970f7 answers_vs_s0_base=same failed_tests=0 time=30.34 30.20 0.12 140104
+prof-none w3-benchgen s0_w3_benchgen.prof-none.r1 exit=0 stdout=3afdbd247af03dcdd3b97d8cd46a31a4b062738a51dc31b2a65f6f5f7612df6a answers_vs_s0_base=same failed_tests=0 time=97.50 96.81 0.59 393672

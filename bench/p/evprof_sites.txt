@@ -1,0 +1,125 @@
+# cetta-internals P: functions timed by upstream/cetta-p/0011 (CETTA_EVPROF=1), one per line: PHASE FUNCTION.
+# Time is exclusive: a sample of time belongs to the innermost timed function on the stack (and so to its phase);
+# time not inside any timed function is phase "outside". Phases (report groups):
+#   dispatch      the PeTTa search machine's goal loop and goal dispatch, the open-equation machine running bodies
+#   choice        choice points, backtracking, answer collection
+#   eqsel         equation lookup and selection, call preparation and admission checks, dispatch caches
+#   prepcompile   compiling prepared pure programs (call preparation that builds code)
+#   prepexec      running prepared pure programs and prepared queries
+#   match         unification and matching, bindings construction and lookup
+#   copy          term copying and instantiation (bindings application, deep copies, fresh variables)
+#   alloc         malloc/calloc/realloc/free (wrapped at link) and arena growth
+#   space         space access: queries over spaces, equation cursors over the store, space additions/removals
+#   prolog        calls into the embedded SWI-Prolog, with term conversion both ways
+dispatch petta_machine_next_local
+dispatch petta_machine_dispatch_goal
+dispatch petta_machine_dispatch_solve
+dispatch petta_machine_dispatch_activation_solve
+dispatch petta_machine_start_open_answers
+dispatch petta_machine_start_open_term_answers
+dispatch petta_machine_open_resume
+dispatch petta_machine_try_extension_call
+dispatch petta_eval_machine_extension_call
+dispatch petta_eval_machine_evaluate_host
+dispatch petta_machine_start_answer_producer
+dispatch petta_machine_call_equations
+dispatch petta_push_evaluated_expression_range_planned
+dispatch petta_push_evaluated_expression_planned
+dispatch petta_machine_named_partial_decision
+dispatch petta_machine_named_arity
+dispatch petta_machine_extension_named_arity_using
+dispatch petta_machine_source_named_arity
+dispatch petta_machine_open_host
+dispatch petta_eval_machine_classify_host
+dispatch petta_machine_start_collapse
+dispatch petta_machine_list_query
+dispatch petta_machine_maybe_collect
+dispatch oem_cursor_run
+dispatch oem_run_body_mode
+dispatch oem_host_with_continuation
+choice petta_machine_advance_choice
+choice petta_machine_resume_choice
+choice petta_machine_backtrack
+choice petta_choice_pop
+choice petta_machine_collect_choice_heap
+choice petta_choice_retire_exhausted
+choice petta_machine_collect_choice_bindings
+eqsel petta_machine_try_ready_relation_invocation
+eqsel petta_machine_start_equation_choice
+eqsel petta_eval_open_program_acquire
+eqsel petta_eval_open_program_lookup_locked
+eqsel petta_eval_open_foreign_reads_current
+eqsel cetta_open_equation_program_host_reads_current
+eqsel petta_eval_machine_builtin_equations
+eqsel petta_machine_builtin_equations_mode
+eqsel petta_program_refresh_callability
+eqsel petta_program_relation_table_safe
+eqsel petta_table_safety_scan_relation
+eqsel petta_eval_machine_tabled_relation_admissible
+eqsel prepared_pure_program_cache_has_decline_head
+eqsel prepared_pure_closed_invocation_plan
+eqsel petta_eval_machine_prepared_refused
+eqsel petta_specializer_prepare_call
+eqsel petta_specializer_query_value_execution_admission
+eqsel petta_program_candidate_snapshot_lease_profiled
+eqsel petta_eval_machine_candidate_snapshot_lease
+eqsel petta_match_decision_select_candidates
+eqsel petta_program_head_is_intrinsic
+eqsel petta_relation_specialization_relevance
+eqsel petta_eval_machine_space_query_admission_policy
+eqsel petta_eval_relation_admission_entry
+eqsel petta_eval_open_relation_admitted
+eqsel cetta_open_equation_cursor_open
+eqsel petta_eval_machine_open_relation_cursor
+eqsel petta_eval_machine_open_relation_declined
+eqsel petta_eval_machine_open_answer_cursor
+eqsel eval_space_mutation_contract_kind
+eqsel space_query_effect_for_head_analyzed
+eqsel get_annotated_types
+prepcompile prepared_pure_program_compile_closed_mode
+prepcompile prepared_pure_compile_pending_heads
+prepcompile oem_compile_certificate
+prepexec prepared_pure_closed_invocation_try
+prepexec petta_eval_machine_execute_prepared_pure_call
+prepexec petta_machine_execute_prepared_query
+prepexec petta_machine_execute_prepared_call
+prepexec prepared_pure_program_execute_internal
+match petta_machine_unify
+match petta_machine_unify_values
+match petta_machine_unify_resolved_values
+match petta_open_answer_unify
+match match_decoded_atoms_worklist
+match match_binding_values_builder
+match petta_semantics_match_cons_constraint_mode
+match petta_match_source_call
+match petta_machine_start_ready_match_mode
+match petta_machine_cons_equation_match
+match petta_machine_equation_slot_match
+match bindings_builder_add_id_internal
+match oem_resolve_in
+match oem_host_query
+match petta_eval_machine_admit_space_query_values
+copy bindings_apply_value
+copy bindings_apply_fold
+copy atom_deep_copy_session_copy
+copy cetta_instantiate_frame_terms
+copy oem_instantiate
+copy petta_fresh_variable
+copy bindings_project_reachable
+copy term_universe_copy_atom_impl
+copy petta_copy_binding_atoms
+alloc arena_grow
+alloc petta_answer_choice_release
+alloc petta_choice_release
+space petta_machine_start_space_query
+space space_equation_cursor_next
+space space_equation_cursor_member_next
+space eval_apply_space_addition
+space eval_apply_space_removal
+space petta_space_remove_pattern_all
+space space_admit_atom_impl
+space space_member_annotated_types
+prolog petta_libpl_call
+prolog petta_libpl_registered_call
+prolog petta_libpl_to_term
+prolog petta_libpl_from_term

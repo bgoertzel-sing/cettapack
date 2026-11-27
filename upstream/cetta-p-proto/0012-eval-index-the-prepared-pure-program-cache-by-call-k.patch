@@ -1,0 +1,262 @@
+From b035b90a411d667c4612f7d444173543ea26d797 Mon Sep 17 00:00:00 2001
+From: cettapack <cettapack@localhost>
+Date: Fri, 27 Nov 2026 05:57:01 -0700
+Subject: [PATCH] eval: index the prepared-pure program cache by call key
+ (calibration prototype)
+
+The prepared-pure program cache kept compiled programs and refusals in one
+list that every lookup and every refusal check walked from the head.  Add a
+hash index over (space, head, arity, source identity) whose buckets chain
+each key's entries newest first, the order of the list, so a lookup meets a
+key's entries in the order the full walk meets them; the list becomes
+doubly linked so a stale entry is unlinked in place.  No entry, key or
+decision changes; without the index (allocation failure) lookups walk the
+list as before.
+---
+ src/eval.c | 151 +++++++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 136 insertions(+), 15 deletions(-)
+
+diff --git a/src/eval.c b/src/eval.c
+index 2b1ed2f5..7898576b 100644
+--- a/src/eval.c
++++ b/src/eval.c
+@@ -24525,6 +24525,10 @@ typedef enum {
+ 
+ typedef struct PreparedPureCacheEntry {
+     struct PreparedPureCacheEntry *next;
++    /* cettapack P (0012): the entry before this one in `entries`, and the
++     * next entry of its key bucket (see PreparedPureProgramCache.buckets). */
++    struct PreparedPureCacheEntry *prev;
++    struct PreparedPureCacheEntry *bucket_next;
+     Space *space;
+     SymbolId head;
+     CettaExprLen arity;
+@@ -24604,6 +24608,14 @@ struct PreparedPureProgramCache {
+     /* Advanced by every change to `entries`; decline answers remembered
+      * under an older generation are not read. */
+     uint64_t entry_generation;
++    /* cettapack P (0012): `entries` indexed by (space, head, arity, source
++     * identity).  Each bucket chains its entries newest first, the order of
++     * `entries`, so a lookup meets the entries of one key in the order the
++     * full walk meets them.  NULL buckets (no table yet, or a failed
++     * allocation) fall back to walking `entries`. */
++    PreparedPureCacheEntry **buckets;
++    size_t bucket_mask;
++    size_t entry_count;
+     PreparedPureDeclineSlot decline_slots[PREPARED_PURE_DECLINE_SLOTS];
+     /* Pauses after uncertified compile refusals, one per key; cleared with
+      * the entries by advancing the epoch. */
+@@ -24779,6 +24791,98 @@ static void prepared_pure_backoff_refused(PreparedPureBackoffSlot *slot) {
+ }
+ 
+ 
++static size_t prepared_pure_cache_key_hash(const Space *space, SymbolId head,
++                                           CettaExprLen arity,
++                                           const void *source_identity) {
++    uint64_t h = (uint64_t)(uintptr_t)space * UINT64_C(0x9e3779b97f4a7c15);
++    h ^= ((uint64_t)head + UINT64_C(0x632be59bd9b4e019)) * UINT64_C(0xff51afd7ed558ccd);
++    h ^= ((uint64_t)arity + 1u) * UINT64_C(0xc4ceb9fe1a85ec53);
++    h ^= (uint64_t)(uintptr_t)source_identity * UINT64_C(0x94d049bb133111eb);
++    h ^= h >> 31;
++    h *= UINT64_C(0xbf58476d1ce4e5b9);
++    h ^= h >> 29;
++    return (size_t)h;
++}
++
++static inline PreparedPureCacheEntry **prepared_pure_cache_bucket(
++        PreparedPureProgramCache *cache, const Space *space, SymbolId head,
++        CettaExprLen arity, const void *source_identity) {
++    return cache->buckets
++        ? &cache->buckets[prepared_pure_cache_key_hash(space, head, arity,
++                                                       source_identity) &
++                          cache->bucket_mask]
++        : NULL;
++}
++
++/* Rebuild the index from `entries` with `cap` buckets (a power of two),
++ * appending in list order so each chain stays newest first.  On allocation
++ * failure the index is dropped and lookups walk `entries`. */
++static void prepared_pure_cache_index_rebuild(PreparedPureProgramCache *cache,
++                                              size_t cap) {
++    PreparedPureCacheEntry **buckets = calloc(cap, sizeof(*buckets));
++    PreparedPureCacheEntry **tails = buckets ? calloc(cap, sizeof(*tails)) : NULL;
++    free(cache->buckets);
++    cache->buckets = NULL;
++    cache->bucket_mask = 0u;
++    if (!buckets || !tails) {
++        free(buckets);
++        free(tails);
++        return;
++    }
++    for (PreparedPureCacheEntry *entry = cache->entries; entry;
++         entry = entry->next) {
++        size_t b = prepared_pure_cache_key_hash(entry->space, entry->head,
++                                                entry->arity,
++                                                entry->source_identity) &
++                   (cap - 1u);
++        entry->bucket_next = NULL;
++        if (tails[b])
++            tails[b]->bucket_next = entry;
++        else
++            buckets[b] = entry;
++        tails[b] = entry;
++    }
++    free(tails);
++    cache->buckets = buckets;
++    cache->bucket_mask = cap - 1u;
++}
++
++/* `entry` was just pushed at the head of `entries`. */
++static void prepared_pure_cache_index_insert(PreparedPureProgramCache *cache,
++                                             PreparedPureCacheEntry *entry) {
++    cache->entry_count++;
++    size_t cap = cache->buckets ? cache->bucket_mask + 1u : 0u;
++    if (!cache->buckets || cache->entry_count > 2u * cap) {
++        prepared_pure_cache_index_rebuild(cache, cap ? 2u * cap : 64u);
++        return;
++    }
++    PreparedPureCacheEntry **bucket = prepared_pure_cache_bucket(
++        cache, entry->space, entry->head, entry->arity, entry->source_identity);
++    entry->bucket_next = *bucket;
++    *bucket = entry;
++}
++
++/* Unlink `entry` from `entries` and from its bucket; the caller frees it. */
++static void prepared_pure_cache_unlink(PreparedPureProgramCache *cache,
++                                       PreparedPureCacheEntry *entry) {
++    if (entry->prev)
++        entry->prev->next = entry->next;
++    else
++        cache->entries = entry->next;
++    if (entry->next)
++        entry->next->prev = entry->prev;
++    if (cache->entry_count)
++        cache->entry_count--;
++    PreparedPureCacheEntry **link = prepared_pure_cache_bucket(
++        cache, entry->space, entry->head, entry->arity, entry->source_identity);
++    for (; link && *link; link = &(*link)->bucket_next) {
++        if (*link == entry) {
++            *link = entry->bucket_next;
++            break;
++        }
++    }
++}
++
+ static void prepared_pure_program_cache_clear_entries(
+     PreparedPureProgramCache *cache) {
+     if (!cache)
+@@ -24791,6 +24895,10 @@ static void prepared_pure_program_cache_clear_entries(
+         entry = next;
+     }
+     cache->entries = NULL;
++    cache->entry_count = 0u;
++    if (cache->buckets)
++        memset(cache->buckets, 0,
++               sizeof(*cache->buckets) * (cache->bucket_mask + 1u));
+     cache->entry_generation++;
+     cache->backoff_epoch++;
+     cache->replay_len = 0u;
+@@ -24805,6 +24913,9 @@ static void prepared_pure_program_cache_free(
+     if (!cache)
+         return;
+     prepared_pure_program_cache_clear_entries(cache);
++    free(cache->buckets);
++    cache->buckets = NULL;
++    cache->bucket_mask = 0u;
+     for (uint32_t c = 0u; c < cache->backoff.chunk_len; c++)
+         free(cache->backoff.chunks[c]);
+     free(cache->backoff.chunks);
+@@ -55609,15 +55720,20 @@ static CettaPreparedPureProgram *prepared_pure_program_cache_lookup(
+         invocation->head.skeleton->kind != ATOM_SYMBOL)
+         return NULL;
+     SymbolId head = invocation->head.skeleton->sym_id;
+-    PreparedPureCacheEntry **link = &cache->entries;
+-    while (*link) {
+-        PreparedPureCacheEntry *entry = *link;
++    /* cettapack P (0012): walk the key's bucket (newest first, as the list)
++     * when the index exists, else the whole list. */
++    PreparedPureCacheEntry **bucket = prepared_pure_cache_bucket(
++        cache, space, head, arity, source_identity);
++    PreparedPureCacheEntry *entry = bucket ? *bucket : cache->entries;
++    while (entry) {
++        PreparedPureCacheEntry *following =
++            bucket ? entry->bucket_next : entry->next;
+         if (!prepared_pure_program_cache_entry_matches(
+                 entry, space, head, arity, source_identity,
+                 language_id, call_mode, answer_producer,
+                 entry_arguments_are_values,
+                 total_structural_equality)) {
+-            link = &entry->next;
++            entry = following;
+             continue;
+         }
+         if (!entry->program) {
+@@ -55634,10 +55750,11 @@ static CettaPreparedPureProgram *prepared_pure_program_cache_lookup(
+                 CETTA_RUNTIME_COUNTER_PREPARED_PURE_CALL_PROGRAM_CACHE_HIT);
+             return entry->program;
+         }
+-        *link = entry->next;
++        prepared_pure_cache_unlink(cache, entry);
+         cetta_prepared_pure_program_free(entry->program);
+         free(entry);
+         cache->entry_generation++;
++        entry = following;
+     }
+     return NULL;
+ }
+@@ -55690,8 +55807,11 @@ static bool prepared_pure_program_cache_has_decline_head(
+         }
+     }
+     bool declined = false;
+-    for (PreparedPureCacheEntry *entry = cache->entries;
+-         entry; entry = entry->next) {
++    /* cettapack P (0012): only the key's bucket can hold a match. */
++    PreparedPureCacheEntry **bucket = prepared_pure_cache_bucket(
++        cache, space, head, arity, source_identity);
++    for (PreparedPureCacheEntry *entry = bucket ? *bucket : cache->entries;
++         entry; entry = bucket ? entry->bucket_next : entry->next) {
+         if (!entry->program &&
+             (inquiry == PREPARED_PURE_ENTRY_INQUIRY ||
+              entry->admission_refused == (inquiry == PREPARED_PURE_ADMISSION_INQUIRY)) &&
+@@ -55735,14 +55855,18 @@ static bool prepared_pure_program_cache_store_entry(
+     if (!entry)
+         return false;
+     *entry = (PreparedPureCacheEntry){
+-        .next = cache->entries, .space = space, .head = head, .arity = arity,
++        .next = cache->entries, .prev = NULL, .bucket_next = NULL,
++        .space = space, .head = head, .arity = arity,
+         .source_identity = source_identity, .language_id = language_id,
+         .call_mode = call_mode, .answer_producer = answer_producer,
+         .entry_arguments_are_values = entry_arguments_are_values,
+         .total_structural_equality = total_structural_equality,
+         .admission_refused = admission_refused, .program = program,
+     };
++    if (cache->entries)
++        cache->entries->prev = entry;
+     cache->entries = entry;
++    prepared_pure_cache_index_insert(cache, entry);
+     cache->entry_generation++;
+     cetta_runtime_stats_inc(program
+         ? CETTA_RUNTIME_COUNTER_PREPARED_PURE_CALL_PROGRAM_CACHE_STORE
+@@ -55828,14 +55952,11 @@ static void prepared_pure_program_cache_remove(
+     CettaPreparedPureProgram *program) {
+     if (!cache || !program)
+         return;
+-    PreparedPureCacheEntry **link = &cache->entries;
+-    while (*link) {
+-        PreparedPureCacheEntry *entry = *link;
+-        if (entry->program != program) {
+-            link = &entry->next;
++    for (PreparedPureCacheEntry *entry = cache->entries; entry;
++         entry = entry->next) {
++        if (entry->program != program)
+             continue;
+-        }
+-        *link = entry->next;
++        prepared_pure_cache_unlink(cache, entry);
+         cetta_prepared_pure_program_free(entry->program);
+         free(entry);
+         cache->entry_generation++;
+-- 
+2.34.1
+

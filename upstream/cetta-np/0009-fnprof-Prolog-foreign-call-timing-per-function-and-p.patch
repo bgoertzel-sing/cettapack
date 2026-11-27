@@ -1,0 +1,303 @@
+From 352f1567e48b9251f57a568a48db27f0d18c0a66 Mon Sep 17 00:00:00 2001
+From: cettapack <cettapack@localhost>
+Date: Thu, 26 Nov 2026 10:14:34 -0700
+Subject: [PATCH] fnprof: Prolog foreign-call timing per function and predicate
+ (CETTA_FNPROF_FOREIGN=1)
+
+cettapack native-primitives (0009). Profiler builds only (CETTA_FNPROF=1); with
+the default CETTA_FNPROF=0 nothing changes. With $CETTA_FNPROF_FOREIGN=1 every
+imported Prolog function call and every callPredicate is timed and charged to
+the current profiler frame's function and the predicate name (calls, wall ns,
+ns converting arguments to Prolog terms, ns converting answers back, and for a
+(heap Q N) first argument the heap size N); the report gains a "foreign" list.
+---
+ src/cetta_fnprof.h         |   9 +++
+ src/petta_libpl.c          | 115 +++++++++++++++++++++++++++++++++++++
+ src/petta_search_machine.c |  71 +++++++++++++++++++++++
+ 3 files changed, 195 insertions(+)
+
+diff --git a/src/cetta_fnprof.h b/src/cetta_fnprof.h
+index 60be9766..9ec9fb00 100644
+--- a/src/cetta_fnprof.h
++++ b/src/cetta_fnprof.h
+@@ -21,6 +21,15 @@ void cetta_fnprof_space_access(struct Space *space, const char *name);
+ /* space_publish_mutation: one published revision of `space`. */
+ void cetta_fnprof_space_mutation(struct Space *space, bool equation_relevant,
+                                  bool prefix_rewritten);
++/* cettapack np (0009): with $CETTA_FNPROF_FOREIGN=1, every call into the
++ * embedded Prolog is timed and charged to the current frame's function and
++ * the predicate's name: calls, wall ns, ns converting arguments to Prolog,
++ * ns converting answers back, and for a (heap Q N) first argument, N. */
++bool cetta_fnprof_foreign_on(void);
++uint64_t cetta_fnprof_clock(void);
++void cetta_fnprof_foreign(const char *name, uint64_t total_ns,
++                          uint64_t to_term_ns, uint64_t from_term_ns,
++                          int64_t heap_size);
+ #endif
+ 
+ #endif
+diff --git a/src/petta_libpl.c b/src/petta_libpl.c
+index ff5af924..677d46d0 100644
+--- a/src/petta_libpl.c
++++ b/src/petta_libpl.c
+@@ -14,6 +14,7 @@
+ #include "var_index.h"
+ #include "foreign_region.h"
+ #include "shared_transition.h"
++#include "cetta_fnprof.h"
+ 
+ #include <SWI-Prolog.h>
+ 
+@@ -313,6 +314,11 @@ typedef struct {
+     bool nondeterministic;
+ } PettaLibplStandardBridge;
+ 
++#if CETTA_FNPROF
++/* cettapack np (0009): conversion time of the foreign call in progress. */
++static _Thread_local uint64_t g_np_to_ns, g_np_from_ns;
++static _Thread_local unsigned g_np_to_depth, g_np_from_depth;
++#endif
+ static bool petta_libpl_to_term(
+     Atom *atom, term_t output,
+     PettaLibplVarMap *variables, uint32_t depth);
+@@ -2659,9 +2665,27 @@ static bool petta_libpl_to_list(
+     return true;
+ }
+ 
++static bool petta_libpl_to_term_impl(
++    Atom *atom, term_t output,
++    PettaLibplVarMap *variables, uint32_t depth);
+ static bool petta_libpl_to_term(
+     Atom *atom, term_t output,
+     PettaLibplVarMap *variables, uint32_t depth) {
++#if CETTA_FNPROF
++    if (g_np_to_depth == 0u && cetta_fnprof_foreign_on()) {
++        g_np_to_depth++;
++        uint64_t t0 = cetta_fnprof_clock();
++        bool ok = petta_libpl_to_term_impl(atom, output, variables, depth);
++        g_np_to_ns += cetta_fnprof_clock() - t0;
++        g_np_to_depth--;
++        return ok;
++    }
++#endif
++    return petta_libpl_to_term_impl(atom, output, variables, depth);
++}
++static bool petta_libpl_to_term_impl(
++    Atom *atom, term_t output,
++    PettaLibplVarMap *variables, uint32_t depth) {
+     if (!atom || !output || !variables ||
+         depth > 1024u) {
+         return false;
+@@ -2970,6 +2994,18 @@ static Atom *petta_libpl_from_term_mode(
+     PettaLibplVarMap *variables,
+     PettaLibplBackVarMap *unknown,
+     bool visible_compounds, uint32_t depth) {
++#if CETTA_FNPROF
++    if (g_np_from_depth == 0u && cetta_fnprof_foreign_on()) {
++        g_np_from_depth++;
++        uint64_t t0 = cetta_fnprof_clock();
++        Atom *r = petta_libpl_from_term_read(
++            arena, term, variables, unknown,
++            visible_compounds ? PETTA_LIBPL_READ_VISIBLE_COMPOUNDS : 0u, depth);
++        g_np_from_ns += cetta_fnprof_clock() - t0;
++        g_np_from_depth--;
++        return r;
++    }
++#endif
+     /* Every independent entry starts without a structural certificate,
+      * including a new answer or a cyclic-graph retry. Presentation policy
+      * and the local read evidence occupy the existing mode argument. */
+@@ -4380,11 +4416,53 @@ static bool petta_libpl_run_query(
+     return ok;
+ }
+ 
++static bool petta_libpl_registered_call_impl(
++    CettaLibPrologRuntime *runtime, Arena *arena,
++    Atom *expression, Atom *expected,
++    PettaLibplImport *entry,
++    OutcomeSet *outcomes, Atom **raised, PettaLibplDelay *delay);
+ static bool petta_libpl_registered_call(
+     CettaLibPrologRuntime *runtime, Arena *arena,
+     Atom *expression, Atom *expected,
+     PettaLibplImport *entry,
+     OutcomeSet *outcomes, Atom **raised, PettaLibplDelay *delay) {
++#if CETTA_FNPROF
++    if (cetta_fnprof_foreign_on()) {
++        uint64_t to0 = g_np_to_ns, from0 = g_np_from_ns;
++        unsigned saved_to_depth = g_np_to_depth, saved_from_depth = g_np_from_depth;
++        g_np_to_depth = 0u;
++        g_np_from_depth = 0u;
++        int64_t heap_size = -1;
++        if (expression && expression->kind == ATOM_EXPR && expression->expr.len >= 2u) {
++            Atom *h = expression->expr.elems[1];
++            Atom *hbody = NULL;
++            if (atom_petta_prolog_compound_body(h, &hbody))
++                h = hbody;
++            if (h && h->kind == ATOM_EXPR && h->expr.len == 3u && h->expr.elems[0] &&
++                h->expr.elems[0]->kind == ATOM_SYMBOL &&
++                strcmp(symbol_bytes(g_symbols, h->expr.elems[0]->sym_id), "heap") == 0 &&
++                h->expr.elems[2] && h->expr.elems[2]->kind == ATOM_GROUNDED &&
++                h->expr.elems[2]->ground.gkind == GV_INT)
++                heap_size = h->expr.elems[2]->ground.ival;
++        }
++        const char *pname = entry ? entry->name : NULL;
++        uint64_t t0 = cetta_fnprof_clock();
++        bool ok = petta_libpl_registered_call_impl(runtime, arena, expression, expected, entry, outcomes, raised, delay);
++        uint64_t total = cetta_fnprof_clock() - t0;
++        g_np_to_depth = saved_to_depth;
++        g_np_from_depth = saved_from_depth;
++        cetta_fnprof_foreign(pname, total, g_np_to_ns - to0,
++                             g_np_from_ns - from0, heap_size);
++        return ok;
++    }
++#endif
++    return petta_libpl_registered_call_impl(runtime, arena, expression, expected, entry, outcomes, raised, delay);
++}
++static bool petta_libpl_registered_call_impl(
++    CettaLibPrologRuntime *runtime, Arena *arena,
++    Atom *expression, Atom *expected,
++    PettaLibplImport *entry,
++    OutcomeSet *outcomes, Atom **raised, PettaLibplDelay *delay) {
+     if (raised)
+         *raised = NULL;
+     if (!runtime || !arena || !expression ||
+@@ -4616,10 +4694,47 @@ static bool petta_libpl_call_goal(
+ 
+ /* callPredicate(G, true) :- call(G) (metta.pl:390): `goal` is the value
+  * of the argument, any term. */
++static bool petta_libpl_call_predicate_impl(
++    CettaLibPrologRuntime *runtime, Arena *arena,
++    Atom *goal, OutcomeSet *outcomes, Atom **raised,
++    PettaLibplDelay *delay);
+ static bool petta_libpl_call_predicate(
+     CettaLibPrologRuntime *runtime, Arena *arena,
+     Atom *goal, OutcomeSet *outcomes, Atom **raised,
+     PettaLibplDelay *delay) {
++#if CETTA_FNPROF
++    if (cetta_fnprof_foreign_on()) {
++        uint64_t to0 = g_np_to_ns, from0 = g_np_from_ns;
++        unsigned saved_to_depth = g_np_to_depth, saved_from_depth = g_np_from_depth;
++        g_np_to_depth = 0u;
++        g_np_from_depth = 0u;
++        int64_t heap_size = -1;
++        const char *pname = "callPredicate:?";
++        char pbuf[96];
++        Atom *body = NULL;
++        if (petta_libpl_predicate_body(goal, &body) && body) {
++            Atom *hd = body->kind == ATOM_EXPR && body->expr.len > 0u ? body->expr.elems[0] : body;
++            if (hd && hd->kind == ATOM_SYMBOL) {
++                snprintf(pbuf, sizeof(pbuf), "callPredicate:%s", symbol_bytes(g_symbols, hd->sym_id));
++                pname = pbuf;
++            }
++        }
++        uint64_t t0 = cetta_fnprof_clock();
++        bool ok = petta_libpl_call_predicate_impl(runtime, arena, goal, outcomes, raised, delay);
++        uint64_t total = cetta_fnprof_clock() - t0;
++        g_np_to_depth = saved_to_depth;
++        g_np_from_depth = saved_from_depth;
++        cetta_fnprof_foreign(pname, total, g_np_to_ns - to0,
++                             g_np_from_ns - from0, heap_size);
++        return ok;
++    }
++#endif
++    return petta_libpl_call_predicate_impl(runtime, arena, goal, outcomes, raised, delay);
++}
++static bool petta_libpl_call_predicate_impl(
++    CettaLibPrologRuntime *runtime, Arena *arena,
++    Atom *goal, OutcomeSet *outcomes, Atom **raised,
++    PettaLibplDelay *delay) {
+     if (!runtime || !arena || !goal || !outcomes)
+         return false;
+     Atom *body = NULL;
+diff --git a/src/petta_search_machine.c b/src/petta_search_machine.c
+index d2a928f1..5c433c65 100644
+--- a/src/petta_search_machine.c
++++ b/src/petta_search_machine.c
+@@ -706,6 +706,65 @@ void cetta_fnprof_space_mutation(struct Space *space, bool equation_relevant,
+         edge->writes_eq++;
+ }
+ 
++/* ---- cettapack np (0009): Prolog foreign-call timing -------------------- */
++typedef struct {
++    uint32_t fn;
++    char *name;
++    uint64_t calls, ns, to_ns, from_ns, heap_calls, heap_sum, heap_max;
++} FnprofForeign;
++static struct {
++    int on; /* -1 unknown */
++    FnprofForeign *items;
++    size_t len, cap;
++} g_fnprof_foreign = {.on = -1};
++
++bool cetta_fnprof_foreign_on(void) {
++    if (g_fnprof_foreign.on < 0) {
++        const char *v = getenv("CETTA_FNPROF_FOREIGN");
++        g_fnprof_foreign.on = (v && strcmp(v, "1") == 0) ? 1 : 0;
++    }
++    return g_fnprof_foreign.on == 1;
++}
++
++uint64_t cetta_fnprof_clock(void) { return fnprof_now(); }
++
++void cetta_fnprof_foreign(const char *name, uint64_t total_ns,
++                          uint64_t to_term_ns, uint64_t from_term_ns,
++                          int64_t heap_size) {
++    if (!fnprof_ready())
++        return;
++    uint32_t fn = g_fnprof.frames[g_fnprof.cur].fn;
++    if (!name)
++        name = "?";
++    FnprofForeign *f = NULL;
++    for (size_t i = 0; i < g_fnprof_foreign.len; i++) {
++        if (g_fnprof_foreign.items[i].fn == fn &&
++            strcmp(g_fnprof_foreign.items[i].name, name) == 0) {
++            f = &g_fnprof_foreign.items[i];
++            break;
++        }
++    }
++    if (!f) {
++        if (!fnprof_grow((void **)&g_fnprof_foreign.items, &g_fnprof_foreign.cap,
++                         g_fnprof_foreign.len + 1u, sizeof(FnprofForeign)))
++            abort();
++        f = &g_fnprof_foreign.items[g_fnprof_foreign.len++];
++        *f = (FnprofForeign){.fn = fn, .name = strdup(name)};
++        if (!f->name)
++            abort();
++    }
++    f->calls++;
++    f->ns += total_ns;
++    f->to_ns += to_term_ns;
++    f->from_ns += from_term_ns;
++    if (heap_size >= 0) {
++        f->heap_calls++;
++        f->heap_sum += (uint64_t)heap_size;
++        if ((uint64_t)heap_size > f->heap_max)
++            f->heap_max = (uint64_t)heap_size;
++    }
++}
++
+ static void fnprof_json_string(FILE *out, const char *text) {
+     fputc('"', out);
+     for (const unsigned char *p = (const unsigned char *)(text ? text : "");
+@@ -814,6 +873,18 @@ static void fnprof_report(void) {
+                 e->writes_append, e->writes_rewrite, e->writes_eq,
+                 e->rev_changes);
+     }
++    fputs("],\n\"foreign\":[\n", out);
++    for (size_t i = 0; i < g_fnprof_foreign.len; i++) {
++        FnprofForeign *f = &g_fnprof_foreign.items[i];
++        fprintf(out, "%s{\"fn\":%u,\"name\":", i ? ",\n" : "", f->fn);
++        fnprof_json_string(out, f->name);
++        fprintf(out, ",\"calls\":%" PRIu64 ",\"ns\":%" PRIu64
++                ",\"to_term_ns\":%" PRIu64 ",\"from_term_ns\":%" PRIu64
++                ",\"heap_calls\":%" PRIu64 ",\"heap_size_sum\":%" PRIu64
++                ",\"heap_size_max\":%" PRIu64 "}",
++                f->calls, f->ns, f->to_ns, f->from_ns, f->heap_calls,
++                f->heap_sum, f->heap_max);
++    }
+     fputs("]}\n", out);
+     fclose(out);
+     free(incl);
+-- 
+2.34.1
+

@@ -1,0 +1,38 @@
+## w3-benchgen: sampler phases (315564 samples, 3 runs)
+  alloc         11.5% (11.3-11.7)
+  choice         3.4% ( 3.2- 3.5)
+  copy          10.9% (10.7-11.0)
+  dispatch      27.6% (27.6-27.7)
+  eqsel         17.2% (17.1-17.4)
+  match         12.4% (12.3-12.5)
+  outside        0.6% ( 0.6- 0.6)
+  prepcompile    5.9% ( 5.9- 5.9)
+  prepexec       1.5% ( 1.4- 1.5)
+  prolog         4.4% ( 4.3- 4.5)
+  space          4.7% ( 4.5- 4.8)
+  top functions (innermost timed function), share of samples:
+    10.29% (libc allocator)
+     5.11% petta_machine_dispatch_solve
+     4.32% prepared_pure_compile_pending_heads
+     3.83% bindings_apply_fold
+     3.03% oem_run_body_mode
+     3.00% petta_machine_advance_choice
+     2.56% oem_resolve_in
+     2.50% atom_deep_copy_session_copy
+     2.42% oem_cursor_run
+     2.35% bindings_builder_add_id_internal
+     2.26% petta_machine_dispatch_goal
+     2.18% petta_machine_next_local
+     2.12% petta_semantics_match_cons_constraint_mode
+     2.07% prepared_pure_program_cache_has_decline_head
+     2.07% cetta_open_equation_cursor_open
+     1.98% petta_eval_machine_builtin_equations
+     1.89% petta_machine_open_resume
+     1.63% match_decoded_atoms_worklist
+     1.59% petta_machine_start_space_query
+     1.56% prepared_pure_program_compile_closed_mode
+     1.53% petta_machine_extension_named_arity_using
+     1.46% petta_libpl_from_term
+     1.32% petta_machine_unify_resolved_values
+     1.12% term_universe_copy_atom_impl
+     1.09% petta_specializer_query_value_execution_admission

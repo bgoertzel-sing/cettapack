@@ -1,0 +1,2692 @@
+{
+ "label": "w2-wmtm",
+ "samples": 105066,
+ "runs": 3,
+ "phase_share_median": {
+  "alloc": 0.11095843352799725,
+  "choice": 0.02358548966200322,
+  "copy": 0.10499785192610626,
+  "dispatch": 0.2854074180151797,
+  "eqsel": 0.20660517518880772,
+  "match": 0.10493354120973496,
+  "outside": 0.003038871125439315,
+  "prepcompile": 0.03176285264213089,
+  "prepexec": 0.01580212985228444,
+  "prolog": 0.05853039494861954,
+  "space": 0.05476156379779464
+ },
+ "phase_share_range": {
+  "alloc": [
+   0.10966324130246378,
+   0.11118430474008306
+  ],
+  "choice": [
+   0.022740942288414723,
+   0.024125994239357344
+  ],
+  "copy": [
+   0.10387520118856011,
+   0.10540919060328198
+  ],
+  "dispatch": [
+   0.2828711155131856,
+   0.2918373279074069
+  ],
+  "eqsel": [
+   0.2018074676954787,
+   0.20793355291422025
+  ],
+  "match": [
+   0.10393813547186023,
+   0.10827039742478643
+  ],
+  "outside": [
+   0.0025204067019905484,
+   0.0034975857372786926
+  ],
+  "prepcompile": [
+   0.029516687366223607,
+   0.0333044447195741
+  ],
+  "prepexec": [
+   0.014268911724650241,
+   0.01618215666618932
+  ],
+  "prolog": [
+   0.05839917554105119,
+   0.05857081483603036
+  ],
+  "space": [
+   0.05417118093174431,
+   0.05552804259007057
+  ]
+ },
+ "site_self": {
+  "(libc allocator)": 0.09803361696457465,
+  "petta_machine_dispatch_solve": 0.04947366417299602,
+  "bindings_apply_fold": 0.038176003654845525,
+  "oem_run_body_mode": 0.03307444844193174,
+  "bindings_builder_add_id_internal": 0.029971636875868502,
+  "oem_resolve_in": 0.027449412750080903,
+  "cetta_open_equation_cursor_open": 0.02725905621228561,
+  "prepared_pure_program_cache_has_decline_head": 0.0265642548493328,
+  "atom_deep_copy_session_copy": 0.02221460796071041,
+  "petta_machine_next_local": 0.021748234443111948,
+  "prepared_pure_compile_pending_heads": 0.021643538347324538,
+  "oem_cursor_run": 0.020539470428111852,
+  "petta_machine_dispatch_goal": 0.01899758247197,
+  "petta_machine_open_resume": 0.018778672453505417,
+  "petta_machine_extension_named_arity_using": 0.017893514552757315,
+  "petta_machine_advance_choice": 0.017874478898977784,
+  "petta_machine_start_space_query": 0.017474730169607676,
+  "petta_eval_machine_builtin_equations": 0.017436658862048617,
+  "petta_libpl_from_term": 0.017094017094017096,
+  "petta_libpl_registered_call": 0.014790702986694078,
+  "petta_libpl_to_term": 0.014400472084213732,
+  "petta_eval_relation_admission_entry": 0.013258332857441988,
+  "petta_machine_call_equations": 0.013248815030552225,
+  "petta_table_safety_scan_relation": 0.01292520891630023,
+  "petta_specializer_query_value_execution_admission": 0.012715816724725411,
+  "petta_libpl_call": 0.012211371899567891,
+  "petta_machine_start_open_term_answers": 0.012059086669331658,
+  "petta_space_remove_pattern_all": 0.011706927074410371,
+  "space_admit_atom_impl": 0.011697409247520605,
+  "petta_machine_equation_slot_match": 0.01151657053661508,
+  "petta_program_refresh_callability": 0.011021643538347324,
+  "petta_machine_dispatch_activation_solve": 0.010793215692992976,
+  "term_universe_copy_atom_impl": 0.010184074772048047,
+  "petta_machine_unify_resolved_values": 0.009860468657796053,
+  "petta_eval_machine_classify_host": 0.009850950830906287,
+  "petta_program_head_is_intrinsic": 0.009736736908229113,
+  "petta_program_candidate_snapshot_lease_profiled": 0.009194220775512536,
+  "petta_fresh_variable": 0.009080006852835361,
+  "oem_host_with_continuation": 0.008965792930158187,
+  "oem_instantiate": 0.008689775950355015,
+  "prepared_pure_program_compile_closed_mode": 0.00868025812346525,
+  "petta_eval_open_program_lookup_locked": 0.008670740296575486,
+  "bindings_apply_value": 0.008451830278110901,
+  "petta_machine_list_query": 0.008442312451221137,
+  "match_decoded_atoms_worklist": 0.008251955913425847,
+  "space_equation_cursor_member_next": 0.007890278491614795,
+  "petta_answer_choice_release": 0.007709439780709268,
+  "petta_specializer_prepare_call": 0.007623779338701388,
+  "petta_eval_open_foreign_reads_current": 0.007566672377362801,
+  "petta_match_decision_select_candidates": 0.007300173224449394,
+  "bindings_project_reachable": 0.007157405821102926,
+  "petta_machine_maybe_collect": 0.006890906668189519,
+  "petta_machine_open_host": 0.006729103611063522,
+  "prepared_pure_program_execute_internal": 0.006691032303504464,
+  "petta_push_evaluated_expression_range_planned": 0.006215140959016237,
+  "prepared_pure_closed_invocation_try": 0.005910570498543773,
+  "petta_program_relation_table_safe": 0.0056631069994098945,
+  "petta_machine_start_collapse": 0.005368054365827195,
+  "petta_machine_start_open_answers": 0.005082519559134259,
+  "petta_machine_start_answer_producer": 0.004492414291968858,
+  "petta_machine_source_named_arity": 0.004302057754173567,
+  "petta_machine_collect_choice_bindings": 0.004187843831496393,
+  "oem_host_query": 0.004121219043268041,
+  "space_query_effect_for_head_analyzed": 0.003930862505472751,
+  "petta_relation_specialization_relevance": 0.003864237717244399,
+  "prepared_pure_closed_invocation_plan": 0.0036643633525593436,
+  "space_member_annotated_types": 0.0033883463727561723,
+  "petta_machine_cons_equation_match": 0.0031408828736222945,
+  "petta_machine_try_ready_relation_invocation": 0.00313136504673253,
+  "(outside)": 0.003007633297165591,
+  "petta_eval_machine_open_relation_cursor": 0.0028934193744884168,
+  "petta_semantics_match_cons_constraint_mode": 0.0026935450098033616,
+  "arena_grow": 0.0025412597795671293,
+  "petta_eval_open_program_acquire": 0.0025412597795671293,
+  "petta_eval_machine_extension_call": 0.0023509032417718388,
+  "petta_choice_release": 0.0023509032417718388,
+  "petta_machine_start_ready_match_mode": 0.002274760626653722,
+  "petta_open_answer_unify": 0.002189100184645842,
+  "petta_machine_unify_values": 0.0021510288770867836,
+  "eval_apply_space_removal": 0.0019892258199607866,
+  "petta_machine_execute_prepared_query": 0.0017322444939371442,
+  "petta_eval_machine_open_answer_cursor": 0.0014276740334646792,
+  "petta_eval_open_relation_admitted": 0.0012849066301182115,
+  "petta_match_source_call": 0.0011611748805512726,
+  "oem_compile_certificate": 0.0011040679192126854,
+  "petta_eval_machine_open_relation_declined": 0.001094550092322921,
+  "eval_space_mutation_contract_kind": 0.0008946757276378657,
+  "petta_eval_machine_prepared_refused": 0.0008566044200788076,
+  "petta_machine_named_arity": 0.0007519083242913978,
+  "petta_machine_execute_prepared_call": 0.0007138370167323396,
+  "cetta_open_equation_program_host_reads_current": 0.0007138370167323396,
+  "cetta_instantiate_frame_terms": 0.0005805874402756363,
+  "petta_machine_builtin_equations_mode": 0.0005234804789370491,
+  "petta_machine_collect_choice_heap": 0.0005234804789370491,
+  "petta_eval_machine_candidate_snapshot_lease": 0.0005139626520472845,
+  "petta_eval_machine_tabled_relation_admissible": 0.00048540917137799097,
+  "petta_machine_resume_choice": 0.00047589134448822645,
+  "match_binding_values_builder": 0.00041878438314963925,
+  "petta_eval_machine_execute_prepared_pure_call": 0.00040926655625987473,
+  "eval_apply_space_addition": 0.0003711952487008166,
+  "get_annotated_types": 0.0003521595949212876,
+  "petta_machine_try_extension_call": 0.00031408828736222946,
+  "petta_machine_named_partial_decision": 0.0002950526335827004,
+  "petta_choice_retire_exhausted": 0.00027601697980317134,
+  "space_equation_cursor_next": 0.00026649915291340683,
+  "petta_copy_binding_atoms": 0.00026649915291340683,
+  "petta_eval_machine_admit_space_query_values": 0.00024746349913387774,
+  "petta_machine_start_equation_choice": 0.00018083871090552605,
+  "petta_machine_unify": 0.00018083871090552605,
+  "petta_eval_machine_evaluate_host": 0.00015228523023623247,
+  "petta_push_evaluated_expression_planned": 0.00013324957645670341,
+  "petta_choice_pop": 0.00010469609578740981,
+  "petta_machine_backtrack": 5.710696133858717e-05,
+  "petta_eval_machine_space_query_admission_policy": 2.8553480669293585e-05
+ },
+ "categories": {
+  "matching, unification and fact iteration": 0.2407724668303733,
+  "equation selection and call preparation": 0.1696647821369425,
+  "goal dispatch and evaluation": 0.1588239773095007,
+  "allocation and freeing": 0.13860811299564083,
+  "copying and instantiation": 0.10288770867835456,
+  "hashing, interning and term universe": 0.09810975957969277,
+  "prolog (SWI-Prolog and the foreign boundary)": 0.05701178306968953,
+  "grounded ops and arithmetic": 0.014153008585079854,
+  "choice points, trail and backtracking": 0.010935983096339443,
+  "space mutation (add/remove atoms)": 0.008727847257914072,
+  "other machine": 0.00017132088401576153,
+  "profiler": 0.00013324957645670341
+ },
+ "leaf_by_phase": {
+  "alloc": [
+   [
+    "__default_morecore@libc.so.6",
+    0.0457236403784288
+   ],
+   [
+    "malloc@libc.so.6",
+    0.01876915462661565
+   ],
+   [
+    "timer_settime@libc.so.6",
+    0.015590200445434299
+   ],
+   [
+    "free@libc.so.6",
+    0.013562903317914455
+   ],
+   [
+    "realloc@libc.so.6",
+    0.002341385414882074
+   ],
+   [
+    "calloc@libc.so.6",
+    0.0016846553594883217
+   ],
+   [
+    "cetta_open_equation_cursor_close",
+    0.0015038166485827956
+   ],
+   [
+    "eval_native_memory_owner",
+    0.0007804618049606914
+   ],
+   [
+    "arena_free_block_list",
+    0.0006948013629528106
+   ],
+   [
+    "??",
+    0.0005996230940551653
+   ],
+   [
+    "cetta_frame_identity_release",
+    0.0005805874402756363
+   ],
+   [
+    "cetta_name_raise_floor",
+    0.0005615517864961073
+   ],
+   [
+    "cetta_name_release",
+    0.0005425161327165781
+   ],
+   [
+    "arena_block_alloc",
+    0.0005139626520472845
+   ],
+   [
+    "cetta_native_memory_current",
+    0.00043782003692916833
+   ],
+   [
+    "arena_claim_block",
+    0.00040926655625987473
+   ],
+   [
+    "petta_answer_choice_release",
+    0.0003616774218110521
+   ],
+   [
+    "brk@libc.so.6",
+    0.0003616774218110521
+   ],
+   [
+    "cetta_open_equation_program_release",
+    0.0003521595949212876
+   ],
+   [
+    "petta_choice_release",
+    0.0002950526335827004
+   ],
+   [
+    "arena_free",
+    0.00028553480669293586
+   ],
+   [
+    "arena_frame_identity_set_bytes",
+    0.00024746349913387774
+   ],
+   [
+    "note_failure",
+    0.00021891001846458417
+   ],
+   [
+    "cetta_name_cell",
+    0.0001903565377952906
+   ],
+   [
+    "arena_frame_identity_set_dispose",
+    0.00017132088401576153
+   ]
+  ],
+  "choice": [
+   [
+    "petta_machine_advance_choice",
+    0.0019035653779529058
+   ],
+   [
+    "cetta_frame_identity_release",
+    0.0005710696133858717
+   ],
+   [
+    "bindings_frame_table_lookup",
+    0.0005615517864961073
+   ],
+   [
+    "__nss_database_lookup@libc.so.6",
+    0.0005425161327165781
+   ],
+   [
+    "atom_has_vars",
+    0.0005425161327165781
+   ],
+   [
+    "cetta_gslt_ground_dense_term_match_impl_v1",
+    0.0005329983058268137
+   ],
+   [
+    "match_atoms_epoch_views_worklist",
+    0.00040926655625987473
+   ],
+   [
+    "petta_machine_stats_accumulate",
+    0.0003711952487008166
+   ],
+   [
+    "petta_equation_template_syntax",
+    0.0003711952487008166
+   ],
+   [
+    "hashcons_slot_hash",
+    0.0003711952487008166
+   ],
+   [
+    "bindings_frame_index_entry_free",
+    0.000323606114251994
+   ],
+   [
+    "bindings_frame_schema_release",
+    0.00031408828736222946
+   ],
+   [
+    "petta_equation_pattern_view_may_match_now",
+    0.00030457046047246495
+   ],
+   [
+    "atom_has_identity_grounded",
+    0.00030457046047246495
+   ],
+   [
+    "hashcons_index_mix",
+    0.00030457046047246495
+   ],
+   [
+    "atom_summary_add_ids",
+    0.00028553480669293586
+   ],
+   [
+    "petta_goal_push",
+    0.00027601697980317134
+   ],
+   [
+    "petta_equation_callability_slot",
+    0.00025698132602364226
+   ],
+   [
+    "collect_value_var_ids_hash_stable",
+    0.00025698132602364226
+   ],
+   [
+    "cetta_gslt_ground_dense_term_instantiate_v1",
+    0.00020939219157481962
+   ],
+   [
+    "arena_frame_identity_set_find",
+    0.00020939219157481962
+   ],
+   [
+    "bindings_frame_slot_version",
+    0.0001903565377952906
+   ],
+   [
+    "bindings_frame_index_find_slot",
+    0.0001903565377952906
+   ],
+   [
+    "bindings_frame_slot_value",
+    0.0001903565377952906
+   ],
+   [
+    "petta_machine_equation_guard_decides_empty",
+    0.0001903565377952906
+   ]
+  ],
+  "copy": [
+   [
+    "bindings_apply_fold_impl",
+    0.0145432394875602
+   ],
+   [
+    "atom_deep_copy_impl",
+    0.003930862505472751
+   ],
+   [
+    "bindings_lookup_value_id",
+    0.0037500237945672244
+   ],
+   [
+    "atom_has_vars",
+    0.003255096796299469
+   ],
+   [
+    "atom_summary_add_ids",
+    0.003093293739173472
+   ],
+   [
+    "bindings_apply_memo_store",
+    0.0026174023946852454
+   ],
+   [
+    "oem_instantiate",
+    0.0023699388955513677
+   ],
+   [
+    "bindings_frame_table_lookup",
+    0.0022366893190946644
+   ],
+   [
+    "oem_instantiate_in",
+    0.0019701901661812577
+   ],
+   [
+    "atom_deep_copy_memo_lookup",
+    0.0018845297241733767
+   ],
+   [
+    "bindings_lookup_index_slow",
+    0.0017893514552757314
+   ],
+   [
+    "hashcons_find_slot",
+    0.0015989949174804409
+   ],
+   [
+    "bindings_apply_value_rewrite_vars",
+    0.0015609236099213828
+   ],
+   [
+    "atom_deep_copy_memo_store",
+    0.0013515314183465631
+   ],
+   [
+    "arena_alloc",
+    0.0012658709763386823
+   ],
+   [
+    "var_id_eq",
+    0.0012563531494489179
+   ],
+   [
+    "term_universe_copy_atom_impl",
+    0.0012468353225591534
+   ],
+   [
+    "bindings_apply_memo_lookup",
+    0.0012373174956693887
+   ],
+   [
+    "arena_frame_identity_set_find",
+    0.0011802105343308015
+   ],
+   [
+    "var_id_is_none",
+    0.001170692707441037
+   ],
+   [
+    "bindings_frame_slot_value",
+    0.0011611748805512726
+   ],
+   [
+    "bindings_frame_index_find_slot",
+    0.0009993718234252756
+   ],
+   [
+    "atom_single_variable_id_from_children",
+    0.0009708183427559819
+   ],
+   [
+    "atom_deep_copy_memo_hash",
+    0.0009517826889764529
+   ],
+   [
+    "atom_single_variable_id",
+    0.0008946757276378657
+   ]
+  ],
+  "dispatch": [
+   [
+    "petta_machine_dispatch_solve",
+    0.0097938438695677
+   ],
+   [
+    "pl_current_predicate1_va@libswipl.so.10.0.2",
+    0.007956903279843146
+   ],
+   [
+    "oem_run_body_mode",
+    0.006814764053071402
+   ],
+   [
+    "petta_machine_next_local",
+    0.0063959796699217634
+   ],
+   [
+    "__nss_database_lookup@libc.so.6",
+    0.005415643500276017
+   ],
+   [
+    "oem_activate",
+    0.004787466925551558
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    0.003654845525669579
+   ],
+   [
+    "petta_goal_push",
+    0.002807758932480536
+   ],
+   [
+    "petta_open_answers_collect_vars",
+    0.0027792054518112424
+   ],
+   [
+    "space_head_chains_find",
+    0.0027792054518112424
+   ],
+   [
+    "petta_machine_space_query_may_hold_carrier",
+    0.0027792054518112424
+   ],
+   [
+    "petta_eval_open_program_current",
+    0.002769687624921478
+   ],
+   [
+    "petta_program_type_calls",
+    0.002579331087126187
+   ],
+   [
+    "oem_unbound_cells",
+    0.002503188472008071
+   ],
+   [
+    "oem_is_cell",
+    0.002484152818228542
+   ],
+   [
+    "atom_has_vars",
+    0.002189100184645842
+   ],
+   [
+    "petta_machine_permit_metered_source_step",
+    0.002141511050197019
+   ],
+   [
+    "symbol_bytes",
+    0.0021129575695277253
+   ],
+   [
+    "petta_machine_maybe_collect",
+    0.0019892258199607866
+   ],
+   [
+    "petta_machine_source_named_arity",
+    0.0019892258199607866
+   ],
+   [
+    "atom_summary_add_ids",
+    0.0019416366855119639
+   ],
+   [
+    "bindings_lookup_value_id",
+    0.0018940475510631413
+   ],
+   [
+    "arena_alloc",
+    0.0018369405897245541
+   ],
+   [
+    "petta_program_type_family_complete",
+    0.0018274227628347895
+   ],
+   [
+    "petta_machine_start_open_term_answers",
+    0.0017607979746064378
+   ]
+  ],
+  "eqsel": [
+   [
+    "prepared_pure_program_cache_has_decline_head",
+    0.023813602878190853
+   ],
+   [
+    "petta_eval_machine_builtin_equations",
+    0.0077665467420478555
+   ],
+   [
+    "petta_eval_open_foreign_reads_current",
+    0.0072716197437801
+   ],
+   [
+    "petta_program_refresh_callability",
+    0.006691032303504464
+   ],
+   [
+    "petta_table_safety_scan_relation",
+    0.00647212228503988
+   ],
+   [
+    "__nss_database_lookup@libc.so.6",
+    0.005586964384291779
+   ],
+   [
+    "petta_eval_open_program_lookup_locked",
+    0.00546323263472484
+   ],
+   [
+    "cetta_open_equation_cursor_open",
+    0.004606628214646032
+   ],
+   [
+    "oem_import_walk",
+    0.002360421068661603
+   ],
+   [
+    "petta_program_head_bucket_lower_bound",
+    0.0023128319342127805
+   ],
+   [
+    "petta_equation_storage_retain",
+    0.002274760626653722
+   ],
+   [
+    "symbol_table_instance_id",
+    0.001979707993071022
+   ],
+   [
+    "petta_symbol_classification",
+    0.001960672339291493
+   ],
+   [
+    "prepared_pure_program_cache_entry_matches",
+    0.0019035653779529058
+   ],
+   [
+    "petta_program_snapshot_lower_bound",
+    0.0019035653779529058
+   ],
+   [
+    "oem_import_node",
+    0.0018845297241733767
+   ],
+   [
+    "bindings_resolve_value_root",
+    0.0017607979746064378
+   ],
+   [
+    "petta_program_relation_safety",
+    0.0017417623208269089
+   ],
+   [
+    "petta_program_space_find_candidate_snapshot",
+    0.0017227266670473797
+   ],
+   [
+    "eval_current_python_object_head",
+    0.0017132088401576153
+   ],
+   [
+    "symbol_bytes",
+    0.001637066225039499
+   ],
+   [
+    "petta_eval_relation_admission_entry",
+    0.0015989949174804409
+   ],
+   [
+    "oem_atom_map_find",
+    0.0014942988216930311
+   ],
+   [
+    "space_member_has_arrow_signature",
+    0.0014181562065749148
+   ],
+   [
+    "space_program_token_matches_live_space",
+    0.0013515314183465631
+   ]
+  ],
+  "match": [
+   [
+    "oem_resolve_in",
+    0.006386461843031999
+   ],
+   [
+    "match_decoded_atoms_worklist",
+    0.002883901547598652
+   ],
+   [
+    "bindings_frame_table_lookup",
+    0.0027601697980317134
+   ],
+   [
+    "atom_has_vars",
+    0.0025412597795671293
+   ],
+   [
+    "atom_summary_add_ids",
+    0.002446081510669484
+   ],
+   [
+    "oem_atom_map_begin",
+    0.001960672339291493
+   ],
+   [
+    "bindings_lookup_value_id",
+    0.0019511545124017283
+   ],
+   [
+    "bindings_builder_add_id_internal_with_cycle_evidence",
+    0.0018750118972836122
+   ],
+   [
+    "oem_atom_map_find",
+    0.0017036910132678506
+   ],
+   [
+    "oem_is_cell",
+    0.0016941731863780861
+   ],
+   [
+    "__nss_database_lookup@libc.so.6",
+    0.0016846553594883217
+   ],
+   [
+    "atom_single_variable_id_of",
+    0.001675137532598557
+   ],
+   [
+    "petta_machine_values_reach_cell",
+    0.0016656197057087925
+   ],
+   [
+    "var_id_eq",
+    0.0014657453410237375
+   ],
+   [
+    "atom_expr",
+    0.0014562275141339729
+   ],
+   [
+    "bindings_value_collect_frame_ids",
+    0.0013896027259056212
+   ],
+   [
+    "atom_single_variable_id_from_children",
+    0.0013705670721260923
+   ],
+   [
+    "bindings_apply_fold_impl",
+    0.001294424457007976
+   ],
+   [
+    "atom_single_variable_id",
+    0.0012182818418898598
+   ],
+   [
+    "bindings_frame_index_register_kind",
+    0.0011992461881103306
+   ],
+   [
+    "bindings_resolve_value_root",
+    0.0011897283612205662
+   ],
+   [
+    "atom_flags_fold",
+    0.0011231035729922145
+   ],
+   [
+    "oem_cursor_owns",
+    0.0011040679192126854
+   ],
+   [
+    "var_id_is_none",
+    0.0010659966116536273
+   ],
+   [
+    "bindings_builder_record_frame_slot_value",
+    0.000989853996535511
+   ]
+  ],
+  "outside": [
+   [
+    "hashcons_free",
+    0.0003997487293701102
+   ],
+   [
+    "__nss_database_lookup@libc.so.6",
+    0.00017132088401576153
+   ],
+   [
+    "petta_machine_next",
+    0.00017132088401576153
+   ],
+   [
+    "write@libc.so.6",
+    7.614261511811624e-05
+   ],
+   [
+    "hashcons_find_slot",
+    6.662478822835171e-05
+   ],
+   [
+    "petta_machine_offer_collection",
+    6.662478822835171e-05
+   ],
+   [
+    "atom_summary_add_ids",
+    4.758913444882265e-05
+   ],
+   [
+    "term_universe_intern_tag_at",
+    4.758913444882265e-05
+   ],
+   [
+    "petta_program_collect_variables",
+    4.758913444882265e-05
+   ],
+   [
+    "petta_plan_compile_deterministic_regions",
+    4.758913444882265e-05
+   ],
+   [
+    "gslt_direct_petta_extract_form",
+    4.758913444882265e-05
+   ],
+   [
+    "gslt_direct_reader_v1_class_contains",
+    3.807130755905812e-05
+   ],
+   [
+    "petta_projection_token_bytes",
+    3.807130755905812e-05
+   ],
+   [
+    "gslt_direct_petta_skip_form",
+    3.807130755905812e-05
+   ],
+   [
+    "open_pattern_plan_compile_node",
+    3.807130755905812e-05
+   ],
+   [
+    "psiginfo@libc.so.6",
+    2.8553480669293585e-05
+   ],
+   [
+    "petta_rule_syntax_view",
+    2.8553480669293585e-05
+   ],
+   [
+    "symbol_intern_span_hashed_unlocked",
+    2.8553480669293585e-05
+   ],
+   [
+    "gslt_direct_petta_parse_expression",
+    2.8553480669293585e-05
+   ],
+   [
+    "gslt_direct_reader_v1_decode",
+    2.8553480669293585e-05
+   ],
+   [
+    "gslt_direct_petta_parse_token",
+    2.8553480669293585e-05
+   ],
+   [
+    "atom_intern_leaf_compare",
+    2.8553480669293585e-05
+   ],
+   [
+    "tu_arity",
+    2.8553480669293585e-05
+   ],
+   [
+    "petta_plan_build_in",
+    2.8553480669293585e-05
+   ],
+   [
+    "cetta_prepared_pure_program_free",
+    2.8553480669293585e-05
+   ]
+  ],
+  "prepcompile": [
+   [
+    "prepared_pure_compile_eval_with_role_in_source",
+    0.0017417623208269089
+   ],
+   [
+    "prepared_pure_add_node",
+    0.0017227266670473797
+   ],
+   [
+    "petta_prepared_pure_source_computation",
+    0.0011135857461024498
+   ],
+   [
+    "__nss_database_lookup@libc.so.6",
+    0.001027925304094569
+   ],
+   [
+    "petta_prepared_pure_source_role",
+    0.000989853996535511
+   ],
+   [
+    "prepared_pure_compile_head",
+    0.0008661222469685721
+   ],
+   [
+    "cetta_gslt_prepared_intrinsic_program",
+    0.0007994974587402204
+   ],
+   [
+    "prepared_pure_source_computation",
+    0.0006852835360630461
+   ],
+   [
+    "prepared_pure_reserve",
+    0.0005805874402756363
+   ],
+   [
+    "prepared_pure_code_liveness",
+    0.0005139626520472845
+   ],
+   [
+    "petta_program_project_computation",
+    0.00040926655625987473
+   ],
+   [
+    "petta_prepared_pure_expression_view",
+    0.0003807130755905812
+   ],
+   [
+    "prepared_pure_compile_bind_pattern",
+    0.0003711952487008166
+   ],
+   [
+    "cetta_prepared_pure_program_free",
+    0.0003616774218110521
+   ],
+   [
+    "space_head_chains_find",
+    0.00030457046047246495
+   ],
+   [
+    "cetta_library_petta_memo_control_lookup",
+    0.0002950526335827004
+   ],
+   [
+    "space_head_has_arrow_signature",
+    0.00028553480669293586
+   ],
+   [
+    "prepared_pure_code_node",
+    0.00028553480669293586
+   ],
+   [
+    "prepared_pure_register_program",
+    0.00028553480669293586
+   ],
+   [
+    "prepared_pure_program_compile_closed_mode",
+    0.00028553480669293586
+   ],
+   [
+    "symbol_bytes",
+    0.00027601697980317134
+   ],
+   [
+    "atom_is_symbol_id",
+    0.00026649915291340683
+   ],
+   [
+    "petta_plan_node_key",
+    0.00023794567224411323
+   ],
+   [
+    "prepared_pure_append_node_live_slot",
+    0.00023794567224411323
+   ],
+   [
+    "bsearch@libc.so.6",
+    0.00022842784535434868
+   ]
+  ],
+  "prepexec": [
+   [
+    "prepared_pure_run_code_worker",
+    0.001922601031732435
+   ],
+   [
+    "prepared_pure_closed_invocation_try",
+    0.0007899796318504559
+   ],
+   [
+    "prepared_pure_program_cache_entry_matches",
+    0.0006186587478346944
+   ],
+   [
+    "cetta_prepared_pure_program_is_current",
+    0.00031408828736222946
+   ],
+   [
+    "prepared_pure_backoff_slot",
+    0.00031408828736222946
+   ],
+   [
+    "prepared_pure_match_bind_pattern_into",
+    0.00028553480669293586
+   ],
+   [
+    "prepared_pure_program_execute_internal_run",
+    0.00026649915291340683
+   ],
+   [
+    "cetta_invocation_arity",
+    0.00025698132602364226
+   ],
+   [
+    "prepared_pure_reserve",
+    0.00023794567224411323
+   ],
+   [
+    "prepared_pure_program_cache_lookup",
+    0.00022842784535434868
+   ],
+   [
+    "__nss_database_lookup@libc.so.6",
+    0.00022842784535434868
+   ],
+   [
+    "petta_machine_execute_prepared_query",
+    0.00021891001846458417
+   ],
+   [
+    "petta_eval_machine_execute_prepared_pure_call",
+    0.00020939219157481962
+   ],
+   [
+    "prepared_pure_match_into",
+    0.00018083871090552605
+   ],
+   [
+    "cetta_prepared_pure_program_rebind_closed_invocation",
+    0.00018083871090552605
+   ],
+   [
+    "cetta_invocation_resolve_arguments",
+    0.00017132088401576153
+   ],
+   [
+    "arena_mark",
+    0.000161803057125997
+   ],
+   [
+    "atom_deep_copy_session_forward_region",
+    0.000161803057125997
+   ],
+   [
+    "bindings_lookup_value_id",
+    0.00014276740334646793
+   ],
+   [
+    "prepared_pure_run_code",
+    0.00014276740334646793
+   ],
+   [
+    "prepared_pure_he_entry_arguments_without_space",
+    0.00013324957645670341
+   ],
+   [
+    "prepared_pure_source_view_for_language",
+    0.00013324957645670341
+   ],
+   [
+    "prepared_pure_select_equation",
+    0.00013324957645670341
+   ],
+   [
+    "prepared_pure_code_value",
+    0.00012373174956693887
+   ],
+   [
+    "cetta_argument_span_valid",
+    0.00012373174956693887
+   ]
+  ],
+  "prolog": [
+   [
+    "valid_term_t___LD@libswipl.so.10.0.2",
+    0.0037880951021262827
+   ],
+   [
+    "lookupBlob___LD@libswipl.so.10.0.2",
+    0.0029029372013781815
+   ],
+   [
+    "pl_current_predicate1_va@libswipl.so.10.0.2",
+    0.002579331087126187
+   ],
+   [
+    "PL_next_solution_guarded___LD@libswipl.so.10.0.2",
+    0.0021319932233072546
+   ],
+   [
+    "__nss_database_lookup@libc.so.6",
+    0.0017227266670473797
+   ],
+   [
+    "mark_for_copy___LD.isra.0@libswipl.so.10.0.2",
+    0.0016085127443702053
+   ],
+   [
+    "valid_user_term_t___LD@libswipl.so.10.0.2",
+    0.0015989949174804409
+   ],
+   [
+    "__tls_get_addr@ld-linux-x86-64.so.2",
+    0.0013991205527953859
+   ],
+   [
+    "ph_acyclic_unmark___LD.constprop.0@libswipl.so.10.0.2",
+    0.0011231035729922145
+   ],
+   [
+    "ph_acyclic_mark___LD.constprop.0.isra.0@libswipl.so.10.0.2",
+    0.001094550092322921
+   ],
+   [
+    "term_variables_loop___LD.constprop.0@libswipl.so.10.0.2",
+    0.000989853996535511
+   ],
+   [
+    "petta_libpl_to_term",
+    0.0009708183427559819
+   ],
+   [
+    "PL_term_type@libswipl.so.10.0.2",
+    0.0009613005158662175
+   ],
+   [
+    "lookupFunctorDef___LD@libswipl.so.10.0.2",
+    0.0009137113814173947
+   ],
+   [
+    "MurmurHashAligned2@libswipl.so.10.0.2",
+    0.0008661222469685721
+   ],
+   [
+    "copy_term___LD.constprop.0@libswipl.so.10.0.2",
+    0.0008375687662992785
+   ],
+   [
+    "symbol_intern_span_hashed_unlocked",
+    0.0007994974587402204
+   ],
+   [
+    "PL_canonicalise_text.part.0@libswipl.so.10.0.2",
+    0.0007614261511811624
+   ],
+   [
+    "_init@libswipl.so.10.0.2",
+    0.0007423904974016332
+   ],
+   [
+    "PL_put_term@libswipl.so.10.0.2",
+    0.0006948013629528106
+   ],
+   [
+    "cp_unmark___LD.constprop.0@libswipl.so.10.0.2",
+    0.0006376944016142234
+   ],
+   [
+    "PL_new_term_ref@libswipl.so.10.0.2",
+    0.0006281765747244589
+   ],
+   [
+    "??",
+    0.0006281765747244589
+   ],
+   [
+    "PL_cons_list___LD@libswipl.so.10.0.2",
+    0.0005901052671654008
+   ],
+   [
+    "PL_unregister_atom@libswipl.so.10.0.2",
+    0.0005520339596063427
+   ]
+  ],
+  "space": [
+   [
+    "petta_machine_start_space_query",
+    0.005701178306968953
+   ],
+   [
+    "eq_head_symbol",
+    0.0028363124131498296
+   ],
+   [
+    "term_universe_intern_tag_at",
+    0.0019035653779529058
+   ],
+   [
+    "term_universe_entry_offset",
+    0.0018750118972836122
+   ],
+   [
+    "space_equation_cursor_peek_bucket",
+    0.0015514057830316181
+   ],
+   [
+    "cetta_rule_view",
+    0.0015418879561418537
+   ],
+   [
+    "petta_machine_space_query_is_closed",
+    0.0013896027259056212
+   ],
+   [
+    "term_universe_decoded_slot",
+    0.001027925304094569
+   ],
+   [
+    "tu_hdr",
+    0.0009708183427559819
+   ],
+   [
+    "term_universe_fallback_at",
+    0.0009327470351969239
+   ],
+   [
+    "term_universe_stable_atom_id_iterative_source_memo",
+    0.0008756400738583367
+   ],
+   [
+    "petta_eval_machine_semantic_authority_token",
+    0.000809015285629985
+   ],
+   [
+    "path_project",
+    0.0007233548436221042
+   ],
+   [
+    "space_head_chains_find",
+    0.0005710696133858717
+   ],
+   [
+    "tu_internal_tag",
+    0.0005425161327165781
+   ],
+   [
+    "bindings_lookup_value_id",
+    0.0005044448251575201
+   ],
+   [
+    "hashcons_find_slot",
+    0.0004949269982677555
+   ],
+   [
+    "petta_equation_guard_candidate_statically_eligible",
+    0.00047589134448822645
+   ],
+   [
+    "term_universe_append_raw_record",
+    0.00045685569070869737
+   ],
+   [
+    "match_atoms_atom_id_epoch_worklist",
+    0.00044733786381893285
+   ],
+   [
+    "term_universe_lookup_record_at_probing",
+    0.00043782003692916833
+   ],
+   [
+    "term_universe_load_slot_value",
+    0.00043782003692916833
+   ],
+   [
+    "space_member_annotated_types",
+    0.0003997487293701102
+   ],
+   [
+    "__nss_database_lookup@libc.so.6",
+    0.0003997487293701102
+   ],
+   [
+    "term_universe_copy_memo_clear_slots",
+    0.0003902309024803457
+   ]
+  ]
+ },
+ "callers": {
+  "null": [
+   [
+    "(none)",
+    0.003007633297165591
+   ]
+  ],
+  "petta_libpl_call": [
+   [
+    "petta_eval_machine_extension_call",
+    0.012211371899567891
+   ]
+  ],
+  "(libc allocator)": [
+   [
+    "petta_answer_choice_release",
+    0.011859212304646602
+   ],
+   [
+    "cetta_open_equation_cursor_open",
+    0.010364913482953573
+   ],
+   [
+    "bindings_builder_add_id_internal",
+    0.007338244532008452
+   ],
+   [
+    "arena_grow",
+    0.005748767441417776
+   ],
+   [
+    "petta_machine_start_open_term_answers",
+    0.00525384044315002
+   ],
+   [
+    "petta_machine_open_resume",
+    0.0034644889878742884
+   ],
+   [
+    "prepared_pure_program_compile_closed_mode",
+    0.003407382026535701
+   ],
+   [
+    "oem_host_with_continuation",
+    0.003407382026535701
+   ]
+  ],
+  "petta_eval_machine_extension_call": [
+   [
+    "petta_machine_try_extension_call",
+    0.0023509032417718388
+   ]
+  ],
+  "petta_relation_specialization_relevance": [
+   [
+    "petta_specializer_query_value_execution_admission",
+    0.003854719890354634
+   ],
+   [
+    "petta_specializer_prepare_call",
+    9.51782688976453e-06
+   ]
+  ],
+  "petta_libpl_registered_call": [
+   [
+    "petta_libpl_call",
+    0.014790702986694078
+   ]
+  ],
+  "space_query_effect_for_head_analyzed": [
+   [
+    "prepared_pure_closed_invocation_plan",
+    0.00323606114251994
+   ],
+   [
+    "prepared_pure_compile_pending_heads",
+    0.0005710696133858717
+   ],
+   [
+    "prepared_pure_program_compile_closed_mode",
+    0.00012373174956693887
+   ]
+  ],
+  "oem_compile_certificate": [
+   [
+    "petta_eval_open_program_lookup_locked",
+    0.0010564787847638626
+   ],
+   [
+    "petta_eval_open_program_acquire",
+    4.758913444882265e-05
+   ]
+  ],
+  "petta_machine_open_resume": [
+   [
+    "petta_machine_dispatch_goal",
+    0.018759636799725886
+   ],
+   [
+    "petta_machine_dispatch_activation_solve",
+    9.51782688976453e-06
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    9.51782688976453e-06
+   ]
+  ],
+  "petta_machine_dispatch_solve": [
+   [
+    "petta_machine_dispatch_goal",
+    0.045618944282641384
+   ],
+   [
+    "petta_machine_dispatch_activation_solve",
+    0.0033883463727561723
+   ],
+   [
+    "petta_machine_next_local",
+    0.00046637351759846194
+   ]
+  ],
+  "petta_specializer_query_value_execution_admission": [
+   [
+    "petta_eval_machine_admit_space_query_values",
+    0.012696781070945882
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    1.903565377952906e-05
+   ]
+  ],
+  "oem_cursor_run": [
+   [
+    "petta_machine_start_open_term_answers",
+    0.016732339672206043
+   ],
+   [
+    "petta_machine_open_resume",
+    0.003597738564330992
+   ],
+   [
+    "petta_machine_resume_choice",
+    0.00020939219157481962
+   ]
+  ],
+  "petta_answer_choice_release": [
+   [
+    "petta_choice_release",
+    0.0047493956179925
+   ],
+   [
+    "petta_machine_start_open_term_answers",
+    0.002446081510669484
+   ],
+   [
+    "petta_machine_start_answer_producer",
+    0.00047589134448822645
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    3.807130755905812e-05
+   ]
+  ],
+  "arena_grow": [
+   [
+    "cetta_open_equation_cursor_open",
+    0.0010564787847638626
+   ],
+   [
+    "oem_cursor_run",
+    0.00034264176803152307
+   ],
+   [
+    "term_universe_copy_atom_impl",
+    0.00020939219157481962
+   ],
+   [
+    "oem_instantiate",
+    0.00018083871090552605
+   ],
+   [
+    "oem_run_body_mode",
+    0.00017132088401576153
+   ],
+   [
+    "atom_deep_copy_session_copy",
+    0.00014276740334646793
+   ],
+   [
+    "oem_resolve_in",
+    0.00010469609578740981
+   ],
+   [
+    "prepared_pure_program_execute_internal",
+    8.566044200788077e-05
+   ]
+  ],
+  "petta_eval_machine_classify_host": [
+   [
+    "petta_machine_dispatch_solve",
+    0.00882302552681172
+   ],
+   [
+    "oem_run_body_mode",
+    0.00044733786381893285
+   ],
+   [
+    "oem_host_query",
+    0.00031408828736222946
+   ],
+   [
+    "petta_machine_advance_choice",
+    7.614261511811624e-05
+   ],
+   [
+    "petta_machine_start_collapse",
+    7.614261511811624e-05
+   ],
+   [
+    "petta_machine_dispatch_activation_solve",
+    5.710696133858717e-05
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    3.807130755905812e-05
+   ],
+   [
+    "petta_machine_call_equations",
+    1.903565377952906e-05
+   ]
+  ],
+  "oem_host_with_continuation": [
+   [
+    "oem_cursor_run",
+    0.008956275103268421
+   ],
+   [
+    "oem_run_body_mode",
+    9.51782688976453e-06
+   ]
+  ],
+  "bindings_apply_fold": [
+   [
+    "bindings_apply_value",
+    0.038176003654845525
+   ]
+  ],
+  "petta_program_refresh_callability": [
+   [
+    "petta_program_candidate_snapshot_lease_profiled",
+    0.011021643538347324
+   ]
+  ],
+  "term_universe_copy_atom_impl": [
+   [
+    "space_member_annotated_types",
+    0.010184074772048047
+   ]
+  ],
+  "oem_run_body_mode": [
+   [
+    "oem_cursor_run",
+    0.03307444844193174
+   ]
+  ],
+  "bindings_builder_add_id_internal": [
+   [
+    "match_decoded_atoms_worklist",
+    0.02788723278701007
+   ],
+   [
+    "petta_machine_advance_choice",
+    0.0020844040888584317
+   ]
+  ],
+  "petta_machine_call_equations": [
+   [
+    "petta_machine_dispatch_solve",
+    0.013248815030552225
+   ]
+  ],
+  "petta_machine_start_space_query": [
+   [
+    "petta_machine_try_ready_relation_invocation",
+    0.013106047627205757
+   ],
+   [
+    "petta_machine_start_equation_choice",
+    0.004368682542401919
+   ]
+  ],
+  "petta_machine_open_host": [
+   [
+    "petta_machine_start_open_term_answers",
+    0.0038832733710239277
+   ],
+   [
+    "petta_machine_open_resume",
+    0.002788723278701007
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    2.8553480669293585e-05
+   ],
+   [
+    "petta_machine_resume_choice",
+    2.8553480669293585e-05
+   ]
+  ],
+  "petta_machine_start_open_term_answers": [
+   [
+    "petta_machine_start_open_answers",
+    0.012059086669331658
+   ]
+  ],
+  "cetta_open_equation_cursor_open": [
+   [
+    "petta_eval_machine_open_relation_cursor",
+    0.02725905621228561
+   ]
+  ],
+  "petta_machine_unify_resolved_values": [
+   [
+    "petta_machine_unify_values",
+    0.008071117202520321
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    0.0016465840519292636
+   ],
+   [
+    "petta_machine_dispatch_activation_solve",
+    8.566044200788077e-05
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    5.710696133858717e-05
+   ]
+  ],
+  "petta_machine_next_local": [
+   [
+    "(none)",
+    0.021748234443111948
+   ]
+  ],
+  "petta_program_relation_table_safe": [
+   [
+    "petta_eval_machine_tabled_relation_admissible",
+    0.00535853653893743
+   ],
+   [
+    "petta_machine_equation_slot_match",
+    0.00030457046047246495
+   ]
+  ],
+  "petta_fresh_variable": [
+   [
+    "petta_push_evaluated_expression_range_planned",
+    0.005158662174252374
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    0.0029124550282679457
+   ],
+   [
+    "petta_machine_start_collapse",
+    0.0007138370167323396
+   ],
+   [
+    "petta_machine_dispatch_activation_solve",
+    0.00027601697980317134
+   ],
+   [
+    "petta_machine_advance_choice",
+    9.51782688976453e-06
+   ],
+   [
+    "(none)",
+    9.51782688976453e-06
+   ]
+  ],
+  "petta_eval_open_foreign_reads_current": [
+   [
+    "petta_eval_open_program_lookup_locked",
+    0.007566672377362801
+   ]
+  ],
+  "petta_eval_relation_admission_entry": [
+   [
+    "petta_eval_machine_space_query_admission_policy",
+    0.009099042506614889
+   ],
+   [
+    "petta_eval_open_relation_admitted",
+    0.003702434660118402
+   ],
+   [
+    "oem_host_query",
+    0.0004283022100394038
+   ],
+   [
+    "oem_compile_certificate",
+    2.8553480669293585e-05
+   ]
+  ],
+  "petta_program_head_is_intrinsic": [
+   [
+    "petta_eval_machine_builtin_equations",
+    0.004425789503740506
+   ],
+   [
+    "petta_table_safety_scan_relation",
+    0.0020748862619686674
+   ],
+   [
+    "petta_eval_relation_admission_entry",
+    0.001332495764567034
+   ],
+   [
+    "oem_host_query",
+    0.0009803361696457465
+   ],
+   [
+    "prepared_pure_compile_pending_heads",
+    0.0003997487293701102
+   ],
+   [
+    "petta_eval_open_relation_admitted",
+    0.00023794567224411323
+   ],
+   [
+    "prepared_pure_program_compile_closed_mode",
+    0.00017132088401576153
+   ],
+   [
+    "petta_eval_machine_classify_host",
+    5.710696133858717e-05
+   ]
+  ],
+  "petta_eval_machine_builtin_equations": [
+   [
+    "petta_machine_builtin_equations_mode",
+    0.01382940247082786
+   ],
+   [
+    "oem_host_query",
+    0.002036814954409609
+   ],
+   [
+    "prepared_pure_compile_pending_heads",
+    0.0009422648620866883
+   ],
+   [
+    "petta_eval_open_relation_admitted",
+    0.00044733786381893285
+   ],
+   [
+    "prepared_pure_closed_invocation_plan",
+    9.51782688976453e-05
+   ],
+   [
+    "petta_eval_relation_admission_entry",
+    6.662478822835171e-05
+   ],
+   [
+    "oem_compile_certificate",
+    1.903565377952906e-05
+   ]
+  ],
+  "prepared_pure_compile_pending_heads": [
+   [
+    "prepared_pure_program_compile_closed_mode",
+    0.021643538347324538
+   ]
+  ],
+  "prepared_pure_program_execute_internal": [
+   [
+    "prepared_pure_closed_invocation_try",
+    0.006691032303504464
+   ]
+  ],
+  "petta_libpl_from_term": [
+   [
+    "petta_libpl_registered_call",
+    0.017094017094017096
+   ]
+  ],
+  "petta_eval_open_program_lookup_locked": [
+   [
+    "petta_eval_open_program_acquire",
+    0.00657681838082729
+   ],
+   [
+    "oem_run_body_mode",
+    0.0020939219157481963
+   ]
+  ],
+  "space_member_annotated_types": [
+   [
+    "get_annotated_types",
+    0.0033883463727561723
+   ]
+  ],
+  "eval_space_mutation_contract_kind": [
+   [
+    "petta_eval_machine_evaluate_host",
+    0.0008946757276378657
+   ]
+  ],
+  "petta_eval_open_relation_admitted": [
+   [
+    "oem_host_query",
+    0.0012849066301182115
+   ]
+  ],
+  "petta_eval_machine_open_answer_cursor": [
+   [
+    "petta_machine_start_answer_producer",
+    0.0014276740334646792
+   ]
+  ],
+  "space_equation_cursor_member_next": [
+   [
+    "space_equation_cursor_next",
+    0.007890278491614795
+   ]
+  ],
+  "petta_eval_machine_prepared_refused": [
+   [
+    "petta_machine_start_space_query",
+    0.0008375687662992785
+   ],
+   [
+    "prepared_pure_compile_pending_heads",
+    9.51782688976453e-06
+   ],
+   [
+    "oem_run_body_mode",
+    9.51782688976453e-06
+   ]
+  ],
+  "oem_instantiate": [
+   [
+    "oem_cursor_run",
+    0.004777949098661793
+   ],
+   [
+    "oem_run_body_mode",
+    0.0038927911979136924
+   ],
+   [
+    "oem_host_with_continuation",
+    1.903565377952906e-05
+   ]
+  ],
+  "petta_choice_release": [
+   [
+    "petta_choice_pop",
+    0.001675137532598557
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    0.00026649915291340683
+   ],
+   [
+    "petta_machine_start_space_query",
+    0.00021891001846458417
+   ],
+   [
+    "petta_machine_try_extension_call",
+    0.0001903565377952906
+   ]
+  ],
+  "prepared_pure_program_compile_closed_mode": [
+   [
+    "prepared_pure_closed_invocation_try",
+    0.004996859117126377
+   ],
+   [
+    "petta_eval_machine_open_answer_cursor",
+    0.0036833990063388725
+   ]
+  ],
+  "atom_deep_copy_session_copy": [
+   [
+    "cetta_instantiate_frame_terms",
+    0.01242076409114271
+   ],
+   [
+    "petta_machine_open_resume",
+    0.004920716502008262
+   ],
+   [
+    "petta_machine_advance_choice",
+    0.001475263167913502
+   ],
+   [
+    "petta_copy_binding_atoms",
+    0.0013515314183465631
+   ],
+   [
+    "petta_machine_collect_choice_heap",
+    0.001313460110787505
+   ],
+   [
+    "prepared_pure_closed_invocation_try",
+    0.0007233548436221042
+   ],
+   [
+    "oem_cursor_run",
+    9.51782688976453e-06
+   ]
+  ],
+  "petta_program_candidate_snapshot_lease_profiled": [
+   [
+    "petta_eval_machine_candidate_snapshot_lease",
+    0.005882017017874479
+   ],
+   [
+    "petta_table_safety_scan_relation",
+    0.002484152818228542
+   ],
+   [
+    "prepared_pure_compile_pending_heads",
+    0.0007899796318504559
+   ],
+   [
+    "petta_program_relation_table_safe",
+    3.807130755905812e-05
+   ]
+  ],
+  "petta_machine_try_ready_relation_invocation": [
+   [
+    "petta_machine_dispatch_goal",
+    0.00313136504673253
+   ]
+  ],
+  "petta_machine_start_answer_producer": [
+   [
+    "petta_machine_start_space_query",
+    0.004492414291968858
+   ]
+  ],
+  "petta_match_decision_select_candidates": [
+   [
+    "petta_machine_start_space_query",
+    0.007300173224449394
+   ]
+  ],
+  "petta_push_evaluated_expression_range_planned": [
+   [
+    "petta_push_evaluated_expression_planned",
+    0.0053775721927169584
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    0.0008375687662992785
+   ]
+  ],
+  "bindings_apply_value": [
+   [
+    "petta_machine_open_resume",
+    0.002179582357756077
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    0.00212247539641749
+   ],
+   [
+    "petta_machine_start_open_answers",
+    0.0011040679192126854
+   ],
+   [
+    "petta_machine_start_open_term_answers",
+    0.0010184074772048046
+   ],
+   [
+    "petta_push_evaluated_expression_range_planned",
+    0.0008185331125197495
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    0.0007233548436221042
+   ],
+   [
+    "petta_machine_list_query",
+    0.00010469609578740981
+   ],
+   [
+    "petta_machine_start_answer_producer",
+    8.566044200788077e-05
+   ]
+  ],
+  "petta_machine_start_open_answers": [
+   [
+    "petta_machine_start_space_query",
+    0.005082519559134259
+   ]
+  ],
+  "oem_resolve_in": [
+   [
+    "oem_host_with_continuation",
+    0.017855443245198256
+   ],
+   [
+    "oem_run_body_mode",
+    0.008908685968819599
+   ],
+   [
+    "oem_cursor_run",
+    0.0006852835360630461
+   ]
+  ],
+  "petta_machine_dispatch_goal": [
+   [
+    "petta_machine_next_local",
+    0.01899758247197
+   ]
+  ],
+  "prepared_pure_program_cache_has_decline_head": [
+   [
+    "petta_eval_machine_prepared_refused",
+    0.011630784459292255
+   ],
+   [
+    "prepared_pure_closed_invocation_try",
+    0.006919460148858813
+   ],
+   [
+    "prepared_pure_closed_invocation_plan",
+    0.004663735175984619
+   ],
+   [
+    "petta_machine_start_space_query",
+    0.003350275065197114
+   ]
+  ],
+  "petta_machine_equation_slot_match": [
+   [
+    "petta_machine_advance_choice",
+    0.01151657053661508
+   ]
+  ],
+  "oem_host_query": [
+   [
+    "cetta_open_equation_program_host_reads_current",
+    0.004121219043268041
+   ]
+  ],
+  "match_binding_values_builder": [
+   [
+    "petta_machine_unify_resolved_values",
+    0.00027601697980317134
+   ],
+   [
+    "petta_semantics_match_cons_constraint_mode",
+    8.566044200788077e-05
+   ],
+   [
+    "petta_match_source_call",
+    5.710696133858717e-05
+   ]
+  ],
+  "petta_machine_extension_named_arity_using": [
+   [
+    "petta_machine_dispatch_solve",
+    0.010621894808977215
+   ],
+   [
+    "petta_machine_named_arity",
+    0.006272247920354824
+   ],
+   [
+    "petta_machine_start_ready_match_mode",
+    0.0009327470351969239
+   ],
+   [
+    "petta_machine_advance_choice",
+    2.8553480669293585e-05
+   ],
+   [
+    "petta_machine_start_answer_producer",
+    2.8553480669293585e-05
+   ],
+   [
+    "petta_match_decision_select_candidates",
+    9.51782688976453e-06
+   ]
+  ],
+  "petta_libpl_to_term": [
+   [
+    "petta_libpl_registered_call",
+    0.009641558639331468
+   ],
+   [
+    "petta_libpl_call",
+    0.004758913444882265
+   ]
+  ],
+  "petta_machine_try_extension_call": [
+   [
+    "petta_machine_dispatch_goal",
+    0.00031408828736222946
+   ]
+  ],
+  "petta_eval_machine_tabled_relation_admissible": [
+   [
+    "petta_machine_start_space_query",
+    0.00048540917137799097
+   ]
+  ],
+  "petta_machine_advance_choice": [
+   [
+    "petta_machine_resume_choice",
+    0.008451830278110901
+   ],
+   [
+    "petta_machine_start_space_query",
+    0.008423276797441608
+   ],
+   [
+    "petta_machine_try_extension_call",
+    0.0005139626520472845
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    0.00048540917137799097
+   ]
+  ],
+  "petta_machine_list_query": [
+   [
+    "petta_machine_start_space_query",
+    0.008413758970551844
+   ],
+   [
+    "petta_machine_named_partial_decision",
+    2.8553480669293585e-05
+   ]
+  ],
+  "petta_eval_open_program_acquire": [
+   [
+    "petta_eval_machine_open_relation_declined",
+    0.001922601031732435
+   ],
+   [
+    "petta_eval_machine_open_relation_cursor",
+    0.0006186587478346944
+   ]
+  ],
+  "space_admit_atom_impl": [
+   [
+    "eval_apply_space_addition",
+    0.011583195324843431
+   ],
+   [
+    "petta_eval_machine_extension_call",
+    7.614261511811624e-05
+   ],
+   [
+    "petta_specializer_prepare_call",
+    3.807130755905812e-05
+   ]
+  ],
+  "petta_semantics_match_cons_constraint_mode": [
+   [
+    "petta_match_source_call",
+    0.0009993718234252756
+   ],
+   [
+    "petta_machine_unify_resolved_values",
+    0.000989853996535511
+   ],
+   [
+    "petta_machine_cons_equation_match",
+    0.0005805874402756363
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    0.00012373174956693887
+   ]
+  ],
+  "petta_table_safety_scan_relation": [
+   [
+    "petta_program_relation_table_safe",
+    0.01292520891630023
+   ]
+  ],
+  "petta_machine_execute_prepared_query": [
+   [
+    "petta_machine_start_space_query",
+    0.0017322444939371442
+   ]
+  ],
+  "petta_open_answer_unify": [
+   [
+    "petta_machine_start_open_term_answers",
+    0.0013420135914567987
+   ],
+   [
+    "petta_machine_open_resume",
+    0.0008470865931890431
+   ]
+  ],
+  "petta_machine_start_collapse": [
+   [
+    "petta_machine_dispatch_solve",
+    0.005291911750709078
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    5.710696133858717e-05
+   ],
+   [
+    "petta_machine_try_extension_call",
+    1.903565377952906e-05
+   ]
+  ],
+  "petta_specializer_prepare_call": [
+   [
+    "petta_machine_dispatch_goal",
+    0.0076047436849218586
+   ],
+   [
+    "eval_apply_space_addition",
+    1.903565377952906e-05
+   ]
+  ],
+  "petta_machine_start_ready_match_mode": [
+   [
+    "petta_machine_dispatch_solve",
+    0.002246207145984429
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    2.8553480669293585e-05
+   ]
+  ],
+  "petta_machine_maybe_collect": [
+   [
+    "petta_machine_next_local",
+    0.006890906668189519
+   ]
+  ],
+  "bindings_project_reachable": [
+   [
+    "petta_machine_cons_equation_match",
+    0.00493975215578779
+   ],
+   [
+    "petta_machine_start_collapse",
+    0.0012468353225591534
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    0.0009708183427559819
+   ]
+  ],
+  "petta_machine_cons_equation_match": [
+   [
+    "petta_machine_advance_choice",
+    0.0031408828736222945
+   ]
+  ],
+  "petta_machine_named_arity": [
+   [
+    "petta_machine_named_partial_decision",
+    0.0007233548436221042
+   ],
+   [
+    "petta_machine_advance_choice",
+    2.8553480669293585e-05
+   ]
+  ],
+  "prepared_pure_closed_invocation_try": [
+   [
+    "petta_eval_machine_execute_prepared_pure_call",
+    0.005910570498543773
+   ]
+  ],
+  "petta_eval_machine_open_relation_cursor": [
+   [
+    "petta_machine_start_open_term_answers",
+    0.002807758932480536
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    7.614261511811624e-05
+   ],
+   [
+    "petta_eval_machine_classify_host",
+    9.51782688976453e-06
+   ]
+  ],
+  "petta_eval_machine_open_relation_declined": [
+   [
+    "petta_machine_start_space_query",
+    0.001094550092322921
+   ]
+  ],
+  "petta_machine_builtin_equations_mode": [
+   [
+    "petta_machine_dispatch_solve",
+    0.00021891001846458417
+   ],
+   [
+    "petta_machine_start_space_query",
+    0.00015228523023623247
+   ],
+   [
+    "petta_machine_call_equations",
+    9.51782688976453e-05
+   ],
+   [
+    "petta_machine_dispatch_activation_solve",
+    3.807130755905812e-05
+   ],
+   [
+    "petta_machine_start_collapse",
+    1.903565377952906e-05
+   ]
+  ],
+  "match_decoded_atoms_worklist": [
+   [
+    "match_binding_values_builder",
+    0.008242438086536082
+   ],
+   [
+    "petta_libpl_registered_call",
+    9.51782688976453e-06
+   ]
+  ],
+  "petta_machine_source_named_arity": [
+   [
+    "petta_machine_named_arity",
+    0.003702434660118402
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    0.00047589134448822645
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    9.51782688976453e-05
+   ],
+   [
+    "petta_machine_dispatch_activation_solve",
+    2.8553480669293585e-05
+   ]
+  ],
+  "petta_machine_execute_prepared_call": [
+   [
+    "petta_machine_dispatch_goal",
+    0.0005996230940551653
+   ],
+   [
+    "petta_machine_execute_prepared_query",
+    0.00011421392267717434
+   ]
+  ],
+  "cetta_instantiate_frame_terms": [
+   [
+    "petta_match_source_call",
+    0.0005805874402756363
+   ]
+  ],
+  "prepared_pure_closed_invocation_plan": [
+   [
+    "prepared_pure_closed_invocation_try",
+    0.0030552224316144137
+   ],
+   [
+    "petta_eval_machine_open_answer_cursor",
+    0.0006091409209449299
+   ]
+  ],
+  "space_equation_cursor_next": [
+   [
+    "petta_specializer_prepare_call",
+    0.00015228523023623247
+   ],
+   [
+    "petta_relation_specialization_relevance",
+    3.807130755905812e-05
+   ],
+   [
+    "prepared_pure_compile_pending_heads",
+    3.807130755905812e-05
+   ],
+   [
+    "oem_run_body_mode",
+    1.903565377952906e-05
+   ],
+   [
+    "petta_machine_start_collapse",
+    9.51782688976453e-06
+   ],
+   [
+    "space_query_effect_for_head_analyzed",
+    9.51782688976453e-06
+   ]
+  ],
+  "petta_match_source_call": [
+   [
+    "petta_specializer_prepare_call",
+    0.0011611748805512726
+   ]
+  ],
+  "eval_apply_space_addition": [
+   [
+    "eval_space_mutation_contract_kind",
+    0.0002950526335827004
+   ],
+   [
+    "oem_run_body_mode",
+    7.614261511811624e-05
+   ]
+  ],
+  "petta_machine_unify_values": [
+   [
+    "petta_machine_unify",
+    0.002036814954409609
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    0.00011421392267717434
+   ]
+  ],
+  "petta_choice_retire_exhausted": [
+   [
+    "petta_machine_open_resume",
+    0.0001903565377952906
+   ],
+   [
+    "petta_machine_backtrack",
+    5.710696133858717e-05
+   ],
+   [
+    "petta_machine_start_ready_match_mode",
+    1.903565377952906e-05
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    9.51782688976453e-06
+   ]
+  ],
+  "petta_eval_machine_candidate_snapshot_lease": [
+   [
+    "petta_machine_start_space_query",
+    0.0005139626520472845
+   ]
+  ],
+  "petta_machine_dispatch_activation_solve": [
+   [
+    "petta_machine_dispatch_goal",
+    0.005767803095197304
+   ],
+   [
+    "petta_machine_next_local",
+    0.005025412597795671
+   ]
+  ],
+  "petta_space_remove_pattern_all": [
+   [
+    "eval_apply_space_removal",
+    0.011706927074410371
+   ]
+  ],
+  "eval_apply_space_removal": [
+   [
+    "eval_space_mutation_contract_kind",
+    0.0019892258199607866
+   ]
+  ],
+  "petta_machine_collect_choice_bindings": [
+   [
+    "petta_machine_collect_choice_heap",
+    0.0036643633525593436
+   ],
+   [
+    "petta_machine_maybe_collect",
+    0.0004283022100394038
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    2.8553480669293585e-05
+   ],
+   [
+    "petta_machine_open_host",
+    1.903565377952906e-05
+   ],
+   [
+    "petta_machine_advance_choice",
+    1.903565377952906e-05
+   ],
+   [
+    "petta_push_evaluated_expression_range_planned",
+    1.903565377952906e-05
+   ],
+   [
+    "petta_machine_call_equations",
+    9.51782688976453e-06
+   ]
+  ],
+  "petta_choice_pop": [
+   [
+    "petta_machine_open_host",
+    3.807130755905812e-05
+   ],
+   [
+    "petta_choice_retire_exhausted",
+    2.8553480669293585e-05
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    1.903565377952906e-05
+   ],
+   [
+    "petta_machine_backtrack",
+    9.51782688976453e-06
+   ],
+   [
+    "petta_machine_start_open_term_answers",
+    9.51782688976453e-06
+   ]
+  ],
+  "petta_machine_resume_choice": [
+   [
+    "petta_machine_backtrack",
+    0.0003711952487008166
+   ],
+   [
+    "petta_machine_next_local",
+    4.758913444882265e-05
+   ],
+   [
+    "petta_machine_start_collapse",
+    2.8553480669293585e-05
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    9.51782688976453e-06
+   ],
+   [
+    "petta_machine_dispatch_goal",
+    9.51782688976453e-06
+   ],
+   [
+    "petta_machine_start_ready_match_mode",
+    9.51782688976453e-06
+   ]
+  ],
+  "cetta_open_equation_program_host_reads_current": [
+   [
+    "petta_eval_open_foreign_reads_current",
+    0.0007138370167323396
+   ]
+  ],
+  "get_annotated_types": [
+   [
+    "petta_eval_open_relation_admitted",
+    0.00012373174956693887
+   ],
+   [
+    "petta_machine_source_named_arity",
+    0.00011421392267717434
+   ],
+   [
+    "oem_run_body_mode",
+    7.614261511811624e-05
+   ],
+   [
+    "petta_machine_start_ready_match_mode",
+    1.903565377952906e-05
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    9.51782688976453e-06
+   ],
+   [
+    "eval_space_mutation_contract_kind",
+    9.51782688976453e-06
+   ]
+  ],
+  "petta_machine_start_equation_choice": [
+   [
+    "petta_machine_dispatch_goal",
+    0.00018083871090552605
+   ]
+  ],
+  "petta_machine_named_partial_decision": [
+   [
+    "petta_machine_dispatch_solve",
+    0.0002950526335827004
+   ]
+  ],
+  "petta_eval_machine_execute_prepared_pure_call": [
+   [
+    "petta_machine_execute_prepared_query",
+    0.00023794567224411323
+   ],
+   [
+    "petta_machine_execute_prepared_call",
+    0.00017132088401576153
+   ]
+  ],
+  "petta_copy_binding_atoms": [
+   [
+    "petta_machine_collect_choice_heap",
+    0.00026649915291340683
+   ]
+  ],
+  "petta_machine_collect_choice_heap": [
+   [
+    "petta_machine_maybe_collect",
+    0.0005234804789370491
+   ]
+  ],
+  "petta_machine_unify": [
+   [
+    "petta_machine_dispatch_goal",
+    9.51782688976453e-05
+   ],
+   [
+    "petta_machine_start_space_query",
+    6.662478822835171e-05
+   ],
+   [
+    "petta_machine_dispatch_solve",
+    9.51782688976453e-06
+   ],
+   [
+    "petta_machine_dispatch_activation_solve",
+    9.51782688976453e-06
+   ]
+  ],
+  "petta_eval_machine_evaluate_host": [
+   [
+    "petta_machine_dispatch_goal",
+    0.00015228523023623247
+   ]
+  ],
+  "petta_eval_machine_space_query_admission_policy": [
+   [
+    "petta_eval_machine_admit_space_query_values",
+    2.8553480669293585e-05
+   ]
+  ],
+  "petta_eval_machine_admit_space_query_values": [
+   [
+    "petta_machine_try_ready_relation_invocation",
+    0.00023794567224411323
+   ],
+   [
+    "oem_host_query",
+    9.51782688976453e-06
+   ]
+  ],
+  "petta_push_evaluated_expression_planned": [
+   [
+    "petta_machine_dispatch_solve",
+    9.51782688976453e-05
+   ],
+   [
+    "petta_machine_call_equations",
+    3.807130755905812e-05
+   ]
+  ],
+  "petta_machine_backtrack": [
+   [
+    "petta_machine_next_local",
+    5.710696133858717e-05
+   ]
+  ]
+ }
+}
