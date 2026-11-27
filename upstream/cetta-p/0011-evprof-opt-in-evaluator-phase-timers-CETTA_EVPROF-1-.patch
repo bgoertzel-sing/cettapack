@@ -1,0 +1,1568 @@
+From 38c056a1baab25ba708d503a297c0aef82a321f7 Mon Sep 17 00:00:00 2001
+From: cettapack <cettapack@localhost>
+Date: Fri, 27 Nov 2026 05:28:10 -0700
+Subject: [PATCH] evprof: opt-in evaluator phase timers (CETTA_EVPROF=1), off
+ by default
+
+Exclusive per-function timers (rdtsc, cleanup-attribute scopes) on the
+functions listed in src/cetta_evprof_sites.def, each tagged with an
+evaluator phase; malloc/calloc/realloc/free wrapped at link
+(-Wl,--wrap) as frames of their own; in-process overhead calibration;
+JSON report at exit to $CETTA_EVPROF_OUT. With CETTA_EVPROF=0 (the
+default) CETTA_EVPROF_SCOPE expands to nothing and cetta_evprof.c is
+not built.
+---
+ Makefile                    |  19 +++-
+ src/atom.c                  |   3 +
+ src/cetta_evprof.c          | 176 ++++++++++++++++++++++++++++++++++++
+ src/cetta_evprof.h          | 134 +++++++++++++++++++++++++++
+ src/cetta_evprof_sites.def  | 113 +++++++++++++++++++++++
+ src/eval.c                  |  26 ++++++
+ src/match.c                 |   7 ++
+ src/open_equation_machine.c |  10 ++
+ src/petta_libpl.c           |   5 +
+ src/petta_libpl_stub.c      |   2 +
+ src/petta_program.c         |   6 ++
+ src/petta_search_machine.c  |  46 ++++++++++
+ src/petta_semantics.c       |   2 +
+ src/petta_specializer.c     |   5 +
+ src/prepared_pure_machine.c |   4 +
+ src/space.c                 |   7 ++
+ src/term_canon.c            |   2 +
+ src/term_universe.c         |   2 +
+ 18 files changed, 567 insertions(+), 2 deletions(-)
+ create mode 100644 src/cetta_evprof.c
+ create mode 100644 src/cetta_evprof.h
+ create mode 100644 src/cetta_evprof_sites.def
+
+diff --git a/Makefile b/Makefile
+index 1027d45d..c64076f3 100644
+--- a/Makefile
++++ b/Makefile
+@@ -606,6 +606,18 @@ endif
+ ifeq ($(ENABLE_PYTHON),1)
+ BUILD_OBJ_TAG := $(BUILD_OBJ_TAG).python-config-$(PYTHON_CONFIG_ID)
+ endif
++# Opt-in evaluator phase timers (src/cetta_evprof.h, cettapack cetta-internals P); off by default.
++CETTA_EVPROF ?= 0
++ifneq ($(filter $(CETTA_EVPROF),0 1),$(CETTA_EVPROF))
++$(error CETTA_EVPROF must be 0 or 1)
++endif
++EVPROF_CPPFLAGS =
++EVPROF_LDFLAGS =
++ifeq ($(CETTA_EVPROF),1)
++BUILD_OBJ_TAG := $(BUILD_OBJ_TAG).evprof
++EVPROF_CPPFLAGS = -DCETTA_EVPROF=1
++EVPROF_LDFLAGS = -Wl,--wrap=malloc,--wrap=calloc,--wrap=realloc,--wrap=free
++endif
+ ifeq ($(ENABLE_PETTA_TYPECHECK_V2),0)
+ BUILD_OBJ_TAG := $(BUILD_OBJ_TAG).no-petta-typecheck-v2
+ endif
+@@ -689,7 +701,7 @@ PROC_FORK_SPAWN_CPPFLAGS =
+ ifeq ($(CETTA_PROC_FORK_SPAWN),1)
+ PROC_FORK_SPAWN_CPPFLAGS = -DCETTA_PROC_FORK_SPAWN=1
+ endif
+-CPPFLAGS = -Isrc -I. -Iexperiments/gslt2parse_foundation/native $(BRIDGE_CFLAGS) $(PY_CFLAGS) $(GMP_CFLAGS) $(LIB_PROLOG_CFLAGS) $(HTTP_CFLAGS) $(DURABLE_CFLAGS) $(PROVENANCE_CPPFLAGS) $(PRIME_RECEIPT_INDEX_CPPFLAGS) $(PRIME_NEED_HEAP_INDEX_CPPFLAGS) $(PRIME_NEED_CLOSURE_CAPTURE_CPPFLAGS) $(PRIME_EVAL_STACK_CPPFLAGS) $(PROC_FORK_SPAWN_CPPFLAGS) -include $(BUILD_CONFIG_HEADER)
++CPPFLAGS = -Isrc -I. -Iexperiments/gslt2parse_foundation/native $(BRIDGE_CFLAGS) $(PY_CFLAGS) $(GMP_CFLAGS) $(LIB_PROLOG_CFLAGS) $(HTTP_CFLAGS) $(DURABLE_CFLAGS) $(PROVENANCE_CPPFLAGS) $(PRIME_RECEIPT_INDEX_CPPFLAGS) $(PRIME_NEED_HEAP_INDEX_CPPFLAGS) $(PRIME_NEED_CLOSURE_CAPTURE_CPPFLAGS) $(PRIME_EVAL_STACK_CPPFLAGS) $(PROC_FORK_SPAWN_CPPFLAGS) $(EVPROF_CPPFLAGS) -include $(BUILD_CONFIG_HEADER)
+ CFLAGS = -O3 -Wall -Werror -std=c11 -pthread
+ DEPFLAGS = -MMD -MP
+ # Libraries a binary does not use are not recorded as its dependencies, with
+@@ -777,6 +789,9 @@ ifeq ($(ENABLE_PETTA_TYPECHECK_CENSUS),1)
+ PETTA_TYPECHECK_CENSUS_SRC = src/petta_typecheck_census.c
+ endif
+ SRC = src/symbol.c src/scalar_trie.c src/atom.c src/state_cell.c src/term_graph.c src/delay_service.c src/string_ops.c src/str_natives.c src/binding/frame_identity.c src/name_key.c src/atom_blob.c src/abt.c src/parser.c src/raw_source_region.c $(COMPILED_READER_RUNTIME_SRC) src/mm2_lower.c src/subst_tree.c src/space.c src/registry_resolver.c src/space_match_backend.c src/match.c src/binding/rule.c src/binding/closure.c src/binding/frame_schema.c src/binding/slot_store.c src/binding/activation_view.c src/match_decision.c src/select/code_tree.c src/term_canon.c src/variant_shape.c src/variant_instance.c src/answer_bank.c src/table_store.c src/search_machine.c src/search_control_advice.c src/petta_program.c src/petta_type_fact_provider_v1.c src/petta_builtin_registry.c src/petta_typecheck_v3_decision_v1.c src/petta_typecheck_v3.c src/generated/petta_typecheck_v3_core_v1.generated.c src/generated/petta_typecheck_v3_core_provider_catalog_v1.generated.c src/petta_search_machine.c $(PETTA_TYPECHECK_V2_SRC) src/petta_specializer.c src/fixpoint.c src/rule_machine.c $(LIB_PROLOG_SRC) src/term_universe.c src/term_domain.c src/stats.c src/parallel_executor.c src/prime_need.c src/petta_semantics.c src/petta_numeric.c src/petta_runtime.c src/prepared_pure_machine.c src/owned_execution.c src/answer_storage.c src/fold_algebra.c src/native_fold.c src/exec_saturation.c src/transform_core.c src/open_equation_machine.c src/eval.c src/grounded.c src/he_macro_expansion.c src/he_typing.c src/he_typing_authority.c src/generated/he_typing_consistency_core_source_binding_v1.generated.c src/generated/he_profiled_type_inference_core_source_binding_v1.generated.c src/inference_checker.c src/nik_direct_authority.c src/nik_hosted_calculus.c src/nik_licensed_implementation_selection.c src/nik_runtime.c src/prime_semantics.c src/generated/prime_typing_closed_formation_source_binding_v1.generated.c src/text_source.c src/native_handle.c src/native_sha256.c src/mork_space_bridge_runtime.c src/library.c src/library_pattern.c src/langdef_pack.c src/gslt_provider_runtime.c src/gslt_space_fact_provider_v1.c src/gslt_finite_fact_provider_v1.c src/gslt_revisioned_space_provider_v1.c src/gslt_abt_provider_v1.c src/gslt_horn_runtime.c src/gslt_dense_bitset_v1.c src/gslt_compiled_runtime.c src/gslt_indexed_instruction_decoder_v1.c src/gslt_indexed_value_table_v1.c src/gslt_split_indexed_table_v1.c src/gslt_literal_hole_program_v1.c src/gslt_u32_index_v1.c src/gslt_u32_slice_arena_v1.c src/gslt_epoch_slots_v1.c src/gslt_ground_dense_term_v1.c src/gslt_language_runtime.c src/gslt_pure_provider_v1.c src/gslt_support_transform_runtime.c src/generated/prime_nik_authorities_v1.generated.c src/generated/gslt_il_language_v1.generated.c src/generated/metta_interact_language_v1.generated.c src/generated/mm2_gslt_profile_v1.generated.c src/generated/subzero_language_v1.generated.c src/generated/zero_language_v1.generated.c src/generated/zero_exp_language_v1.generated.c src/generated/zero_emit_language_v1.generated.c src/generated/zero_interact_language_v1.generated.c src/generated/zero_interact_provider_catalog_v1.generated.c src/generated/zerouv_language_v1.generated.c src/he_small_step_pack.c src/lib_parse_native_grammar.c src/lib_parse_inference_native.c experiments/gslt2parse_foundation/native/finite_horn_gslt_v1.c experiments/gslt2parse_foundation/native/finite_horn_ground_term_v1.c experiments/gslt2parse_foundation/native/parser_term_projection_v1.c experiments/gslt2parse_foundation/native/parser_pack_abi_v1.c experiments/gslt2parse_foundation/native/parser_action_bytecode_v1.c experiments/gslt2parse_foundation/native/parser_pack_native_v1.c experiments/gslt2parse_foundation/native/parser_pack_lexical_v1.c experiments/gslt2parse_foundation/native/parser_pack_gll_v1.c experiments/gslt2parse_foundation/native/regular_span_dfa_v1.c experiments/gslt2parse_foundation/native/regular_span_nfa_v1.c $(PYTHON_SRC) src/session.c src/lang.c src/rhocalc_core.c src/rhocalc_syntax.c src/compile.c src/runtime.c src/cetta_stdlib.c native/native_modules.c src/main.c src/foreign_provider.c src/runtime_prelude.c src/runtime_session.c
++ifeq ($(CETTA_EVPROF),1)
++SRC += src/cetta_evprof.c
++endif
+ SRC += src/shared_transition.c src/run_report.c src/run_cli.c src/error_presentation.c src/run_guard.c
+ SRC += src/library_proc.c
+ SRC += src/library_fs.c
+@@ -6955,7 +6970,7 @@ define link_cetta_binary
+ 	tmp_out=$$(mktemp "$(BOOTSTRAP_TMPDIR)/cetta.XXXXXX"); \
+ 	trap 'rm -f "$$tmp_out"' EXIT INT TERM; \
+ 	$(CC) $(CFLAGS) -Wl,--export-dynamic -o "$$tmp_out" \
+-		$(filter-out FORCE,$^) $(LDFLAGS); \
++		$(filter-out FORCE,$^) $(LDFLAGS) $(EVPROF_LDFLAGS); \
+ 	mv "$$tmp_out" $@
+ endef
+ 
+diff --git a/src/atom.c b/src/atom.c
+index 35f9adce..b1400e9b 100644
+--- a/src/atom.c
++++ b/src/atom.c
+@@ -1,4 +1,5 @@
+ #define _GNU_SOURCE
++#include "cetta_evprof.h"
+ #include "atom.h"
+ #include "state_cell.h"
+ #include "u64_index.h"
+@@ -3289,6 +3290,7 @@ static __attribute__((noinline)) SymbolId symbol_cached_literal_slow(
+ /* A new head block for an allocation that does not fit.  Out of line, so
+  * the bump path of arena_alloc stays short whatever claiming involves. */
+ static __attribute__((noinline)) bool arena_grow(Arena *a, size_t size) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_arena_grow);
+     ArenaBlock *b = arena_claim_block(a, size, false);
+     if (!b) return false;
+     b->next = a->head;
+@@ -8545,6 +8547,7 @@ void atom_deep_copy_session_set_resolver(
+ }
+ 
+ Atom *atom_deep_copy_session_copy(AtomDeepCopySession *session, Atom *src) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_atom_deep_copy_session_copy);
+     if (!session || !session->dst || session->failed)
+         return NULL;
+     if (!src) {
+diff --git a/src/cetta_evprof.c b/src/cetta_evprof.c
+new file mode 100644
+index 00000000..13307df1
+--- /dev/null
++++ b/src/cetta_evprof.c
+@@ -0,0 +1,176 @@
++/* cettapack cetta-internals P (0011): the evaluator phase timers' runtime:
++ * start-up, allocator wrappers (-Wl,--wrap), overhead calibration and the
++ * report.  Linked only with CETTA_EVPROF=1. */
++#ifndef _GNU_SOURCE
++#define _GNU_SOURCE
++#endif
++#include "cetta_evprof.h"
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <time.h>
++#include <sys/resource.h>
++
++#if CETTA_EVPROF
++static const char *const evp_names[CETTA_EVP__COUNT] = {
++#define EVP(fn, phase) #fn,
++#include "cetta_evprof_sites.def"
++#undef EVP
++    "malloc", "calloc", "realloc", "free", "(calibration parent)", "(calibration child)",
++};
++static const char *const evp_phases[CETTA_EVP__COUNT] = {
++#define EVP(fn, phase) phase,
++#include "cetta_evprof_sites.def"
++#undef EVP
++    "alloc", "alloc", "alloc", "alloc", "calibration", "calibration",
++};
++
++static uint64_t evp_t0, evp_ns0;
++static uint64_t evp_alloc_bytes;
++static uint64_t evp_free_null; /* free(NULL): no frame, counted only */
++
++static uint64_t evp_mono_ns(void) {
++    struct timespec ts;
++    clock_gettime(CLOCK_MONOTONIC, &ts);
++    return (uint64_t)ts.tv_sec * 1000000000ull + (uint64_t)ts.tv_nsec;
++}
++
++__attribute__((constructor)) static void evp_start(void) {
++    const char *out = getenv("CETTA_EVPROF_OUT");
++    if (!out || !out[0])
++        return;
++    evp_ns0 = evp_mono_ns();
++    evp_t0 = __rdtsc();
++    cetta_evprof_tls.on = 1;
++}
++
++/* Allocator wrappers: every malloc/calloc/realloc/free of CeTTa's own code
++ * (and of statically linked code such as the MORK bridge) is a frame. */
++void *__real_malloc(size_t n);
++void *__real_calloc(size_t n, size_t m);
++void *__real_realloc(void *p, size_t n);
++void __real_free(void *p);
++void *__wrap_malloc(size_t n) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_ALLOC_MALLOC);
++    evp_alloc_bytes += n;
++    return __real_malloc(n);
++}
++void *__wrap_calloc(size_t n, size_t m) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_ALLOC_CALLOC);
++    evp_alloc_bytes += n * m;
++    return __real_calloc(n, m);
++}
++void *__wrap_realloc(void *p, size_t n) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_ALLOC_REALLOC);
++    evp_alloc_bytes += n;
++    return __real_realloc(p, n);
++}
++void __wrap_free(void *p) {
++    if (!p) {
++        evp_free_null++;
++        return;
++    }
++    CETTA_EVPROF_SCOPE(CETTA_EVP_ALLOC_FREE);
++    __real_free(p);
++}
++
++/* Overhead calibration.  A frame costs time in two places: inside it (from
++ * its start stamp to its end stamp, part of enter and leave: c_in per
++ * frame) and in its parent (the rest of enter and leave: c_out per child
++ * frame).  Measured on empty frames: parent P with N empty children C.
++ * Then self(C) = N*c_in and self(P) = N*c_out + loop overhead.  Run R times,
++ * keep the minimum per quantity (a lower bound: real frames also miss in
++ * the caches, so subtraction under-corrects). */
++static __attribute__((noinline)) void evp_cal_child(void) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_CAL_CHILD);
++    __asm__ volatile("" ::: "memory");
++}
++static __attribute__((noinline)) void evp_cal_parent(uint32_t n) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_CAL_PARENT);
++    for (uint32_t i = 0; i < n; i++)
++        evp_cal_child();
++}
++static void evp_calibrate(double *c_in, double *c_out, double *c_in_med, double *c_out_med) {
++    enum { R = 21, N = 200000 };
++    double in[R], outv[R];
++    CettaEvprofSite *p = &cetta_evprof_sites[CETTA_EVP_CAL_PARENT];
++    CettaEvprofSite *c = &cetta_evprof_sites[CETTA_EVP_CAL_CHILD];
++    for (int r = 0; r < R; r++) {
++        uint64_t ps = p->self, cs = c->self;
++        evp_cal_parent(N);
++        in[r] = (double)(c->self - cs) / N;
++        outv[r] = (double)(p->self - ps) / N;
++    }
++    for (int i = 0; i < R; i++)
++        for (int j = i + 1; j < R; j++) {
++            if (in[j] < in[i]) { double t = in[i]; in[i] = in[j]; in[j] = t; }
++            if (outv[j] < outv[i]) { double t = outv[i]; outv[i] = outv[j]; outv[j] = t; }
++        }
++    *c_in = in[0];
++    *c_out = outv[0];
++    *c_in_med = in[R / 2];
++    *c_out_med = outv[R / 2];
++}
++
++static void evp_json_str(FILE *f, const char *s) {
++    fputc('"', f);
++    for (; *s; s++) {
++        if (*s == '"' || *s == '\\') fputc('\\', f);
++        fputc(*s, f);
++    }
++    fputc('"', f);
++}
++
++__attribute__((destructor)) static void evp_report(void) {
++    CettaEvprofState *s = &cetta_evprof_tls;
++    const char *out = getenv("CETTA_EVPROF_OUT");
++    if (!s->on || !out || !out[0])
++        return;
++    uint64_t t1 = __rdtsc();
++    uint64_t ns1 = evp_mono_ns();
++    uint32_t open_frames = s->depth;
++    while (s->depth) /* frames still open at exit (main's callers) */
++        cetta_evprof_pop(s, t1);
++    struct rusage ru;
++    getrusage(RUSAGE_SELF, &ru);
++    double c_in, c_out, c_in_med, c_out_med;
++    evp_calibrate(&c_in, &c_out, &c_in_med, &c_out_med);
++    s->on = 0;
++    FILE *f = fopen(out, "w");
++    if (!f)
++        return;
++    double hz = (double)(t1 - evp_t0) * 1e9 / (double)(ns1 - evp_ns0);
++    fprintf(f, "{\n \"format\": \"cetta-evprof-v1\",\n \"tsc_hz\": %.0f,\n", hz);
++    fprintf(f, " \"total_ticks\": %llu,\n \"wall_ns\": %llu,\n",
++            (unsigned long long)(t1 - evp_t0), (unsigned long long)(ns1 - evp_ns0));
++    fprintf(f, " \"utime_us\": %lld,\n \"stime_us\": %lld,\n \"maxrss_kb\": %ld,\n",
++            (long long)ru.ru_utime.tv_sec * 1000000 + ru.ru_utime.tv_usec,
++            (long long)ru.ru_stime.tv_sec * 1000000 + ru.ru_stime.tv_usec, ru.ru_maxrss);
++    fprintf(f, " \"top_incl_ticks\": %llu,\n \"top_events\": %llu,\n",
++            (unsigned long long)s->top_incl, (unsigned long long)s->top_events);
++    fprintf(f, " \"overflow\": %llu,\n \"unwound\": %llu,\n \"open_at_exit\": %u,\n",
++            (unsigned long long)s->overflow, (unsigned long long)s->unwound, open_frames);
++    fprintf(f, " \"alloc_bytes_requested\": %llu,\n \"free_null\": %llu,\n",
++            (unsigned long long)evp_alloc_bytes, (unsigned long long)evp_free_null);
++    fprintf(f, " \"calibration\": {\"c_in_min\": %.3f, \"c_out_min\": %.3f, \"c_in_median\": %.3f, \"c_out_median\": %.3f},\n",
++            c_in, c_out, c_in_med, c_out_med);
++    fprintf(f, " \"sites\": [\n");
++    int first = 1;
++    for (int i = 0; i < CETTA_EVP__COUNT; i++) {
++        CettaEvprofSite *st = &cetta_evprof_sites[i];
++        if (i >= CETTA_EVP_CAL_PARENT)
++            continue;
++        fprintf(f, "%s  {\"name\": ", first ? "" : ",\n");
++        evp_json_str(f, evp_names[i]);
++        fprintf(f, ", \"phase\": ");
++        evp_json_str(f, evp_phases[i]);
++        fprintf(f, ", \"calls\": %llu, \"self\": %llu, \"incl\": %llu, \"nchild\": %llu, \"desc\": %llu, \"max_rec\": %llu}",
++                (unsigned long long)st->calls, (unsigned long long)st->self,
++                (unsigned long long)st->incl, (unsigned long long)st->nchild,
++                (unsigned long long)st->desc, (unsigned long long)st->max_depth);
++        first = 0;
++    }
++    fprintf(f, "\n ]\n}\n");
++    fclose(f);
++}
++#endif
+diff --git a/src/cetta_evprof.h b/src/cetta_evprof.h
+new file mode 100644
+index 00000000..e45c4698
+--- /dev/null
++++ b/src/cetta_evprof.h
+@@ -0,0 +1,134 @@
++#ifndef CETTA_EVPROF_H
++#define CETTA_EVPROF_H
++
++/* cettapack cetta-internals P (0011): opt-in phase timers for the evaluator.
++ * Built only with "make CETTA_EVPROF=1"; with the default CETTA_EVPROF=0
++ * CETTA_EVPROF_SCOPE() expands to nothing and no code or data changes.
++ *
++ * A timed function opens a frame on entry (CETTA_EVPROF_SCOPE as its first
++ * statement) that closes when the function returns (cleanup attribute).
++ * Each frame's time is exclusive: time inside a nested timed function is
++ * charged to that function.  Per site: calls, self ticks, outermost
++ * inclusive ticks, number of direct child frames and of all descendant
++ * frames (for overhead subtraction, see cetta_evprof.c).  Only the main
++ * thread is timed.  The report is written at exit to $CETTA_EVPROF_OUT. */
++#ifndef CETTA_EVPROF
++#define CETTA_EVPROF 0
++#endif
++
++#if CETTA_EVPROF
++#include <stdint.h>
++#include <x86intrin.h>
++
++enum {
++#define EVP(fn, phase) CETTA_EVP_##fn,
++#include "cetta_evprof_sites.def"
++#undef EVP
++    CETTA_EVP_ALLOC_MALLOC,
++    CETTA_EVP_ALLOC_CALLOC,
++    CETTA_EVP_ALLOC_REALLOC,
++    CETTA_EVP_ALLOC_FREE,
++    CETTA_EVP_CAL_PARENT,
++    CETTA_EVP_CAL_CHILD,
++    CETTA_EVP__COUNT
++};
++
++#define CETTA_EVPROF_MAX_DEPTH 4096u
++#define CETTA_EVPROF_NO_FRAME UINT32_MAX
++
++typedef struct {
++    uint64_t start;
++    uint64_t child;  /* ticks inside direct child frames (their inclusive) */
++    uint64_t desc;   /* descendant frames */
++    uint64_t nchild; /* direct child frames */
++    uint32_t site;
++} CettaEvprofFrame;
++
++typedef struct {
++    uint64_t calls, self, incl, nchild, desc;
++    uint64_t active;    /* open frames of this site (recursion) */
++    uint64_t max_depth; /* deepest recursion of this site */
++} CettaEvprofSite;
++
++typedef struct {
++    uint32_t on;    /* 1 on the main thread after start-up */
++    uint32_t depth;
++    uint64_t overflow, unwound;
++    uint64_t top_incl, top_events;
++    CettaEvprofFrame stack[CETTA_EVPROF_MAX_DEPTH];
++} CettaEvprofState;
++
++/* Weak, so every translation unit (also the standalone tool binaries that
++ * compile some instrumented sources without cetta_evprof.c) links. */
++__attribute__((weak)) __thread CettaEvprofState cetta_evprof_tls;
++__attribute__((weak)) CettaEvprofSite cetta_evprof_sites[CETTA_EVP__COUNT];
++
++static inline __attribute__((always_inline)) uint32_t
++cetta_evprof_enter(uint32_t site) {
++    CettaEvprofState *s = &cetta_evprof_tls;
++    if (__builtin_expect(!s->on, 0))
++        return CETTA_EVPROF_NO_FRAME;
++    uint32_t d = s->depth;
++    if (__builtin_expect(d >= CETTA_EVPROF_MAX_DEPTH, 0)) {
++        s->overflow++;
++        return CETTA_EVPROF_NO_FRAME;
++    }
++    CettaEvprofSite *st = &cetta_evprof_sites[site];
++    if (++st->active > st->max_depth)
++        st->max_depth = st->active;
++    CettaEvprofFrame *f = &s->stack[d];
++    f->site = site;
++    f->child = 0;
++    f->desc = 0;
++    f->nchild = 0;
++    s->depth = d + 1u;
++    f->start = __rdtsc();
++    return d;
++}
++
++static inline __attribute__((always_inline)) void
++cetta_evprof_pop(CettaEvprofState *s, uint64_t now) {
++    uint32_t d = --s->depth;
++    CettaEvprofFrame *f = &s->stack[d];
++    uint64_t incl = now - f->start;
++    CettaEvprofSite *st = &cetta_evprof_sites[f->site];
++    st->calls++;
++    st->self += incl - f->child;
++    st->nchild += f->nchild;
++    st->desc += f->desc;
++    if (--st->active == 0)
++        st->incl += incl;
++    if (d) {
++        CettaEvprofFrame *p = &s->stack[d - 1u];
++        p->child += incl;
++        p->nchild++;
++        p->desc += 1u + f->desc;
++    } else {
++        s->top_incl += incl;
++        s->top_events += 1u + f->desc;
++    }
++}
++
++static inline __attribute__((always_inline)) void
++cetta_evprof_leave(uint32_t *tok) {
++    uint64_t now = __rdtsc();
++    uint32_t d = *tok;
++    if (d == CETTA_EVPROF_NO_FRAME)
++        return;
++    CettaEvprofState *s = &cetta_evprof_tls;
++    while (s->depth > d + 1u) { /* frames left open by a non-local exit */
++        s->unwound++;
++        cetta_evprof_pop(s, now);
++    }
++    if (s->depth == d + 1u)
++        cetta_evprof_pop(s, now);
++}
++
++#define CETTA_EVPROF_SCOPE(site)                                              \
++    __attribute__((cleanup(cetta_evprof_leave), unused)) uint32_t             \
++        cetta_evprof_tok_ = cetta_evprof_enter(site)
++#else
++#define CETTA_EVPROF_SCOPE(site) do { } while (0)
++#endif
++
++#endif
+diff --git a/src/cetta_evprof_sites.def b/src/cetta_evprof_sites.def
+new file mode 100644
+index 00000000..4282eaa7
+--- /dev/null
++++ b/src/cetta_evprof_sites.def
+@@ -0,0 +1,113 @@
++/* generated by cettapack tools/p_evprof_insert.py from bench/p/evprof_sites.txt: EVP(site, phase) */
++EVP(petta_machine_next_local, "dispatch")
++EVP(petta_machine_dispatch_goal, "dispatch")
++EVP(petta_machine_dispatch_solve, "dispatch")
++EVP(petta_machine_dispatch_activation_solve, "dispatch")
++EVP(petta_machine_start_open_answers, "dispatch")
++EVP(petta_machine_start_open_term_answers, "dispatch")
++EVP(petta_machine_open_resume, "dispatch")
++EVP(petta_machine_try_extension_call, "dispatch")
++EVP(petta_eval_machine_extension_call, "dispatch")
++EVP(petta_eval_machine_evaluate_host, "dispatch")
++EVP(petta_machine_start_answer_producer, "dispatch")
++EVP(petta_machine_call_equations, "dispatch")
++EVP(petta_push_evaluated_expression_range_planned, "dispatch")
++EVP(petta_push_evaluated_expression_planned, "dispatch")
++EVP(petta_machine_named_partial_decision, "dispatch")
++EVP(petta_machine_named_arity, "dispatch")
++EVP(petta_machine_extension_named_arity_using, "dispatch")
++EVP(petta_machine_source_named_arity, "dispatch")
++EVP(petta_machine_open_host, "dispatch")
++EVP(petta_eval_machine_classify_host, "dispatch")
++EVP(petta_machine_start_collapse, "dispatch")
++EVP(petta_machine_list_query, "dispatch")
++EVP(petta_machine_maybe_collect, "dispatch")
++EVP(oem_cursor_run, "dispatch")
++EVP(oem_run_body_mode, "dispatch")
++EVP(oem_host_with_continuation, "dispatch")
++EVP(petta_machine_advance_choice, "choice")
++EVP(petta_machine_resume_choice, "choice")
++EVP(petta_machine_backtrack, "choice")
++EVP(petta_choice_pop, "choice")
++EVP(petta_machine_collect_choice_heap, "choice")
++EVP(petta_choice_retire_exhausted, "choice")
++EVP(petta_machine_collect_choice_bindings, "choice")
++EVP(petta_machine_try_ready_relation_invocation, "eqsel")
++EVP(petta_machine_start_equation_choice, "eqsel")
++EVP(petta_eval_open_program_acquire, "eqsel")
++EVP(petta_eval_open_program_lookup_locked, "eqsel")
++EVP(petta_eval_open_foreign_reads_current, "eqsel")
++EVP(cetta_open_equation_program_host_reads_current, "eqsel")
++EVP(petta_eval_machine_builtin_equations, "eqsel")
++EVP(petta_machine_builtin_equations_mode, "eqsel")
++EVP(petta_program_refresh_callability, "eqsel")
++EVP(petta_program_relation_table_safe, "eqsel")
++EVP(petta_table_safety_scan_relation, "eqsel")
++EVP(petta_eval_machine_tabled_relation_admissible, "eqsel")
++EVP(prepared_pure_program_cache_has_decline_head, "eqsel")
++EVP(prepared_pure_closed_invocation_plan, "eqsel")
++EVP(petta_eval_machine_prepared_refused, "eqsel")
++EVP(petta_specializer_prepare_call, "eqsel")
++EVP(petta_specializer_query_value_execution_admission, "eqsel")
++EVP(petta_program_candidate_snapshot_lease_profiled, "eqsel")
++EVP(petta_eval_machine_candidate_snapshot_lease, "eqsel")
++EVP(petta_match_decision_select_candidates, "eqsel")
++EVP(petta_program_head_is_intrinsic, "eqsel")
++EVP(petta_relation_specialization_relevance, "eqsel")
++EVP(petta_eval_machine_space_query_admission_policy, "eqsel")
++EVP(petta_eval_relation_admission_entry, "eqsel")
++EVP(petta_eval_open_relation_admitted, "eqsel")
++EVP(cetta_open_equation_cursor_open, "eqsel")
++EVP(petta_eval_machine_open_relation_cursor, "eqsel")
++EVP(petta_eval_machine_open_relation_declined, "eqsel")
++EVP(petta_eval_machine_open_answer_cursor, "eqsel")
++EVP(eval_space_mutation_contract_kind, "eqsel")
++EVP(space_query_effect_for_head_analyzed, "eqsel")
++EVP(get_annotated_types, "eqsel")
++EVP(prepared_pure_program_compile_closed_mode, "prepcompile")
++EVP(prepared_pure_compile_pending_heads, "prepcompile")
++EVP(oem_compile_certificate, "prepcompile")
++EVP(prepared_pure_closed_invocation_try, "prepexec")
++EVP(petta_eval_machine_execute_prepared_pure_call, "prepexec")
++EVP(petta_machine_execute_prepared_query, "prepexec")
++EVP(petta_machine_execute_prepared_call, "prepexec")
++EVP(prepared_pure_program_execute_internal, "prepexec")
++EVP(petta_machine_unify, "match")
++EVP(petta_machine_unify_values, "match")
++EVP(petta_machine_unify_resolved_values, "match")
++EVP(petta_open_answer_unify, "match")
++EVP(match_decoded_atoms_worklist, "match")
++EVP(match_binding_values_builder, "match")
++EVP(petta_semantics_match_cons_constraint_mode, "match")
++EVP(petta_match_source_call, "match")
++EVP(petta_machine_start_ready_match_mode, "match")
++EVP(petta_machine_cons_equation_match, "match")
++EVP(petta_machine_equation_slot_match, "match")
++EVP(bindings_builder_add_id_internal, "match")
++EVP(oem_resolve_in, "match")
++EVP(oem_host_query, "match")
++EVP(petta_eval_machine_admit_space_query_values, "match")
++EVP(bindings_apply_value, "copy")
++EVP(bindings_apply_fold, "copy")
++EVP(atom_deep_copy_session_copy, "copy")
++EVP(cetta_instantiate_frame_terms, "copy")
++EVP(oem_instantiate, "copy")
++EVP(petta_fresh_variable, "copy")
++EVP(bindings_project_reachable, "copy")
++EVP(term_universe_copy_atom_impl, "copy")
++EVP(petta_copy_binding_atoms, "copy")
++EVP(arena_grow, "alloc")
++EVP(petta_answer_choice_release, "alloc")
++EVP(petta_choice_release, "alloc")
++EVP(petta_machine_start_space_query, "space")
++EVP(space_equation_cursor_next, "space")
++EVP(space_equation_cursor_member_next, "space")
++EVP(eval_apply_space_addition, "space")
++EVP(eval_apply_space_removal, "space")
++EVP(petta_space_remove_pattern_all, "space")
++EVP(space_admit_atom_impl, "space")
++EVP(space_member_annotated_types, "space")
++EVP(petta_libpl_call, "prolog")
++EVP(petta_libpl_registered_call, "prolog")
++EVP(petta_libpl_to_term, "prolog")
++EVP(petta_libpl_from_term, "prolog")
+diff --git a/src/eval.c b/src/eval.c
+index b3fdc6ab..2b1ed2f5 100644
+--- a/src/eval.c
++++ b/src/eval.c
+@@ -1,4 +1,5 @@
+ #define _GNU_SOURCE
++#include "cetta_evprof.h"
+ #include "library.h"
+ #include "linux_stack_bounds.h"
+ #include "petta_program.h"
+@@ -3460,6 +3461,7 @@ static void petta_removal_receipt_sort(CettaIndex *positions, Atom **atoms,
+ static bool petta_space_remove_pattern_all(
+         Space *space, Atom *pattern, PettaProgram *program,
+         CettaCount *removed_out) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_space_remove_pattern_all);
+     if (removed_out)
+         *removed_out = 0u;
+     if (!space || !pattern || pattern->kind == ATOM_VAR)
+@@ -8256,6 +8258,7 @@ static inline __attribute__((always_inline))
+ EvalSpaceMutationEffect eval_apply_space_addition(
+         Space *target, Arena *arena, Atom *call, Atom *payload,
+         bool suppress_duplicate) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_eval_apply_space_addition);
+     /* A row static-import! loaded is static data. */
+     Atom *static_refusal = petta_static_rows_refusal(
+         arena, target, payload, "assertz");
+@@ -8270,6 +8273,7 @@ EvalSpaceMutationEffect eval_apply_space_addition(
+ 
+ static EvalSpaceMutationEffect eval_apply_space_removal(
+         Space *target, Arena *arena, Atom *call, Atom *payload) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_eval_apply_space_removal);
+     EvalSpaceMutationEffect effect = {
+         .error = NULL,
+         .emit_result = true,
+@@ -26643,6 +26647,7 @@ bool eval_space_mutation_contract_kind(
+         Space *root, Arena *arena, Atom *call, int fuel,
+         const Bindings *environment, OutcomeSet *outcomes,
+         EvalSpaceMutationKind kind) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_eval_space_mutation_contract_kind);
+     if (!root || !arena || !call || !outcomes || !g_registry ||
+         call->kind != ATOM_EXPR || call->expr.len != 3u) {
+         return false;
+@@ -44091,6 +44096,7 @@ static void petta_eval_machine_memoized_relation_truncated(
+ static bool petta_eval_machine_tabled_relation_admissible(
+     void *context, Space *space,
+     SymbolId head, CettaExprLen arity) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_machine_tabled_relation_admissible);
+     PettaEvalMachineContext *eval_context = context;
+     bool context_admitted = eval_context &&
+         !eval_context->transaction &&
+@@ -45409,6 +45415,7 @@ static bool petta_eval_machine_extension_call(
+     const Bindings *environment, OutcomeSet *outcomes,
+     bool *recognized, CettaCallOutcome *end,
+     const CettaDelayView *delay) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_machine_extension_call);
+     PettaEvalMachineContext *eval_context = context;
+     if (recognized)
+         *recognized = false;
+@@ -45524,6 +45531,7 @@ static bool petta_eval_machine_candidate_snapshot_lease(
+     void *context, Space *space, SymbolId head,
+     PettaCandidateSnapshotLease *lease,
+     PettaCandidateSnapshotStats *stats) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_machine_candidate_snapshot_lease);
+     /* Capture the complete ordered candidate vector as one physical read.
+        The owned lease outlives this guard, so equation bodies may interleave
+        effects without exposing a torn Space representation to enumeration. */
+@@ -45766,6 +45774,7 @@ static bool petta_eval_machine_execute_prepared_pure_call(
+     void *context, Space *space, Arena *result_arena,
+     const CettaInvocation *invocation, Atom *source_call,
+     CettaCallOutcome *outcome) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_machine_execute_prepared_pure_call);
+     CettaExprLen dispatch_arity = 0u;
+     Atom *dispatch_head = invocation ? invocation->head.skeleton : NULL;
+     if (g_he_shared_execution && g_he_shared_execution_typed_dispatch &&
+@@ -45784,6 +45793,7 @@ static bool petta_eval_machine_execute_prepared_pure_call(
+ static bool petta_eval_machine_prepared_refused(
+     void *context, Space *space, SymbolId head, CettaExprLen arity,
+     PreparedPureRefusalInquiry inquiry) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_machine_prepared_refused);
+     PreparedPureProgramCache *program_cache =
+         petta_eval_machine_prepared_pure_cache(context);
+     if (!program_cache)
+@@ -45922,6 +45932,7 @@ static PettaDispatchMemoMode petta_dispatch_memo_mode(void) {
+  * transaction it is computed each time, as relation admission is. */
+ static PettaMachineBuiltinEquations petta_eval_machine_builtin_equations(
+     void *context, Space *space, SymbolId head, CettaExprLen arity) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_machine_builtin_equations);
+     PettaEvalMachineContext *eval_context = context;
+     CettaLibraryContext *library = g_library_context;
+     PettaDispatchMemoMode memo = petta_dispatch_memo_mode();
+@@ -46111,6 +46122,7 @@ static bool he_dispatch_apply_ready(Space *space, Arena *arena,
+ 
+ static PettaMachineHostMode petta_eval_machine_classify_host(
+     void *context, Space *space, Atom *expression) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_machine_classify_host);
+     (void)context;
+     if (!expression || expression->kind != ATOM_EXPR ||
+         expression->expr.len == 0u) {
+@@ -46430,6 +46442,7 @@ static const PettaRelationAdmissionCacheEntry *
+ petta_eval_relation_admission_entry(
+         void *context, Space *space, SymbolId head,
+         CettaExprLen arity) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_relation_admission_entry);
+     PettaEvalMachineContext *eval_context = context;
+     if (!eval_context || !space || head == SYMBOL_ID_NONE ||
+         eval_context->transaction ||
+@@ -46481,6 +46494,7 @@ static PettaMachineSpaceQueryAdmission
+ petta_eval_machine_space_query_admission_policy(
+         void *context, Space *space, SymbolId head,
+         CettaExprLen arity) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_machine_space_query_admission_policy);
+     const PettaRelationAdmissionCacheEntry *entry =
+         petta_eval_relation_admission_entry(context, space, head, arity);
+     return entry ? entry->admission : PETTA_MACHINE_SPACE_QUERY_DEFER;
+@@ -46515,6 +46529,7 @@ petta_eval_machine_admit_space_query_values(
+         void *context, Space *space, SymbolId head,
+         Bindings *environment, const BindingValue *arguments,
+         CettaExprLen arity) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_machine_admit_space_query_values);
+     PettaMachineSpaceQueryAdmission policy =
+         petta_eval_machine_space_query_admission_policy(
+             context, space, head, arity);
+@@ -47057,6 +47072,7 @@ static bool petta_eval_machine_evaluate_host(
+     void *context, Space *space, Arena *arena, Atom *expression,
+     const Bindings *environment, OutcomeSet *outcomes,
+     CettaCallOutcome *end, const CettaDelayView *delay) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_machine_evaluate_host);
+     __attribute__((cleanup(petta_eval_delay_scope_leave)))
+     PettaEvalDelayScope delay_scope = {0};
+     petta_eval_delay_scope_enter(&delay_scope,
+@@ -55639,6 +55655,7 @@ static bool prepared_pure_program_cache_has_decline_head(
+         bool answer_producer,
+         bool entry_arguments_are_values,
+         bool total_structural_equality, PreparedPureRefusalInquiry inquiry) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_prepared_pure_program_cache_has_decline_head);
+     uint64_t capability_revision =
+         language_id == CETTA_LANGUAGE_PETTA && g_library_context
+             ? petta_libpl_capability_revision(
+@@ -56234,6 +56251,7 @@ static bool prepared_pure_closed_invocation_plan(
+     bool entry_arguments_are_values,
+     PreparedPureProgramCache *program_cache,
+     PreparedPureClosedCallPlan *plan) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_prepared_pure_closed_invocation_plan);
+     if (he_retained_execution_active()) return false;
+     if (plan)
+         memset(plan, 0, sizeof(*plan));
+@@ -56615,6 +56633,7 @@ static bool prepared_pure_closed_invocation_try(
+     bool entry_arguments_are_values,
+     bool preserve_internal_values,
+     PreparedPureProgramCache *program_cache, CettaCallOutcome *outcome) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_prepared_pure_closed_invocation_try);
+     if (he_retained_execution_active()) return false;
+     if (!outcome)
+         return false;
+@@ -57452,6 +57471,7 @@ static CettaPreparedPureAnswerCursor *petta_eval_machine_open_answer_cursor(
+     CettaPreparedPureHeadAdmissionFn head_admission,
+     void *head_admission_context,
+     bool (*continuation_current)(const void *)) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_machine_open_answer_cursor);
+     PettaEvalMachineContext *eval_context = context;
+     if (!eval_context || eval_context->transaction ||
+         !eval_context->library_context ||
+@@ -57771,6 +57791,7 @@ static bool petta_eval_open_call_protocol_admitted(
+ 
+ static bool petta_eval_open_relation_admitted(
+     void *context, Space *space, SymbolId head, uint32_t arity) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_open_relation_admitted);
+     if (!petta_eval_open_call_protocol_admitted(context, space, head, arity))
+         return false;
+     Arena scratch;
+@@ -57998,6 +58019,7 @@ static bool petta_eval_open_foreign_reads_current(
+     PettaOpenProgramCacheEntry *entry, CettaLibraryContext *library,
+     CettaLibPrologReadToken now, PettaEvalMachineContext *eval_context,
+     Space *space, bool body_is_data) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_open_foreign_reads_current);
+     if (entry->foreign.instance_id != now.instance_id)
+         return false;
+     if (entry->foreign.revision == now.revision)
+@@ -58015,6 +58037,7 @@ static bool petta_eval_open_foreign_reads_current(
+ static PettaOpenProgramCacheEntry *petta_eval_open_program_lookup_locked(
+     PettaEvalMachineContext *eval_context, Space *space, SymbolId head,
+     uint32_t arity, CettaOpenEquationEntryKind entry_kind, bool create) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_open_program_lookup_locked);
+     PettaOpenProgramCache *cache = petta_eval_open_program_cache(eval_context);
+     if (!cache)
+         return NULL;
+@@ -58160,6 +58183,7 @@ static CettaOpenEquationProgram *petta_eval_open_program_acquire_entry(
+ static CettaOpenEquationProgram *petta_eval_open_program_acquire(
+     PettaEvalMachineContext *context, Space *space, SymbolId head,
+     uint32_t arity, bool body_is_data, bool create, bool *cached) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_open_program_acquire);
+     return petta_eval_open_program_acquire_entry(context, space, head, arity,
+         body_is_data ? CETTA_OPEN_ENTRY_BODY_DATA : CETTA_OPEN_ENTRY_BODY_VALUE,
+         create, cached);
+@@ -58616,6 +58640,7 @@ static CettaOpenEquationCursor *petta_eval_machine_open_relation_cursor(
+     uint32_t query_var_count, bool evaluate_result, bool source_output_constraints,
+     bool dispatch_recovers, bool count_only, uint64_t activation_budget,
+     uint32_t depth_bound) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_machine_open_relation_cursor);
+     PettaEvalMachineContext *eval_context = context;
+     /* The open tier's typed guards are PeTTa's, whose failed checks answer
+      * nothing where HE answers an error: a call that can reach a typed call
+@@ -58716,6 +58741,7 @@ static CettaOpenEquationCursor *petta_eval_machine_open_body_cursor(
+ static bool petta_eval_machine_open_relation_declined(
+     void *context, Space *space, SymbolId head, CettaExprLen arity,
+     bool evaluate_result) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_eval_machine_open_relation_declined);
+     PettaEvalMachineContext *eval_context = context;
+     if (!petta_eval_open_relation_ready(eval_context) ||
+         he_dispatch_keeps_call(space, head, arity))
+diff --git a/src/match.c b/src/match.c
+index c8603d44..7f0ef954 100644
+--- a/src/match.c
++++ b/src/match.c
+@@ -1,3 +1,4 @@
++#include "cetta_evprof.h"
+ #include "match.h"
+ #include "binding/term_cursor.h"
+ #include "eval.h"
+@@ -5047,6 +5048,7 @@ Atom *bindings_apply_graph(Bindings *b, Arena *a, Atom *atom) {
+ }
+ 
+ Atom *bindings_apply_value(const Bindings *b, Arena *a, BindingValue value) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_bindings_apply_value);
+     cetta_runtime_stats_inc(CETTA_RUNTIME_COUNTER_BINDINGS_APPLY);
+     return bindings_apply_value_rewrite_vars((Bindings *)b, a, value, NULL, NULL, false);
+ }
+@@ -5658,6 +5660,7 @@ failed:
+ 
+ static Atom *bindings_apply_fold(BindingsApplyFold *fold, Atom *atom,
+                                  BindingsApplyScope scope, uint32_t seen_len) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_bindings_apply_fold);
+     return bindings_apply_fold_impl(fold, atom, scope, seen_len, false, NULL);
+ }
+ 
+@@ -7245,6 +7248,7 @@ static bool bindings_builder_add_id_internal_with_cycle_evidence(
+ static bool bindings_builder_add_id_internal(
+         BindingsBuilder *bb, VarId var_id,
+         SymbolId spelling, Atom *name_key, BindingValue val) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_bindings_builder_add_id_internal);
+     return bindings_builder_add_id_internal_with_cycle_evidence(
+         bb, var_id, spelling, name_key, val, false,
+         BINDINGS_REACHABILITY_UNKNOWN, NULL);
+@@ -10083,6 +10087,7 @@ bool bindings_project_reachable_with_epoch_roots(
+ bool bindings_project_reachable(
+     const Bindings *src, Atom *const *roots, size_t root_count,
+     Bindings *dst) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_bindings_project_reachable);
+     return bindings_project_reachable_with_entry_marks(
+         src, roots, root_count, NULL, 0u, dst);
+ }
+@@ -11641,6 +11646,7 @@ static bool match_decoded_atoms_worklist(BindingValue left_value, BindingValue r
+                                          Bindings *bindings,
+                                          BindingsBuilder *builder,
+                                          Arena *a, bool undefined_is_wildcard) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_match_decoded_atoms_worklist);
+     Atom *left, *right;
+     DecodedMatchWorklist work;
+     MatchPathSet path;
+@@ -12157,6 +12163,7 @@ bool match_atoms(Atom *left, Atom *right, Bindings *b, Arena *a) {
+ 
+ bool match_binding_values_builder(BindingValue left, BindingValue right,
+                                   BindingsBuilder *bb, Arena *a) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_match_binding_values_builder);
+     return left.skeleton && right.skeleton && bb &&
+         match_decoded_atoms_worklist(left, right, NULL, bb, a, false);
+ }
+diff --git a/src/open_equation_machine.c b/src/open_equation_machine.c
+index 3a292774..ed851e1d 100644
+--- a/src/open_equation_machine.c
++++ b/src/open_equation_machine.c
+@@ -1,3 +1,4 @@
++#include "cetta_evprof.h"
+ #include "binding/frame_identity_quiet.h"
+ #include "atom.h"
+ #include "space.h"
+@@ -821,6 +822,7 @@ static uint32_t oem_host_read_mask(const CettaOpenEquationHost *host) {
+ 
+ static bool oem_host_query(const CettaOpenEquationHost *host, Space *space,
+                            const OemHostRead *read) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_oem_host_query);
+     switch (read->kind) {
+     case OEM_READ_RELATION:
+         return host->relation_admitted(host->context, space, read->head, read->arity);
+@@ -847,6 +849,7 @@ static bool oem_host_query(const CettaOpenEquationHost *host, Space *space,
+ 
+ bool cetta_open_equation_program_host_reads_current(
+     const CettaOpenEquationProgram *program, const CettaOpenEquationHost *host) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_cetta_open_equation_program_host_reads_current);
+     if (!program || !program->host_reads_complete ||
+         oem_host_read_mask(host) != program->host_read_mask)
+         return false;
+@@ -7198,6 +7201,7 @@ static bool oem_compile_body_entry(CettaOpenEquationProgram *program,
+ static CettaOpenEquationProgram *oem_compile_certificate(
+     PettaProgram *petta, Space *space, SymbolId head, uint32_t arity,
+     const CettaOpenEquationHost *host, const OemBodySource *body, const char **reason_out) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_oem_compile_certificate);
+     const char *reason = NULL;
+     if (reason_out)
+         *reason_out = NULL;
+@@ -8721,6 +8725,7 @@ static Atom *oem_instantiate_in(CettaOpenEquationCursor *cursor,
+ static inline __attribute__((always_inline)) Atom *oem_instantiate(
+     CettaOpenEquationCursor *cursor, const CettaOpenEquationProgram *program,
+     Atom **locals, uint32_t template_index) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_oem_instantiate);
+     const OemTemplate *item = &program->templates[template_index];
+     if (item->kind == OEM_T_LITERAL)
+         return item->literal;
+@@ -9305,6 +9310,7 @@ static inline bool oem_immutable_string(const Atom *atom) {
+ static inline __attribute__((always_inline)) Atom *oem_resolve_in(
+     CettaOpenEquationCursor *cursor, Atom *root, bool operand, Arena *arena,
+     Arena *ground, bool collect) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_oem_resolve_in);
+     OemAtomMap images;
+     oem_atom_map_init(&images);
+     Atom *answer = NULL;
+@@ -11345,6 +11351,7 @@ static __attribute__((noinline)) OemRun oem_host_with_continuation(
+                             const PettaPlanNode *plan,
+                             CettaOpenEquationHostMode mode,
+                             bool own_recovers, bool recovers) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_oem_host_with_continuation);
+     oem_forget_answer_vars(cursor);
+     if (!goal || !destination)
+         return OEM_RUN_HANDOFF;
+@@ -14820,6 +14827,7 @@ static inline __attribute__((always_inline)) OemRun oem_run_body_mode(
+     CettaOpenEquationCursor *cursor, const CettaOpenEquationProgram *program,
+     uint32_t pc, Atom **locals, uint32_t local_count, const OemCont *cont,
+     uint32_t depth, Atom **value_out, const bool he) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_oem_run_body_mode);
+     for (;;) {
+         if (pc >= program->step_len)
+             return OEM_RUN_HANDOFF;
+@@ -19059,6 +19067,7 @@ CettaOpenEquationCursor *cetta_open_equation_cursor_open(
+     Atom *const *args, uint32_t arity, Atom *expected,
+     Atom *const *query_vars, uint32_t query_var_count,
+     const CettaOpenEquationRuntime *runtime) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_cetta_open_equation_cursor_open);
+     if (!program || !answer_arena || (!args && arity > 0u) ||
+         (!query_vars && query_var_count > 0u) ||
+         program->relation_len == 0u || program->relations[0].arity != arity ||
+@@ -20681,6 +20690,7 @@ static __attribute__((noinline)) CettaOpenEquationStep oem_cursor_run_he(
+ static CettaOpenEquationStep oem_cursor_run(
+     CettaOpenEquationCursor *cursor, uint32_t base, Atom **value_out,
+     Atom ***query_values_out) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_oem_cursor_run);
+     return cursor->runtime.unmatched_call_is_value
+         ? oem_cursor_run_he(cursor, base, value_out, query_values_out)
+         : oem_cursor_run_plain(cursor, base, value_out, query_values_out);
+diff --git a/src/petta_libpl.c b/src/petta_libpl.c
+index ff5af924..eefa1bba 100644
+--- a/src/petta_libpl.c
++++ b/src/petta_libpl.c
+@@ -1,4 +1,5 @@
+ #define _GNU_SOURCE
++#include "cetta_evprof.h"
+ #include "petta_libpl.h"
+ #include <errno.h>
+ #include "petta_builtin_registry.h"
+@@ -2662,6 +2663,7 @@ static bool petta_libpl_to_list(
+ static bool petta_libpl_to_term(
+     Atom *atom, term_t output,
+     PettaLibplVarMap *variables, uint32_t depth) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_libpl_to_term);
+     if (!atom || !output || !variables ||
+         depth > 1024u) {
+         return false;
+@@ -2983,6 +2985,7 @@ static Atom *petta_libpl_from_term(
+     PettaLibplVarMap *variables,
+     PettaLibplBackVarMap *unknown,
+     uint32_t depth) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_libpl_from_term);
+     return petta_libpl_from_term_mode(
+         arena, term, variables, unknown,
+         false, depth);
+@@ -4385,6 +4388,7 @@ static bool petta_libpl_registered_call(
+     Atom *expression, Atom *expected,
+     PettaLibplImport *entry,
+     OutcomeSet *outcomes, Atom **raised, PettaLibplDelay *delay) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_libpl_registered_call);
+     if (raised)
+         *raised = NULL;
+     if (!runtime || !arena || !expression ||
+@@ -6792,6 +6796,7 @@ bool petta_libpl_call(
+     const Bindings *environment, OutcomeSet *outcomes,
+     bool *recognized, CettaCallOutcome *end,
+     const CettaDelayView *delay) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_libpl_call);
+     Atom *raised = NULL;
+     bool called = petta_libpl_call_raising(
+         runtime, arena, expression, expected, environment,
+diff --git a/src/petta_libpl_stub.c b/src/petta_libpl_stub.c
+index 57f4f9ce..89d3f1a8 100644
+--- a/src/petta_libpl_stub.c
++++ b/src/petta_libpl_stub.c
+@@ -1,3 +1,4 @@
++#include "cetta_evprof.h"
+ #include "petta_libpl.h"
+ 
+ #include <stdlib.h>
+@@ -127,6 +128,7 @@ bool petta_libpl_call(
+     const Bindings *environment, OutcomeSet *outcomes,
+     bool *recognized, CettaCallOutcome *end,
+     const CettaDelayView *delay) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_libpl_call);
+     (void)delay;
+     if (end)
+         *end = cetta_call_failure();
+diff --git a/src/petta_program.c b/src/petta_program.c
+index 1262c3ac..a644386d 100644
+--- a/src/petta_program.c
++++ b/src/petta_program.c
+@@ -1,3 +1,4 @@
++#include "cetta_evprof.h"
+ #include "petta_program.h"
+ #include "foreign_provider.h"
+ 
+@@ -1723,6 +1724,7 @@ static bool petta_program_builtin_names_data(SymbolId head) {
+ }
+ 
+ bool petta_program_head_is_intrinsic(SymbolId head) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_program_head_is_intrinsic);
+     const PettaIntrinsicNameIds *ids =
+         head == SYMBOL_ID_NONE ? NULL : petta_intrinsic_name_ids();
+     bool machine_named =
+@@ -5273,6 +5275,7 @@ static bool petta_plan_callability_changed(const Atom *syntax,
+  * plan's actual reads decide whether recompilation is necessary. */
+ static bool petta_program_refresh_callability(PettaProgram *program,
+         PettaProgramSpace *entry, SymbolId head) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_program_refresh_callability);
+     if (!program || !entry || !program->refresh_callability)
+         return true;
+     if (!petta_program_reserve((void **)&entry->plan_callability_epochs,
+@@ -6431,6 +6434,7 @@ bool petta_program_candidate_snapshot_lease_profiled(
+     PettaProgram *program, Space *space, SymbolId head,
+     PettaCandidateSnapshotLease *lease,
+     PettaCandidateSnapshotStats *stats) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_program_candidate_snapshot_lease_profiled);
+     /* A live Space is the source of truth.  Shared mutable catalogs are
+        optimization evidence, so concurrent workers may read only an
+        explicitly captured immutable revision view. */
+@@ -7370,6 +7374,7 @@ static PettaRelationSafety petta_table_safety_scan_relation(
+     PettaTableSafetyRelation **relations,
+     size_t *relation_len, size_t *relation_cap,
+     bool *transient_out) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_table_safety_scan_relation);
+     PettaEquationCandidate *candidates = NULL;
+     size_t candidate_count = 0u;
+     if (!petta_program_candidate_snapshot(
+@@ -7707,6 +7712,7 @@ PettaRelationSafety petta_program_relation_safety(
+ bool petta_program_relation_table_safe(
+     PettaProgram *program, Space *space,
+     SymbolId head, CettaExprLen arity) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_program_relation_table_safe);
+     return petta_program_relation_safety(
+                program, space, head, arity) ==
+            PETTA_RELATION_SAFETY_STATIC;
+diff --git a/src/petta_search_machine.c b/src/petta_search_machine.c
+index d7de67e2..fae672f4 100644
+--- a/src/petta_search_machine.c
++++ b/src/petta_search_machine.c
+@@ -2,6 +2,7 @@
+ #define _POSIX_C_SOURCE 200809L
+ #endif
+ 
++#include "cetta_evprof.h"
+ #include "binding/frame_identity_census.h"
+ #include "binding/frame_identity_quiet.h"
+ #include "petta_program.h"
+@@ -1856,6 +1857,7 @@ static bool petta_machine_builtin_allowed(
+ 
+ static PettaMachineBuiltinEquations petta_machine_builtin_equations_mode(
+     PettaMachineImpl *machine, SymbolId head, CettaExprLen arity) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_builtin_equations_mode);
+     return machine && machine->host.builtin_equations && head != SYMBOL_ID_NONE
+         ? machine->host.builtin_equations(
+               machine->host.context, machine->space, head, arity)
+@@ -5322,6 +5324,7 @@ static void petta_prepared_native_release(PettaMachineImpl *machine, PettaPrepar
+ 
+ static void __attribute__((noinline))
+ petta_answer_choice_release(PettaChoice *choice) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_answer_choice_release);
+     PettaAnswerAdmission *admission = choice->as.answers.admission;
+     if (admission && admission->native)
+         petta_prepared_native_release(admission->machine, admission->native);
+@@ -5347,6 +5350,7 @@ petta_answer_choice_release(PettaChoice *choice) {
+ 
+ static void petta_choice_release(
+     PettaMachineImpl *machine, PettaChoice *choice) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_choice_release);
+     if (!machine || !choice)
+         return;
+     switch (choice->kind) {
+@@ -5630,6 +5634,7 @@ static bool petta_choice_push(
+ }
+ 
+ static void petta_choice_pop(PettaMachineImpl *machine) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_choice_pop);
+     if (!machine || machine->choice_len == 0u)
+         return;
+     PettaChoice *choice =
+@@ -5776,6 +5781,7 @@ static bool petta_choice_exhausted_after_success(
+  */
+ static void petta_choice_retire_exhausted(
+     PettaMachineImpl *machine) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_choice_retire_exhausted);
+     if (!machine || machine->choice_len == 0u)
+         return;
+     PettaChoice *choice =
+@@ -5786,6 +5792,7 @@ static void petta_choice_retire_exhausted(
+ }
+ 
+ static Atom *petta_fresh_variable(PettaMachineImpl *machine) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_fresh_variable);
+     CETTA_FRAME_IDENTITY_SCOPE(frame_identity_scope);
+     if (!machine)
+         return NULL;
+@@ -7379,6 +7386,7 @@ static Atom *petta_copy_goal_field(
+ static bool petta_copy_binding_atoms(
+     Bindings *bindings, Arena *destination,
+     AtomDeepCopySession *session) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_copy_binding_atoms);
+     if (!bindings || !destination || !session)
+         return false;
+     /* Atom ownership changes here, so relocate the logical rows and rebuild
+@@ -7981,6 +7989,7 @@ static bool petta_machine_delay_frontier(PettaMachineImpl *machine) {
+ 
+ static bool petta_machine_collect_choice_bindings(
+     PettaMachineImpl *machine) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_collect_choice_bindings);
+     if (!machine || machine->choice_len == 0u)
+         return true;
+     if (!petta_goal_trail_compact_at_collection(machine))
+@@ -8483,6 +8492,7 @@ static bool petta_choice_query_value_vectors_clone(
+ 
+ static bool petta_machine_collect_choice_heap(
+     PettaMachineImpl *machine) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_collect_choice_heap);
+     if (!petta_choice_heap_evacuation_supported(machine))
+         return true;
+     uint64_t collection_started_ns =
+@@ -11199,6 +11209,7 @@ static void petta_machine_identity_pressure_relieved(
+ 
+ static bool petta_machine_maybe_collect(
+     PettaMachineImpl *machine) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_maybe_collect);
+     if (!machine)
+         return false;
+     bool native_due = false;
+@@ -11321,6 +11332,7 @@ static bool petta_equation_capture(
+ static bool petta_machine_cons_equation_match(
+     PettaMachineImpl *machine, Atom *equation, Atom *query,
+     bool lhs_contains_cons_constraint, PettaEquationMatch *match) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_cons_equation_match);
+     CETTA_FRAME_IDENTITY_SCOPE(frame_identity_scope);
+     if (!machine || !equation || !query || !match ||
+         equation->kind != ATOM_EXPR ||
+@@ -11481,6 +11493,7 @@ static bool petta_machine_values_reach_cell(
+ static bool petta_machine_unify_resolved_values(
+     PettaMachineImpl *machine, BindingValue left_value,
+     BindingValue right_value) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_unify_resolved_values);
+     BindingsBuilder *builder = search_context_builder(&machine->search);
+     Atom *left = left_value.skeleton;
+     Atom *right = right_value.skeleton;
+@@ -11557,6 +11570,7 @@ static bool petta_machine_unify_resolved(
+ static bool petta_machine_unify_values(
+     PettaMachineImpl *machine, BindingValue left,
+     BindingValue right) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_unify_values);
+     Bindings *environment = (Bindings *)search_context_bindings(
+         &machine->search);
+     BindingValue left_root;
+@@ -11571,6 +11585,7 @@ static bool petta_machine_unify_values(
+ 
+ static bool petta_machine_unify(
+     PettaMachineImpl *machine, Atom *left, Atom *right) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_unify);
+     /* The authoritative matcher dereferences variables through its live
+      * BindingsBuilder as it walks each pair.  Materializing both complete
+      * operands here first repeats that same traversal and turns a sequence of
+@@ -11853,6 +11868,7 @@ static PettaEquationSlotMatch petta_machine_equation_slot_match(
+     CettaFrameIdentity *activation_epoch_out,
+     uint32_t *activation_first_entry_out,
+     uint64_t *materialized_bytes_out) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_equation_slot_match);
+         CETTA_FRAME_IDENTITY_SCOPE(frame_identity_scope);
+     if (result_out)
+         *result_out = NULL;
+@@ -12947,6 +12963,7 @@ static bool petta_push_evaluated_expression_planned(
+     PettaMachineImpl *machine, Atom *expression, Atom *expected,
+     PettaGoalKind final_kind, CettaExprIndex first_evaluated,
+     uint32_t barrier, const PettaPlanNode *plan) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_push_evaluated_expression_planned);
+     return petta_push_evaluated_expression_range_planned(
+         machine, expression, expected, final_kind,
+         first_evaluated, expression->expr.len, barrier, plan);
+@@ -12957,6 +12974,7 @@ static bool petta_push_evaluated_expression_range_planned(
+     PettaGoalKind final_kind, CettaExprIndex first_evaluated,
+     CettaExprIndex end_evaluated, uint32_t barrier,
+     const PettaPlanNode *plan) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_push_evaluated_expression_range_planned);
+     CettaExprLen length = expression->expr.len;
+     if (first_evaluated > end_evaluated ||
+         end_evaluated > length ||
+@@ -13965,6 +13983,7 @@ static PeTTaNamedArity petta_machine_extension_named_arity_using(
+     CettaExprLen supplied,
+     PeTTaNamedArity (*foreign_named_arity)(
+         void *, SymbolId, CettaExprLen)) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_extension_named_arity_using);
+     if (!machine || head == SYMBOL_ID_NONE)
+         return (PeTTaNamedArity){0};
+     if (machine->host.native_named_arity) {
+@@ -15294,6 +15313,7 @@ petta_match_decision_select_candidates(
+     bool deep_admissible, uint64_t observable_arguments,
+     const uint32_t **selected, size_t *selected_count,
+     bool *structurally_verified) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_match_decision_select_candidates);
+     if (structurally_verified)
+         *structurally_verified = false;
+     if (!machine || !query || !query->head ||
+@@ -16855,6 +16875,7 @@ static bool petta_machine_schedule_typed_call(
+ static PeTTaNamedArity petta_machine_source_named_arity(
+     PettaMachineImpl *machine, Atom *head_atom,
+     CettaExprLen nargs) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_source_named_arity);
+     if (!machine)
+         return (PeTTaNamedArity){0};
+     /* The arity summary is a detached value, but deriving it traverses the
+@@ -16943,6 +16964,7 @@ static PeTTaNamedArity petta_machine_source_named_arity(
+ static PeTTaNamedArity petta_machine_named_arity(
+     PettaMachineImpl *machine, Atom *head_atom,
+     CettaExprLen nargs) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_named_arity);
+     PeTTaNamedArity result = petta_machine_source_named_arity(
+         machine, head_atom, nargs);
+     if (machine && head_atom && head_atom->kind == ATOM_SYMBOL) {
+@@ -17348,6 +17370,7 @@ typedef enum {
+ 
+ static PettaPartialDecision petta_machine_named_partial_decision(
+     PettaMachineImpl *machine, Atom *expression) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_named_partial_decision);
+     if (!machine || !expression ||
+         expression->kind != ATOM_EXPR ||
+         expression->expr.len == 0u ||
+@@ -19339,6 +19362,7 @@ static bool petta_machine_advance_choice(
+     PettaMachineImpl *machine, PettaChoice *choice,
+     PettaMachineStep *failure, bool restore_choice_state,
+     const PettaSpaceQueryView *fields) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_advance_choice);
+     if (restore_choice_state) {
+         machine->stats.choice_resumes++;
+         if (!petta_choice_restore(machine, choice)) {
+@@ -21436,6 +21460,7 @@ static bool petta_machine_advance_choice(
+ static bool petta_machine_resume_choice(
+     PettaMachineImpl *machine, PettaChoice *choice,
+     PettaMachineStep *failure) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_resume_choice);
+     if (choice->kind == PETTA_CHOICE_ANSWERS)
+         return petta_machine_resume_answer_choice(
+             machine, choice, failure, true);
+@@ -21448,6 +21473,7 @@ static bool petta_machine_resume_choice(
+ 
+ static bool petta_machine_backtrack(
+     PettaMachineImpl *machine, PettaMachineStep *failure) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_backtrack);
+     while (machine->choice_len > 0u) {
+         PettaChoice *choice =
+             &machine->choices[machine->choice_len - 1u];
+@@ -21997,6 +22023,7 @@ static bool petta_machine_value_result_admitted(
+ static __attribute__((noinline)) bool petta_machine_list_query(
+         PettaMachineImpl *machine, const PettaSpaceQueryView *query,
+         PettaSpaceQueryView *resolved, Atom **list_query) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_list_query);
+     *list_query = NULL;
+     if (!petta_machine_space_query_may_hold_carrier(machine, query))
+         return true;
+@@ -22157,6 +22184,7 @@ static bool petta_machine_start_space_query(
+     PettaMachineImpl *machine, const PettaSpaceQueryView *query,
+     Atom *expected, uint32_t barrier, bool evaluate_result,
+     bool count_collection_result) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_start_space_query);
+     if (!machine || !query || !query->head ||
+         query->head->kind != ATOM_SYMBOL ||
+         (!query->whole && query->operands.count > 0u && !query->operands.atoms &&
+@@ -22929,6 +22957,7 @@ static bool petta_machine_start_equation_choice(
+     bool count_collection_result, Atom *query_source,
+     const PettaEquationTemplate *query_template,
+     CettaFrameIdentity query_epoch, uint32_t query_first_entry) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_start_equation_choice);
+     if (!query || query->kind != ATOM_EXPR ||
+         query->expr.len == 0u) {
+         return false;
+@@ -23303,6 +23332,7 @@ static bool petta_machine_try_extension_call(
+     PettaMachineImpl *machine, Atom *expression, Atom *expected,
+     uint32_t barrier, bool *recognized,
+     PettaMachineStep *failure) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_try_extension_call);
+     if (recognized)
+         *recognized = false;
+     if (!machine || !expression || !expected ||
+@@ -24762,6 +24792,7 @@ static bool petta_machine_start_collapse(
+     PettaMachineImpl *machine, Atom *body, Atom *expected,
+     uint32_t barrier, const PettaPlanNode *plan, size_t limit,
+     PettaMachineStep *failure) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_start_collapse);
+     if (!machine || !body || !expected || !failure) {
+         if (failure)
+             *failure = PETTA_MACHINE_STEP_CAPACITY;
+@@ -28633,6 +28664,7 @@ static bool petta_machine_start_ready_match_mode(
+     Atom *template, Atom *expected, uint32_t barrier,
+     const PettaPlanNode *template_plan, bool row_only,
+     PettaMachineStep *failure) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_start_ready_match_mode);
+     if (!machine || !reference || !pattern || !template ||
+         !expected || !failure) {
+         return false;
+@@ -29623,6 +29655,7 @@ static bool petta_machine_try_ready_relation_invocation(
+         PettaMachineImpl *machine, const CettaInvocation *invocation,
+         Atom *expected, uint32_t barrier, const PettaPlanNode *dispatch_scope,
+         bool *handled_out, PettaMachineStep *failure) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_try_ready_relation_invocation);
+     if (handled_out)
+         *handled_out = false;
+     CettaExprLen arity = 0u;
+@@ -31395,6 +31428,7 @@ static bool petta_machine_space_query_closed(
+ static bool petta_machine_execute_prepared_call(
+         PettaMachineImpl *machine, Atom *call, Atom *expected,
+         CettaCallOutcome *outcome) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_execute_prepared_call);
+     if (!machine->host.execute_prepared_pure_call ||
+         !petta_machine_value_result_admitted(machine, expected) ||
+         petta_machine_prepared_call_blocked(machine, call))
+@@ -31414,6 +31448,7 @@ static bool petta_machine_execute_prepared_call(
+ static bool petta_machine_execute_prepared_query(
+         PettaMachineImpl *machine, const PettaSpaceQueryView *query,
+         Atom *expected, CettaCallOutcome *outcome) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_execute_prepared_query);
+     if (query->whole)
+         return petta_machine_execute_prepared_call(
+             machine, query->whole, expected, outcome);
+@@ -32170,6 +32205,7 @@ static void petta_open_answer_meet_range(PettaMachineImpl *machine,
+ static bool petta_open_answer_unify(
+     PettaMachineImpl *machine, const PettaOpenAnswers *open,
+     Atom **values) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_open_answer_unify);
+     Atom *vars = NULL;
+     Atom *bound = NULL;
+     if (!petta_open_answer_bindings(machine, open, values, &vars, &bound))
+@@ -32624,6 +32660,7 @@ static bool petta_open_host_receiver_emit(void *context,
+  * OPEN_RESUME returns each answer to the holder beneath the goal's choices. */
+ static bool petta_machine_open_host(PettaMachineImpl *machine,
+                                     size_t holder, uint32_t barrier) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_open_host);
+     PettaOpenAnswers *open = machine->choices[holder].as.answers.open;
+     Atom *goal = NULL;
+     Atom *destination = NULL;
+@@ -33105,6 +33142,7 @@ static bool petta_machine_start_open_term_answers(
+ static __attribute__((noinline)) bool petta_machine_start_open_answers(
+     PettaMachineImpl *machine, const PettaSpaceQueryView *query,
+     Atom *expected, bool evaluate_result, bool *taken_out) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_start_open_answers);
+     *taken_out = false;
+     if (!machine->host.open_relation_cursor ||
+         !machine->host.answer_authority_token ||
+@@ -33137,6 +33175,7 @@ static bool petta_machine_start_open_term_answers(
+     PettaMachineImpl *machine, Atom *call, Atom *expected,
+     bool evaluate_result, bool body, Atom *const *parameters,
+     Atom *const *arguments, uint32_t arity, bool *taken_out) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_start_open_term_answers);
+     /* The consumer's expected value is the call's destination. */
+     Atom *destination = expected && atom_has_vars(expected)
+         ? petta_machine_apply_bindings(
+@@ -33687,6 +33726,7 @@ static bool petta_machine_stabilize_open_host_values(
+ static __attribute__((noinline)) bool petta_machine_open_resume(
+     PettaMachineImpl *machine, const PettaGoal *goal,
+     PettaMachineStep *failure) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_open_resume);
+     size_t holder = goal->open_host.holder;
+     Atom *tuple = goal->first;
+     if (holder >= machine->choice_len ||
+@@ -34213,6 +34253,7 @@ static __attribute__((noinline)) bool petta_machine_start_answer_producer(
+     PettaMachineImpl *machine, const PettaSpaceQueryView *query,
+     Atom *expected, const PettaCandidateSnapshotLease *entry_lease,
+     bool *taken_out) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_start_answer_producer);
+     *taken_out = false;
+     /* A completed producer returns values before observing its consumer.
+      * Purity alone does not make earlier output bindings irrelevant.
+@@ -34763,6 +34804,7 @@ static bool petta_machine_push_case(PettaMachineImpl *machine,
+ static bool petta_machine_dispatch_activation_solve(
+     PettaMachineImpl *machine, const PettaGoal *goal,
+     PettaMachineStep *failure) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_dispatch_activation_solve);
+     if (!machine || !goal || !failure ||
+         goal->kind != PETTA_GOAL_SOLVE_ACTIVATION ||
+         goal->activation_source_fields !=
+@@ -35496,6 +35538,7 @@ static bool petta_machine_dispatch_equation_result(
+ static bool petta_machine_call_equations(
+     PettaMachineImpl *machine, const PettaGoal *goal, Atom *expression,
+     Atom *expected, const PettaPlanNode *plan, PettaMachineStep *failure) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_call_equations);
+     Atom *head = expression->expr.elems[0];
+     SymbolId head_id = head->sym_id;
+     CettaExprLen nargs = expression->expr.len - 1u;
+@@ -36050,6 +36093,7 @@ static bool petta_machine_schedule_invocation(
+ static bool petta_machine_dispatch_solve(
+     PettaMachineImpl *machine, const PettaGoal *goal,
+     PettaMachineStep *failure) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_dispatch_solve);
+     if (machine->host.empty_result_is_failure &&
+         atom_is_empty(goal->first))
+         return false;
+@@ -38846,6 +38890,7 @@ static void petta_machine_record_transition(
+ static bool petta_machine_dispatch_goal(
+     PettaMachineImpl *machine, PettaGoal goal,
+     PettaMachineStep *failure) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_dispatch_goal);
+     petta_machine_record_transition(machine, &goal);
+     if (goal.kind == PETTA_GOAL_SOLVE_ACTIVATION) {
+         return petta_machine_dispatch_equation_result(
+@@ -42103,6 +42148,7 @@ static inline __attribute__((always_inline)) void petta_machine_offer_collection
+ 
+ static PettaMachineStep petta_machine_next_local(
+     PettaMachine *machine, Atom **answer, Bindings *environment) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_machine_next_local);
+     if (answer)
+         *answer = NULL;
+     if (!machine || !machine->impl || !answer || !environment) {
+diff --git a/src/petta_semantics.c b/src/petta_semantics.c
+index 84dbb25f..85334c8c 100644
+--- a/src/petta_semantics.c
++++ b/src/petta_semantics.c
+@@ -1,3 +1,4 @@
++#include "cetta_evprof.h"
+ #include "petta_semantics.h"
+ 
+ #include "space.h"
+@@ -2110,6 +2111,7 @@ static bool petta_cons_cells_end_in_expression(Atom *cells) {
+ static bool petta_semantics_match_cons_constraint_mode(
+     Arena *arena, Atom *constraint, Atom *value,
+     BindingsBuilder *builder, bool authored_cons, CettaFrameIdentity source_epoch) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_semantics_match_cons_constraint_mode);
+     if (!arena || !constraint || !value || !builder)
+         return false;
+     uint32_t entry_mark = bindings_builder_save(builder);
+diff --git a/src/petta_specializer.c b/src/petta_specializer.c
+index 398c1a3e..10ca31da 100644
+--- a/src/petta_specializer.c
++++ b/src/petta_specializer.c
+@@ -1,3 +1,4 @@
++#include "cetta_evprof.h"
+ #include "term_canon.h"
+ #include "petta_specializer.h"
+ 
+@@ -1740,6 +1741,7 @@ static bool petta_relation_relevance_node_scan(
+ static PettaRelationRelevance
+ petta_relation_specialization_relevance(
+     PettaSpecializerContext *context, SymbolId source) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_relation_specialization_relevance);
+     if (!context || !context->space ||
+         source == SYMBOL_ID_NONE) {
+         return PETTA_RELATION_RELEVANCE_UNKNOWN;
+@@ -2486,6 +2488,7 @@ PettaSpecializerRelationAdmission
+ petta_specializer_query_value_execution_admission(
+         Space *space, SymbolId source, Bindings *environment,
+         const BindingValue *arguments, CettaExprLen arity) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_specializer_query_value_execution_admission);
+     if (!space || source == SYMBOL_ID_NONE || !environment ||
+         (arity > 0u && !arguments)) {
+         return PETTA_SPECIALIZER_RELATION_DEFER;
+@@ -2598,6 +2601,7 @@ static bool petta_collect_source_equations(
+ static bool petta_match_source_call(
+     PettaSpecializerContext *context, Atom *equation,
+     Atom *call, Atom **fresh_equation, Bindings *bindings) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_match_source_call);
+     if (fresh_equation)
+         *fresh_equation = NULL;
+     bindings_init(bindings);
+@@ -4807,6 +4811,7 @@ PettaSpecializeResult petta_specializer_prepare_call(
+     Space *space, PettaProgram *program,
+     Arena *persistent_arena,
+     Arena *result_arena, Atom *call, Atom **out_call) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_petta_specializer_prepare_call);
+     if (out_call)
+         *out_call = call;
+     if (!space || !persistent_arena || !result_arena ||
+diff --git a/src/prepared_pure_machine.c b/src/prepared_pure_machine.c
+index eaa9eb7e..4ed8dd96 100644
+--- a/src/prepared_pure_machine.c
++++ b/src/prepared_pure_machine.c
+@@ -1,3 +1,4 @@
++#include "cetta_evprof.h"
+ #include "fixpoint.h"
+ #include "prepared_pure_machine.h"
+ #include "he_macro_expansion.h"
+@@ -8474,6 +8475,7 @@ static bool prepared_pure_binds_meet_destinations(
+ 
+ static bool prepared_pure_compile_pending_heads(
+     CettaPreparedPureProgram *program) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_prepared_pure_compile_pending_heads);
+     if (!program)
+         return false;
+     for (uint32_t i = 0u; i < program->head_len; i++) {
+@@ -15424,6 +15426,7 @@ prepared_pure_program_compile_closed_mode(
+     bool total_structural_equality,
+     CettaMatchDecisionSemanticIdentity match_decision_semantics,
+     bool answer_producer, CettaPreparedPureCompileReport *report) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_prepared_pure_program_compile_closed_mode);
+     if (report)
+         *report = (CettaPreparedPureCompileReport){
+             .status = CETTA_PREPARED_PURE_COMPILE_INPUT_REFUSED,
+@@ -20911,6 +20914,7 @@ static bool PREPARED_PURE_HOT prepared_pure_program_execute_internal(
+     CettaPreparedPureInterruptPollFn interrupt_poll,
+     void *interrupt_context,
+     Atom **result_out, CettaCallOutcome *outcome, bool *native_entered) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_prepared_pure_program_execute_internal);
+     const CettaPreparedPureProgram *outer_program = g_prepared_pure_stamp_program;
+     const Arena *outer_arena = g_prepared_pure_stamp_arena;
+     g_prepared_pure_stamp_program = program;
+diff --git a/src/space.c b/src/space.c
+index bc43bc2d..cda7856a 100644
+--- a/src/space.c
++++ b/src/space.c
+@@ -1,3 +1,4 @@
++#include "cetta_evprof.h"
+ #include "term_canon.h"
+ #include <time.h>
+ #include "space.h"
+@@ -9709,6 +9710,7 @@ bool space_rule_cursor_init(Space *s, SymbolId head, unsigned admitted_forms,
+ /* The next equation of the member being read, or END when it is done. */
+ static SpaceEquationCursorStep space_equation_cursor_member_next(
+     SpaceEquationCursor *cursor, SpaceEquationOccurrenceId *out) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_space_equation_cursor_member_next);
+     /* The space itself was checked by the caller; a dependency is checked
+        here. */
+     if (cursor->dependency != 0u &&
+@@ -9832,6 +9834,7 @@ static SpaceEquationCursorStep space_equation_cursor_member_next(
+ 
+ SpaceEquationCursorStep space_equation_cursor_next(
+     SpaceEquationCursor *cursor, SpaceEquationOccurrenceId *out) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_space_equation_cursor_next);
+     if (out)
+         memset(out, 0, sizeof(*out));
+     if (!cursor || !out || !space_read_token_prefix_intact(cursor->read))
+@@ -10576,6 +10579,7 @@ static bool space_effect_graph_solve(SpaceEffectGraph *graph) {
+ 
+ static CettaGsltQueryEffect space_query_effect_for_head_analyzed(
+     Space *space, SymbolId head, bool *out_defined) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_space_query_effect_for_head_analyzed);
+     if (out_defined)
+         *out_defined = false;
+     if (!space || head == SYMBOL_ID_NONE)
+@@ -11693,6 +11697,7 @@ bool space_keys_open_row(Space *s, Atom *atom) {
+ 
+ static bool space_admit_atom_impl(Space *s, Arena *fallback,
+                                   const Arena *source_arena, Atom *atom) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_space_admit_atom_impl);
+     s = space_mutation_target(s);
+     bool transition_failed = false;
+     if (!s || !atom || !space_proof_prepare_storage(s))
+@@ -14737,6 +14742,7 @@ space_member_annotated_types(
+         Space *s, Arena *a, Atom *atom, SpaceAnnotatedTypes *list,
+         CettaTypeInferenceBudget *budget,
+         SpaceDeclaredTypeLookupCost *cost, bool own_only) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_space_member_annotated_types);
+     if (space_has_overlay_base(s) || !declared_type_index_enabled()) {
+         CettaCount logical_len = space_length64(s);
+         CettaIndex imported = space_imported_length(s);
+@@ -14869,6 +14875,7 @@ static uint32_t get_annotated_types(Space *s, Arena *a, Atom *atom,
+                                     Atom ***out_types,
+                                     CettaTypeInferenceBudget *budget,
+                                     SpaceDeclaredTypeLookupCost *cost) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_get_annotated_types);
+     Atom *const *grounded = NULL;
+     uint32_t grounded_count = atom && atom->kind == ATOM_SYMBOL
+         ? space_grounded_types(atom->sym_id, &grounded) : 0u;
+diff --git a/src/term_canon.c b/src/term_canon.c
+index c3e38a5f..d4bfb96d 100644
+--- a/src/term_canon.c
++++ b/src/term_canon.c
+@@ -1,3 +1,4 @@
++#include "cetta_evprof.h"
+ #include "term_canon.h"
+ 
+ #include <stdlib.h>
+@@ -114,6 +115,7 @@ bool cetta_instantiate_frame_terms_within(Arena *dst, Atom **terms,
+ }
+ 
+ bool cetta_instantiate_frame_terms(Arena *dst, Atom **terms, size_t count) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_cetta_instantiate_frame_terms);
+     if (!dst || (count && !terms))
+         return false;
+     CETTA_FRAME_IDENTITY_SCOPE(owner);
+diff --git a/src/term_universe.c b/src/term_universe.c
+index 3540739c..af2cd360 100644
+--- a/src/term_universe.c
++++ b/src/term_universe.c
+@@ -1,3 +1,4 @@
++#include "cetta_evprof.h"
+ #include "term_universe.h"
+ #include "match.h"
+ #include "stats.h"
+@@ -5611,6 +5612,7 @@ static Atom *term_universe_copy_atom_impl(const TermUniverse *universe,
+                                           CettaFrameIdentity epoch,
+                                           bool rename_epoch_vars,
+                                           TermUniverseCopyMemo *memo) {
++    CETTA_EVPROF_SCOPE(CETTA_EVP_term_universe_copy_atom_impl);
+     Atom *out = NULL;
+     if (!universe || !dst || id == CETTA_ATOM_ID_NONE)
+         return NULL;
+-- 
+2.34.1
+
